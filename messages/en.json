@@ -1,0 +1,20 @@
+{
+  "workbench": {
+    "toolsLabel": "Tools",
+    "tools": { "nipper": "Nipper", "sand": "Sandpaper", "build": "Build" },
+    "hint": {
+      "nipper": "Click a gate (the small connector) to cut the part off the runner. A part comes free once all its gates are cut.",
+      "sand": "Hold the mouse on a gate nub and rub back and forth until it is flush.",
+      "build": "Drag a free part onto the yellow outline."
+    },
+    "drop": {
+      "wrongStep": "Almost! Finish step {n} first.",
+      "wrongSpot": "That spot is for the {part}."
+    },
+    "manual": "Manual",
+    "step": "Step {n}",
+    "parts": { "legs": "Legs", "torso": "Torso", "head": "Head", "armL": "Left arm", "armR": "Right arm" },
+    "nubsLeft": "Nubs left: {n}",
+    "done": "Model complete!"
+  }
+}

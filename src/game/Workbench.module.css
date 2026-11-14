@@ -1,0 +1,87 @@
+/* shortcut: placeholder styling for the prototype; replaced by ChatGPT's tokens.css + screens when they arrive. */
+.shell {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  background: #10261f;
+  color: #f5f7f3;
+  font-family: system-ui, sans-serif;
+}
+
+.panel {
+  padding: 20px;
+  background: #14202b;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel h2 {
+  margin: 8px 0 0;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.tools {
+  display: flex;
+  gap: 6px;
+}
+
+.tools button {
+  flex: 1;
+  padding: 10px 8px;
+  border: 2px solid #f5f7f3;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tools button[aria-pressed="true"] {
+  background: #f2c230;
+  border-color: #f2c230;
+  color: #14202b;
+}
+
+.tools button:focus-visible {
+  outline: 3px solid #2f5fb0;
+  outline-offset: 2px;
+}
+
+.hint {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.warn {
+  margin: 0;
+  padding: 8px 10px;
+  border-left: 4px solid #f2c230;
+  background: rgba(242, 194, 48, 0.12);
+}
+
+.manual {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.8;
+}
+
+.manual li[data-state="done"] {
+  opacity: 0.55;
+  text-decoration: line-through;
+}
+
+.manual li[data-state="now"] {
+  color: #f2c230;
+  font-weight: 700;
+}
+
+.done {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #f2c230;
+}

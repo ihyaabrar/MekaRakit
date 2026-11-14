@@ -1,0 +1,20 @@
+{
+  "workbench": {
+    "toolsLabel": "Alat",
+    "tools": { "nipper": "Nipper", "sand": "Amplas", "build": "Rakit" },
+    "hint": {
+      "nipper": "Klik gate (penghubung kecil) untuk memotong part dari runner. Part lepas setelah semua gate-nya terpotong.",
+      "sand": "Tahan klik di nub bekas gate, lalu gosok bolak-balik sampai rata.",
+      "build": "Seret part yang sudah lepas ke kerangka kuning."
+    },
+    "drop": {
+      "wrongStep": "Hampir! Selesaikan langkah {n} dulu.",
+      "wrongSpot": "Tempat itu untuk {part}."
+    },
+    "manual": "Manual",
+    "step": "Langkah {n}",
+    "parts": { "legs": "Kaki", "torso": "Badan", "head": "Kepala", "armL": "Lengan kiri", "armR": "Lengan kanan" },
+    "nubsLeft": "Nub tersisa: {n}",
+    "done": "Model selesai dirakit!"
+  }
+}
