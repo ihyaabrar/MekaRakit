@@ -279,7 +279,9 @@
       "error": "Photo not saved, try again.",
       "download": "Download",
       "leave": "Leave photo mode"
-    }
+    },
+    "stepOf": "Step {n} of {total}",
+    "nubsShort": "Nubs {n}"
   },
   "account": {
     "forgotTitle": "Forgot password",

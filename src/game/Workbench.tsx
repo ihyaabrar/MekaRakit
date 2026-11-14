@@ -24,6 +24,8 @@ import { DecalMesh } from "./bench/Finish";
 import { PhotoRig, Posed, type PhotoApi } from "./bench/Pose";
 import { Studio } from "./bench/Studio";
 import styles from "./Workbench.module.css";
+import hud from "./bench/Hud.module.css";
+import { ToolIcon } from "./bench/ToolIcons";
 
 type Tool = HeldTool;
 type Burst = { id: number; at: Vec3 };
@@ -246,6 +248,25 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
 
   const nubsLeft = kit.parts.reduce((n, p) => n + Object.values(state.parts[p.id].nubs).filter((h) => h > 0).length, 0);
   const done = isComplete(kit, state);
+  const currentStep = lk.steps.find((st) => st.n === state.step);
+
+  // keyboard: 1-5 pick tools, B opens the manual (not while typing or reading the book)
+  useEffect(() => {
+    if (!opened || bookOpen) return;
+    const order = ["hand", "nipper", "sand", "brush", "decal"] as const;
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA")) return;
+      const i = Number(e.key) - 1;
+      if (i >= 0 && i < order.length) setTool(order[i]);
+      if (e.key.toLowerCase() === "b") {
+        setBookPage(null);
+        setBookOpen(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [opened, bookOpen]);
 
   function onCut(part: PartDef, gateId: string) {
     sfx.snip();
@@ -284,14 +305,14 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
           e.preventDefault();
           setTool("hand");
         }}
-        camera={{ position: [-1.7, 10, 7.2], fov: 48 }}
+        camera={{ position: [-1.2, 11.2, 9.4], fov: 46 }}
         dpr={[1, 2]}
         gl={{ preserveDrawingBuffer: true }}
         shadows="soft"
       >
         <PhotoRig onReady={onPhotoReady} />
         <Studio lampTarget={[lk.assembly[0] - 2, 0, lk.assembly[2]]} />
-        <OrbitControls makeDefault target={[-1.7, 0.6, -0.3]} maxPolarAngle={Math.PI / 2.1} minDistance={4} maxDistance={16} />
+        <OrbitControls makeDefault target={[-1.2, 0.2, 0.9]} maxPolarAngle={Math.PI / 2.1} minDistance={4} maxDistance={16} />
         <Scene
           lk={lk}
           tool={tool}
@@ -335,112 +356,61 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
         ))}
       </Canvas>
 
-      <aside className={styles.panel}>
-        <button className={styles.back} type="button" onClick={leave} disabled={shelving}>
+      {/* ---- HUD: everything floats over the bench ---- */}
+      <div className={hud.topLeft}>
+        <button className={hud.chipBtn} type="button" onClick={leave} disabled={shelving}>
           {t("back")}
         </button>
-        <h1 className={styles.kitTitle}>
-          <span className={ui.code}>{entry.code}</span> {tk(`${entry.id}.name`)}
-        </h1>
-        {!opened ? (
-          <>
-            <p className={styles.hint}>{t("box.hint")}</p>
-            <button className={ui.btn} type="button" onClick={openBox}>
-              {t("box.open")}
-            </button>
-          </>
-        ) : (
-          <>
-            <div className={styles.tools} role="toolbar" aria-label={t("toolsLabel")}>
-              {(["hand", "nipper", "sand", "brush", "decal"] as const).map((k) => (
-                <button key={k} aria-pressed={tool === k} onClick={() => setTool(k)}>
-                  {t(`tools.${k}`)}
-                </button>
-              ))}
-            </div>
-            <p className={styles.hint}>{lifted ? t(tool === "sand" ? "lift.sand" : "lift.turn") : t(`hint.${tool}`)}</p>
-            {tool === "brush" && (
-              <div className={styles.swatches} role="radiogroup" aria-label={t("paint.label")}>
-                {PAINTS.map((c) => (
-                  <button key={c} type="button" role="radio" aria-checked={paintColor === c} aria-label={t(`paint.colors.${c.slice(1)}`)} style={{ background: c }} onClick={() => setPaintColor(c)} />
-                ))}
-              </div>
-            )}
-            {tool === "decal" && (
-              <>
-                <div className={styles.decalKinds} role="radiogroup" aria-label={t("decal.label")}>
-                  {DECAL_KINDS.map((k) => (
-                    <button key={k} type="button" role="radio" aria-checked={decalKind === k} onClick={() => setDecalKind(k)}>
-                      {t(`decal.kinds.${k}`)}
-                    </button>
-                  ))}
-                </div>
-                {selectedDecal && decals.some((d) => d.id === selectedDecal) && (
-                  <div className={styles.decalEdit}>
-                    <label>
-                      {t("decal.rotate")}
-                      <input
-                        type="range"
-                        min={-180}
-                        max={180}
-                        step={5}
-                        value={Math.round((decals.find((d) => d.id === selectedDecal)!.rot * 180) / Math.PI)}
-                        onChange={(e) => editDecal({ rot: (Number(e.target.value) * Math.PI) / 180 })}
-                      />
-                    </label>
-                    <label>
-                      {t("decal.size")}
-                      <input
-                        type="range"
-                        min={6}
-                        max={60}
-                        step={1}
-                        value={Math.round(decals.find((d) => d.id === selectedDecal)!.size * 100)}
-                        onChange={(e) => editDecal({ size: Number(e.target.value) / 100 })}
-                      />
-                    </label>
-                    <button
-                      className={styles.linkBtn}
-                      type="button"
-                      onClick={() => {
-                        setDecals((all) => all.filter((d) => d.id !== selectedDecal));
-                        setSelectedDecal(null);
-                      }}
-                    >
-                      {t("decal.remove")}
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
-            {lifted && (
-              <button className={ui.btnLine} type="button" onClick={() => setLifted(null)}>
-                {t("lift.putDown", { part: lk.parts[lifted].name[lang] })}
-              </button>
-            )}
-            <button
-              className={ui.btnLine}
-              type="button"
-              onClick={() => {
-                setBookPage(null);
-                setBookOpen(true);
-              }}
-            >
-              {t("book.open")}
-            </button>
-          </>
+        <div className={hud.chip}>
+          <span className={hud.code}>{entry.code}</span>
+          <h1 className={hud.kitName}>{tk(`${entry.id}.name`)}</h1>
+        </div>
+        {opened && !done && currentStep && (
+          <div className={hud.stepCard}>
+            <p className={hud.stepLabel}>{t("stepOf", { n: currentStep.n, total: lk.steps.length })}</p>
+            <p className={hud.stepTitle}>{currentStep.title[lang]}</p>
+            <p className={hud.stepParts}>
+              {kit.parts
+                .filter((p) => p.step === currentStep.n && state.parts[p.id].status !== "placed")
+                .map((p) => lk.parts[p.id].name[lang])
+                .join(" · ")}
+            </p>
+          </div>
         )}
+      </div>
+
+      {opened && (
+        <div className={hud.topRight}>
+          <span className={hud.chip} title={t("nubsLeft", { n: nubsLeft })}>
+            {t("nubsShort", { n: nubsLeft })}
+          </span>
+          <button
+            className={hud.chipBtn}
+            type="button"
+            onClick={() => {
+              setBookPage(null);
+              setBookOpen(true);
+            }}
+          >
+            {t("book.open")} <kbd>B</kbd>
+          </button>
+        </div>
+      )}
+
+      {/* notices: the current tool hint, save problems, drop nudges */}
+      <div className={hud.notices} aria-live="polite">
+        {opened && <p className={hud.hint}>{lifted ? t(tool === "sand" ? "lift.sand" : "lift.turn") : photoMode ? t("photo.hint") : t(`hint.${tool}`)}</p>}
         {saveError && (
-          <p className={styles.warn} role="status">
+          <p className={hud.warn} role="status">
             {t("saveError")}
           </p>
         )}
         {hint && (
-          <div className={styles.warn}>
+          <div className={hud.warn}>
             <p>{hint.key === "wrongStep" ? t("drop.wrongStep", { n: hint.n }) : t("drop.wrongSpot", { part: lk.parts[hint.part].name[lang] })}</p>
             {hint.page !== null && (
               <button
-                className={styles.linkBtn}
+                className={hud.link}
                 type="button"
                 onClick={() => {
                   setBookPage(hint.page);
@@ -452,82 +422,149 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
             )}
           </div>
         )}
-        <h2>{t("manual")}</h2>
-        <ol className={styles.manual}>
-          {lk.steps.map(({ n, title }) => (
-            <li key={n} data-state={n < state.step ? "done" : n === state.step ? "now" : "later"}>
-              <span>
-                {title[lang]}
-                {n === state.step && (
-                  <small className={styles.stepParts}>
-                    {kit.parts
-                      .filter((p) => p.step === n && state.parts[p.id].status !== "placed")
-                      .map((p) => lk.parts[p.id].name[lang])
-                      .join(", ")}
-                  </small>
+      </div>
+
+      {!opened ? (
+        <div className={hud.boxPrompt}>
+          <p>{t("box.hint")}</p>
+          <button className={hud.primary} type="button" onClick={openBox}>
+            {t("box.open")}
+          </button>
+        </div>
+      ) : (
+        !photoMode && (
+          <div className={hud.bottom}>
+            {(tool === "brush" || tool === "decal" || lifted) && (
+              <div className={hud.options}>
+                {tool === "brush" && (
+                  <div className={hud.swatches} role="radiogroup" aria-label={t("paint.label")}>
+                    {PAINTS.map((c) => (
+                      <button key={c} type="button" role="radio" aria-checked={paintColor === c} aria-label={t(`paint.colors.${c.slice(1)}`)} title={t(`paint.colors.${c.slice(1)}`)} style={{ background: c }} onClick={() => setPaintColor(c)} />
+                    ))}
+                  </div>
                 )}
-              </span>
-            </li>
-          ))}
-        </ol>
-        <p>{t("nubsLeft", { n: nubsLeft })}</p>
-        {done && (
-          <div className={styles.done} role="status">
-            <p>{t("done")}</p>
-            {lk.poses.length > 0 && (
-              <fieldset className={styles.pose}>
-                <legend>{t("pose.title")}</legend>
-                {lk.poses.map((j) => (
-                  <label key={j.id}>
-                    {j.name[lang]}
-                    <input
-                      type="range"
-                      min={Math.round((j.min * 180) / Math.PI)}
-                      max={Math.round((j.max * 180) / Math.PI)}
-                      step={5}
-                      value={Math.round(((pose[j.id] ?? 0) * 180) / Math.PI)}
-                      onChange={(e) => setPose((p) => ({ ...p, [j.id]: (Number(e.target.value) * Math.PI) / 180 }))}
-                    />
-                  </label>
-                ))}
-                <button className={styles.linkBtn} type="button" onClick={() => setPose({})}>
-                  {t("pose.reset")}
-                </button>
-              </fieldset>
-            )}
-            {!photoMode ? (
-              <button className={ui.btnLine} type="button" onClick={enterPhoto}>
-                {t("photo.enter")}
-              </button>
-            ) : (
-              <div className={styles.photo}>
-                <p className={styles.hint}>{t("photo.hint")}</p>
-                <button className={ui.btn} type="button" onClick={snapPhoto} disabled={photo?.saved === "saving"}>
-                  {t("photo.snap")}
-                </button>
-                {photo && (
-                  <figure>
-                    {/* eslint-disable-next-line @next/next/no-img-element -- a local data URL just captured */}
-                    <img src={photo.url} alt={t("photo.alt", { name: tk(`${entry.id}.name`) })} />
-                    <figcaption>
-                      {t(`photo.${photo.saved}`)}{" "}
-                      <a href={photo.url} download={`${entry.code}.jpg`}>
-                        {t("photo.download")}
-                      </a>
-                    </figcaption>
-                  </figure>
+                {tool === "decal" && (
+                  <>
+                    <div className={hud.segmented} role="radiogroup" aria-label={t("decal.label")}>
+                      {DECAL_KINDS.map((k) => (
+                        <button key={k} type="button" role="radio" aria-checked={decalKind === k} onClick={() => setDecalKind(k)}>
+                          {t(`decal.kinds.${k}`)}
+                        </button>
+                      ))}
+                    </div>
+                    {selectedDecal && decals.some((d) => d.id === selectedDecal) && (
+                      <div className={hud.sliders}>
+                        <label>
+                          {t("decal.rotate")}
+                          <input
+                            type="range"
+                            min={-180}
+                            max={180}
+                            step={5}
+                            value={Math.round((decals.find((d) => d.id === selectedDecal)!.rot * 180) / Math.PI)}
+                            onChange={(e) => editDecal({ rot: (Number(e.target.value) * Math.PI) / 180 })}
+                          />
+                        </label>
+                        <label>
+                          {t("decal.size")}
+                          <input
+                            type="range"
+                            min={6}
+                            max={60}
+                            step={1}
+                            value={Math.round(decals.find((d) => d.id === selectedDecal)!.size * 100)}
+                            onChange={(e) => editDecal({ size: Number(e.target.value) / 100 })}
+                          />
+                        </label>
+                        <button
+                          className={hud.link}
+                          type="button"
+                          onClick={() => {
+                            setDecals((all) => all.filter((d) => d.id !== selectedDecal));
+                            setSelectedDecal(null);
+                          }}
+                        >
+                          {t("decal.remove")}
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
-                <button className={styles.linkBtn} type="button" onClick={leavePhoto}>
-                  {t("photo.leave")}
-                </button>
+                {lifted && (
+                  <button className={hud.chipBtn} type="button" onClick={() => setLifted(null)}>
+                    {t("lift.putDown", { part: lk.parts[lifted].name[lang] })} <kbd>Esc</kbd>
+                  </button>
+                )}
               </div>
             )}
-            <button className={ui.btn} type="button" onClick={leave} disabled={shelving}>
-              {t("toShelf")}
-            </button>
+            <div className={hud.hotbar} role="toolbar" aria-label={t("toolsLabel")}>
+              {(["hand", "nipper", "sand", "brush", "decal"] as const).map((k, i) => (
+                <button key={k} className={hud.slot} aria-pressed={tool === k} onClick={() => setTool(k)}>
+                  <kbd>{i + 1}</kbd>
+                  <ToolIcon tool={k} />
+                  <span>{t(`tools.${k}`)}</span>
+                </button>
+              ))}
+            </div>
           </div>
-        )}
-      </aside>
+        )
+      )}
+
+      {done && (
+        <aside className={hud.finish} aria-labelledby="finish-title">
+          <h2 id="finish-title">{t("done")}</h2>
+          {lk.poses.length > 0 && !photoMode && (
+            <fieldset className={hud.sliders}>
+              <legend>{t("pose.title")}</legend>
+              {lk.poses.map((j) => (
+                <label key={j.id}>
+                  {j.name[lang]}
+                  <input
+                    type="range"
+                    min={Math.round((j.min * 180) / Math.PI)}
+                    max={Math.round((j.max * 180) / Math.PI)}
+                    step={5}
+                    value={Math.round(((pose[j.id] ?? 0) * 180) / Math.PI)}
+                    onChange={(e) => setPose((p) => ({ ...p, [j.id]: (Number(e.target.value) * Math.PI) / 180 }))}
+                  />
+                </label>
+              ))}
+              <button className={hud.link} type="button" onClick={() => setPose({})}>
+                {t("pose.reset")}
+              </button>
+            </fieldset>
+          )}
+          {!photoMode ? (
+            <button className={hud.chipBtn} type="button" onClick={enterPhoto}>
+              {t("photo.enter")}
+            </button>
+          ) : (
+            <div className={hud.photo}>
+              <button className={hud.primary} type="button" onClick={snapPhoto} disabled={photo?.saved === "saving"}>
+                {t("photo.snap")}
+              </button>
+              {photo && (
+                <figure>
+                  {/* eslint-disable-next-line @next/next/no-img-element -- a local data URL just captured */}
+                  <img src={photo.url} alt={t("photo.alt", { name: tk(`${entry.id}.name`) })} />
+                  <figcaption>
+                    {t(`photo.${photo.saved}`)}{" "}
+                    <a href={photo.url} download={`${entry.code}.jpg`}>
+                      {t("photo.download")}
+                    </a>
+                  </figcaption>
+                </figure>
+              )}
+              <button className={hud.link} type="button" onClick={leavePhoto}>
+                {t("photo.leave")}
+              </button>
+            </div>
+          )}
+          <button className={hud.primary} type="button" onClick={leave} disabled={shelving}>
+            {t("toShelf")}
+          </button>
+        </aside>
+      )}
       {bookOpen && <ManualBook initialPage={bookPage ?? undefined} lk={lk} state={state} lang={lang} code={entry.code} name={tk(`${entry.id}.name`)} onClose={() => setBookOpen(false)} />}
     </div>
   );

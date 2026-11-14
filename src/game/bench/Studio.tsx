@@ -175,7 +175,7 @@ export function Studio({ lampTarget }: { lampTarget: Vec3 }) {
       {/* warm desk lamp: the key light and the shadow caster */}
       <primitive object={target} />
       <spotLight
-        position={[-6.4, 6.4, 1.6]}
+        position={[-8.2, 7.2, -2.2]}
         target={target}
         angle={0.95}
         penumbra={0.85}
@@ -200,7 +200,7 @@ export function Studio({ lampTarget }: { lampTarget: Vec3 }) {
         <planeGeometry args={[MAT_W, MAT_D]} />
         <meshStandardMaterial map={mat ?? undefined} color={mat ? "#ffffff" : "#1e4a3d"} roughness={0.92} />
       </mesh>
-      <DeskLamp at={[-9.2, 0, -3.6]} />
+      <DeskLamp at={[-11.5, 0, -6.5]} />
     </>
   );
 }

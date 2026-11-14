@@ -1,10 +1,9 @@
 /* The 3D mat fills the screen; the manual is a printed sheet clipped to the right edge. */
+/* the 3D desk fills the screen; the HUD (bench/Hud.module.css) floats over it */
 .shell {
   position: fixed;
   inset: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  background: #10261f;
+  background: #15110e;
 }
 
 .panel {
@@ -174,18 +173,7 @@
 }
 
 /* PRD: desktop first. Narrow screens still work: the sheet drops below the mat. */
-@media (max-width: 760px) {
-  .shell {
-    grid-template-columns: 1fr;
-    grid-template-rows: 55vh auto;
-    position: static;
-    min-height: 100vh;
-  }
-  .panel {
-    border-left: 0;
-    border-top: 4px solid var(--ink);
-  }
-}
+
 
 /* parts still to place in the current step, under its title */
 .stepParts {

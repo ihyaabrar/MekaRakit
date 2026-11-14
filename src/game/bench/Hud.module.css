@@ -1,0 +1,414 @@
+/*
+  In-game HUD over the 3D desk. Dark, quiet panels so the lit desk stays the focus;
+  decal yellow marks the active tool and the one primary action. Glass blur only on the hotbar.
+*/
+.topLeft,
+.topRight,
+.notices,
+.bottom,
+.boxPrompt,
+.finish {
+  position: absolute;
+  z-index: 5;
+  color: #f2efe9;
+  font-family: var(--font-body);
+}
+
+.topLeft {
+  top: 16px;
+  left: 16px;
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  max-width: min(360px, calc(100vw - 32px));
+}
+
+.topRight {
+  top: 16px;
+  right: 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.chip,
+.chipBtn,
+.stepCard,
+.options,
+.finish,
+.boxPrompt,
+.hint,
+.warn {
+  background: rgba(16, 18, 20, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 14px;
+  font-weight: 600;
+}
+
+.chipBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chipBtn:hover {
+  border-color: rgba(242, 194, 48, 0.6);
+}
+
+.chipBtn:disabled {
+  opacity: 0.6;
+}
+
+.topRight kbd,
+.bottom kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  color: #c9c3b8;
+}
+
+.code {
+  padding: 2px 6px;
+  border: 1.5px solid #f2c230;
+  border-radius: 3px;
+  color: #f2c230;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+
+.kitName {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.stepCard {
+  padding: 12px 14px;
+  width: 100%;
+}
+
+.stepCard p {
+  margin: 0;
+}
+
+.stepLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f2c230;
+}
+
+.stepTitle {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  margin: 2px 0 4px !important;
+}
+
+.stepParts {
+  font-size: 13px;
+  color: #c9c3b8;
+  line-height: 1.4;
+}
+
+.notices {
+  left: 16px;
+  bottom: 120px;
+  display: grid;
+  gap: 8px;
+  max-width: min(380px, calc(100vw - 32px));
+}
+
+.hint,
+.warn {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.hint {
+  color: #d8d2c7;
+}
+
+.warn {
+  border-color: rgba(242, 194, 48, 0.55);
+}
+
+.warn p {
+  margin: 0;
+}
+
+.link {
+  min-height: 36px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #f2c230;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* bottom centre: options for the held tool, then the hotbar */
+.bottom {
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+}
+
+.options {
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 10px 12px;
+}
+
+.hotbar {
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 14px;
+  background: rgba(16, 18, 20, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+}
+
+.slot {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 2px;
+  width: 76px;
+  height: 72px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #e9e4da;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.slot kbd {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  min-width: 16px;
+  height: 16px;
+  font-size: 10px;
+}
+
+.slot:hover {
+  background: rgba(255, 255, 255, 0.09);
+}
+
+.slot[aria-pressed="true"] {
+  background: rgba(242, 194, 48, 0.16);
+  border-color: #f2c230;
+  color: #f2c230;
+}
+
+.slot:focus-visible,
+.chipBtn:focus-visible,
+.swatches button:focus-visible,
+.segmented button:focus-visible {
+  outline: 3px solid #f2c230;
+  outline-offset: 2px;
+}
+
+.swatches {
+  display: flex;
+  gap: 8px;
+}
+
+.swatches button {
+  width: 34px;
+  height: 34px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.swatches button[aria-checked="true"] {
+  border-color: #f2c230;
+  box-shadow: 0 0 0 3px rgba(242, 194, 48, 0.35);
+}
+
+.segmented {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+
+.segmented button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.segmented button[aria-checked="true"] {
+  border-color: #f2c230;
+  color: #f2c230;
+}
+
+.sliders {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  min-width: 240px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.sliders legend {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.sliders label {
+  display: grid;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #d8d2c7;
+}
+
+.sliders input {
+  accent-color: #f2c230;
+}
+
+.primary {
+  min-height: 48px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 10px;
+  background: #f2c230;
+  color: #14202b;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.primary:hover {
+  background: #ffd24a;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+}
+
+.boxPrompt {
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 10px;
+  justify-items: center;
+  padding: 16px 20px;
+  text-align: center;
+}
+
+.boxPrompt p {
+  margin: 0;
+}
+
+.finish {
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  width: min(320px, calc(100vw - 32px));
+  overflow-y: auto;
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  padding: 16px;
+}
+
+.finish h2 {
+  font-size: 28px;
+}
+
+.photo {
+  display: grid;
+  gap: 8px;
+}
+
+.photo figure {
+  margin: 0;
+}
+
+.photo img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.photo figcaption {
+  font-size: 13px;
+  color: #d8d2c7;
+}
+
+.photo a {
+  color: #f2c230;
+}
+
+/* when the finish card is open the top-right chips move out of its way */
+.finish ~ .topRight {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  .slot {
+    width: 58px;
+    height: 60px;
+  }
+  .slot span {
+    display: none;
+  }
+  .notices {
+    bottom: 100px;
+  }
+}

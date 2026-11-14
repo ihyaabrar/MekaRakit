@@ -38,7 +38,7 @@ export function PhotoRig({ onReady }: { onReady: (api: PhotoApi) => void }) {
     onReady({
       frame(center) {
         const c = controls();
-        saved = { pos: camera.position.toArray() as Vec3, target: [-1.7, 0.6, -0.3] };
+        saved = { pos: camera.position.toArray() as Vec3, target: [-1.2, 0.2, 0.9] };
         camera.position.set(center[0] + 2.2, center[1] + 1.2, center[2] + 6.2);
         c?.target.set(...center);
         c?.update();
