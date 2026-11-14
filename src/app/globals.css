@@ -1,9 +1,9 @@
 /*
   Design tokens. Direction (PRD): a model-kit instruction sheet lying on a cutting mat.
-  - Mat green is the page: the player's workbench, so the theme is fixed (no light/dark toggle).
+  - The page is the studio at night (dark desk tones, warm lamp glow), so the theme is fixed (no light/dark toggle).
   - Box white sheets carry content, Ink is all text, Cobalt is the one action color,
     Decal yellow is the single accent (current step, focus, highlights). Sprue grey is a neutral.
-  - The mat grid is the identity motif (a real cutting mat has one), not decoration.
+  - The printed instruction sheet on a dark desk is the identity motif, shared with the 3D workbench.
 */
 :root {
   --mat: #214f43;
@@ -50,18 +50,14 @@ body {
   font-size: 16px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
-  /* cutting-mat grid: 1 large cell = 5 small, like the printed mats */
-  background-color: var(--mat);
+  /* the studio at night: a warm desk-lamp glow from the top left over dark wood tones,
+     matching the 3D workbench; the printed sheets sit on top of it */
+  background-color: #15110e;
   background-image:
-    linear-gradient(var(--mat-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--mat-line) 1px, transparent 1px),
-    linear-gradient(rgba(245, 247, 243, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(245, 247, 243, 0.035) 1px, transparent 1px);
-  background-size:
-    100px 100px,
-    100px 100px,
-    20px 20px,
-    20px 20px;
+    radial-gradient(1100px 620px at 12% -8%, rgba(255, 214, 160, 0.2), transparent 62%),
+    radial-gradient(900px 520px at 100% 110%, rgba(47, 95, 176, 0.12), transparent 60%),
+    linear-gradient(180deg, #1c1713 0%, #120f0c 100%);
+  background-attachment: fixed;
 }
 
 h1,
