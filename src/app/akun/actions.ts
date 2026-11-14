@@ -44,17 +44,16 @@ export async function deleteAccount(password: string): Promise<{ ok: boolean; co
   const check = await auth.signIn.email({ email, password: String(password ?? "") });
   if (check.error) return { ok: false, code: "password" };
   try {
+    // one transaction: either the game data and the login all go, or nothing does (so the player can retry)
     const db = sql();
-    await db`delete from photos where user_id = ${me.id}`;
-    await db`delete from kit_runs where user_id = ${me.id}`;
-    await db`delete from profiles where user_id = ${me.id}`;
-    const { error } = await auth.deleteUser({});
-    if (error) {
-      // the managed auth may not allow self-deletion: remove the login rows directly (same database)
-      await db`delete from neon_auth.session where "userId"::text = ${me.id}`;
-      await db`delete from neon_auth.account where "userId"::text = ${me.id}`;
-      await db`delete from neon_auth."user" where id::text = ${me.id}`;
-    }
+    await db.transaction([
+      db`delete from photos where user_id = ${me.id}`,
+      db`delete from kit_runs where user_id = ${me.id}`,
+      db`delete from profiles where user_id = ${me.id}`,
+      db`delete from neon_auth.session where "userId"::text = ${me.id}`,
+      db`delete from neon_auth.account where "userId"::text = ${me.id}`,
+      db`delete from neon_auth."user" where id::text = ${me.id}`,
+    ]);
     await auth.signOut().catch(() => {});
     return { ok: true };
   } catch (e) {

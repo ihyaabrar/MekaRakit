@@ -178,6 +178,6 @@ export function sanitizeFinish(kit: KitDef, raw: Partial<Finish> | null | undefi
   }
   const pose: Record<string, number> = {};
   for (const [k, a] of Object.entries(raw?.pose ?? {})) if (/^[a-z0-9-]{1,20}$/i.test(k) && Number.isFinite(a)) pose[k] = Math.max(-Math.PI, Math.min(Math.PI, a));
-  const ps = Number(raw?.playSeconds);
-  return { paint, decals, pose, playSeconds: Number.isFinite(ps) ? Math.min(1e7, Math.max(0, Math.round(ps))) : 0 };
+  const ps = raw?.playSeconds;
+  return { paint, decals, pose, playSeconds: typeof ps === "number" && Number.isFinite(ps) ? Math.min(1e7, Math.max(0, Math.round(ps))) : 0 };
 }

@@ -114,9 +114,10 @@ export function DecalMesh({ decal, code, selected, onSelect }: { decal: Decal; c
     <mesh
       position={at}
       quaternion={quat}
-      onClick={
+      onPointerDown={
         onSelect
-          ? (e: ThreeEvent<MouseEvent>) => {
+          ? (e: ThreeEvent<PointerEvent>) => {
+              // select here, and stop the part underneath from placing another sticker on the same press
               e.stopPropagation();
               onSelect();
             }
