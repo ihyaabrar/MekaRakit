@@ -4,10 +4,10 @@ import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber"
 import { OrbitControls, Outlines } from "@react-three/drei";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { GATE_LENGTH, RUNNER_BAR_Y, ASSEMBLY_X } from "./prototypeKit";
-import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, type KitDef, type KitState, type PartDef, type RunSnapshot, type Vec3 } from "./logic";
+import { GATE_LENGTH, RUNNER_BAR_Y, lyingOffset, type LoadedKit, type PartVisual, type RunnerVisual } from "./kitFormat";
+import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, type KitState, type PartDef, type RunSnapshot, type Vec3 } from "./logic";
 import { catalog, findKit, type KitEntry } from "./kits";
 import { kitStatus } from "./progress";
 import { fetchProfile, fetchProgress, fetchRun, saveRun } from "./store";
@@ -65,7 +65,7 @@ export default function Workbench({ kitId }: { kitId: string }) {
     progress,
     kitId,
   );
-  if (entry?.kit && status !== "locked") return <Bench entry={entry} kit={entry.kit} sfxVolume={profile.sfx} saved={saved} />;
+  if (entry?.kit && status !== "locked") return <Bench entry={entry} lk={entry.kit} sfxVolume={profile.sfx} saved={saved} />;
   return (
     <main className={styles.unavailable}>
       <section className={ui.sheet}>
@@ -82,7 +82,9 @@ export default function Workbench({ kitId }: { kitId: string }) {
 const SAVE_DELAY_MS = 600;
 const RETRY_MS = 5000;
 
-function Bench({ entry, kit, sfxVolume, saved }: { entry: KitEntry; kit: KitDef; sfxVolume: number; saved: RunSnapshot | null }) {
+function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit; sfxVolume: number; saved: RunSnapshot | null }) {
+  const kit = lk.def;
+  const lang = useLocale() === "en" ? "en" : "id";
   const t = useTranslations("workbench");
   const tk = useTranslations("kits");
   const router = useRouter();
@@ -140,19 +142,18 @@ function Bench({ entry, kit, sfxVolume, saved }: { entry: KitEntry; kit: KitDef;
   }, [kit, state]);
 
   const nubsLeft = kit.parts.reduce((n, p) => n + Object.values(state.parts[p.id].nubs).filter((h) => h > 0).length, 0);
-  const maxStep = Math.max(...kit.parts.map((p) => p.step));
   const done = isComplete(kit, state);
 
   function onCut(part: PartDef, gateId: string) {
     sfx.snip();
-    setBursts((b) => [...b.slice(-6), { id: Date.now() + Math.random(), at: add(part.runnerPos, part.gates.find((g) => g.id === gateId)!.offset) }]);
+    setBursts((b) => [...b.slice(-6), { id: Date.now() + Math.random(), at: add(part.runnerPos, lyingOffset(part.gates.find((g) => g.id === gateId)!.offset)) }]);
     setState((s) => cutGate(kit, s, part.id, gateId));
   }
 
   function onDrop(partId: string, at: Vec3) {
     setDragging(null);
     const part = kit.parts.find((p) => p.id === partId)!;
-    const rest: Vec3 = [at[0], part.size[1] / 2, 0]; // where it lands on the mat if it does not snap
+    const rest: Vec3 = [at[0], part.size[2] / 2, 0]; // lies face-up on the mat if it does not snap
     const res = checkDrop(kit, state, partId, at);
     if (res.kind === "snap" || checkDrop(kit, state, partId, rest).kind === "snap") {
       sfx.snap();
@@ -168,13 +169,13 @@ function Bench({ entry, kit, sfxVolume, saved }: { entry: KitEntry; kit: KitDef;
 
   return (
     <div className={styles.shell}>
-      <Canvas camera={{ position: [-1, 11, 6.5], fov: 42 }} dpr={[1, 2]}>
+      <Canvas camera={{ position: [-1.7, 10, 7.2], fov: 48 }} dpr={[1, 2]}>
         <color attach="background" args={["#10261F"]} />
         <ambientLight intensity={0.9} />
         <directionalLight position={[4, 8, 5]} intensity={1.6} />
-        <OrbitControls makeDefault target={[-1, 0.6, 0]} maxPolarAngle={Math.PI / 2.1} minDistance={4} maxDistance={16} />
+        <OrbitControls makeDefault target={[-1.7, 0.6, -0.3]} maxPolarAngle={Math.PI / 2.1} minDistance={4} maxDistance={16} />
         <Scene
-          kit={kit}
+          lk={lk}
           tool={tool}
           state={state}
           pos={pos}
@@ -215,12 +216,22 @@ function Bench({ entry, kit, sfxVolume, saved }: { entry: KitEntry; kit: KitDef;
             {t("saveError")}
           </p>
         )}
-        {hint && <p className={styles.warn}>{hint.key === "wrongStep" ? t("drop.wrongStep", { n: hint.n }) : t("drop.wrongSpot", { part: t(`parts.${hint.part}`) })}</p>}
+        {hint && <p className={styles.warn}>{hint.key === "wrongStep" ? t("drop.wrongStep", { n: hint.n }) : t("drop.wrongSpot", { part: lk.parts[hint.part].name[lang] })}</p>}
         <h2>{t("manual")}</h2>
         <ol className={styles.manual}>
-          {Array.from({ length: maxStep }, (_, i) => i + 1).map((n) => (
+          {lk.steps.map(({ n, title }) => (
             <li key={n} data-state={n < state.step ? "done" : n === state.step ? "now" : "later"}>
-              {t("step", { n })}: {kit.parts.filter((p) => p.step === n).map((p) => t(`parts.${p.id}`)).join(", ")}
+              <span>
+                {title[lang]}
+                {n === state.step && (
+                  <small className={styles.stepParts}>
+                    {kit.parts
+                      .filter((p) => p.step === n && state.parts[p.id].status !== "placed")
+                      .map((p) => lk.parts[p.id].name[lang])
+                      .join(", ")}
+                  </small>
+                )}
+              </span>
             </li>
           ))}
         </ol>
@@ -239,7 +250,7 @@ function Bench({ entry, kit, sfxVolume, saved }: { entry: KitEntry; kit: KitDef;
 }
 
 type SceneProps = {
-  kit: KitDef;
+  lk: LoadedKit;
   tool: Tool;
   state: KitState;
   pos: Record<string, Vec3>;
@@ -253,7 +264,8 @@ type SceneProps = {
   onRub: (partId: string, gateId: string, pixels: number) => void;
 };
 
-function Scene({ kit, tool, state, pos, nextGate, dragging, onCut, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
+function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
+  const kit = lk.def;
   const gradient = useToonGradient();
   const { camera, gl } = useThree();
   const get = useThree((s) => s.get);
@@ -307,8 +319,10 @@ function Scene({ kit, tool, state, pos, nextGate, dragging, onCut, canDrag, onDr
         <planeGeometry args={[14, 9]} />
         <meshToonMaterial color={MAT} gradientMap={gradient} />
       </mesh>
-      <Runner gradient={gradient} />
-      <mesh position={[ASSEMBLY_X, 0.01, 0]} rotation-x={-Math.PI / 2}>
+      {lk.runners.map((r) => (
+        <Runner key={r.id} runner={r} gradient={gradient} />
+      ))}
+      <mesh position={[lk.assembly[0], 0.01, lk.assembly[2]]} rotation-x={-Math.PI / 2}>
         <circleGeometry args={[1.1, 40]} />
         <meshToonMaterial color="#2A6656" gradientMap={gradient} />
       </mesh>
@@ -324,7 +338,10 @@ function Scene({ kit, tool, state, pos, nextGate, dragging, onCut, canDrag, onDr
                 <meshBasicMaterial color={YELLOW} transparent opacity={0.22} depthWrite={false} />
               </mesh>
             )}
-            <group position={pos[p.id]}>
+            {/* on the runner or loose on the mat a part lies face-up; held or assembled it stands upright */}
+            <group position={pos[p.id]} rotation-x={ps.status !== "placed" && dragging !== p.id ? -Math.PI / 2 : 0}>
+              <PartBody visual={lk.parts[p.id]} gradient={gradient} ghosted={dragging === p.id} />
+              {/* one invisible box over the whole part: the grab target */}
               <mesh
                 onPointerDown={(e: ThreeEvent<PointerEvent>) => {
                   if (!canDrag(p.id)) return;
@@ -333,13 +350,12 @@ function Scene({ kit, tool, state, pos, nextGate, dragging, onCut, canDrag, onDr
                 }}
               >
                 <boxGeometry args={p.size} />
-                <meshToonMaterial color={p.color} gradientMap={gradient} transparent={dragging === p.id} opacity={dragging === p.id ? 0.85 : 1} />
-                <Outlines thickness={0.04} color={INK} />
+                <meshBasicMaterial transparent opacity={0} depthWrite={false} />
               </mesh>
               {p.gates.map((g) => {
                 const cut = ps.cut.includes(g.id);
                 if (!cut) return <Gate key={g.id} offset={g.offset} hot={nextGate === `${p.id}/${g.id}` && tool === "nipper"} onCut={() => tool === "nipper" && onCut(p, g.id)} />;
-                return <Nub key={g.id} offset={g.offset} height={ps.nubs[g.id] ?? 0} active={tool === "sand"} onStart={() => startRub(p.id, g.id)} gradient={gradient} color={p.color} />;
+                return <Nub key={g.id} offset={g.offset} height={ps.nubs[g.id] ?? 0} active={tool === "sand"} onStart={() => startRub(p.id, g.id)} gradient={gradient} color={lk.parts[p.id].color} />;
               })}
             </group>
           </group>
@@ -349,22 +365,38 @@ function Scene({ kit, tool, state, pos, nextGate, dragging, onCut, canDrag, onDr
   );
 }
 
-function Runner({ gradient }: { gradient: THREE.Texture }) {
-  // frame + middle bar the gates attach to
-  const x0 = -5.3, x1 = -2.2, z = 1.3, r = 0.05;
+function PartBody({ visual, gradient, ghosted }: { visual: PartVisual; gradient: THREE.Texture; ghosted: boolean }) {
+  return (
+    <>
+      {visual.shape.map((prim, i) => (
+        <mesh key={i} position={prim.at ?? [0, 0, 0]}>
+          <boxGeometry args={prim.box} />
+          <meshToonMaterial color={prim.color ?? visual.color} gradientMap={gradient} transparent={ghosted} opacity={ghosted ? 0.85 : 1} />
+          <Outlines thickness={0.025} color={INK} />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
+function Runner({ runner, gradient }: { runner: RunnerVisual; gradient: THREE.Texture }) {
+  // frame + the middle bar every gate attaches to
+  const [cx, cz] = runner.center;
+  const [w, d] = runner.size;
+  const r = 0.05;
   const bars: { p: Vec3; len: number; axis: "x" | "z" }[] = [
-    { p: [(x0 + x1) / 2, RUNNER_BAR_Y, 0], len: x1 - x0, axis: "x" },
-    { p: [(x0 + x1) / 2, RUNNER_BAR_Y, -z], len: x1 - x0, axis: "x" },
-    { p: [(x0 + x1) / 2, RUNNER_BAR_Y, z], len: x1 - x0, axis: "x" },
-    { p: [x0, RUNNER_BAR_Y, 0], len: 2 * z, axis: "z" },
-    { p: [x1, RUNNER_BAR_Y, 0], len: 2 * z, axis: "z" },
+    { p: [cx, RUNNER_BAR_Y, cz], len: w, axis: "x" },
+    { p: [cx, RUNNER_BAR_Y, cz - d / 2], len: w, axis: "x" },
+    { p: [cx, RUNNER_BAR_Y, cz + d / 2], len: w, axis: "x" },
+    { p: [cx - w / 2, RUNNER_BAR_Y, cz], len: d, axis: "z" },
+    { p: [cx + w / 2, RUNNER_BAR_Y, cz], len: d, axis: "z" },
   ];
   return (
     <group>
       {bars.map((b, i) => (
         <mesh key={i} position={b.p} rotation={b.axis === "x" ? [0, 0, Math.PI / 2] : [Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[r, r, b.len, 10]} />
-          <meshToonMaterial color={SPRUE} gradientMap={gradient} />
+          <meshToonMaterial color={runner.color} gradientMap={gradient} />
         </mesh>
       ))}
     </group>
@@ -381,13 +413,12 @@ function Gate({ offset, hot, onCut }: { offset: Vec3; hot: boolean; onCut: () =>
   });
   return (
     <group position={offset}>
-      <mesh rotation-x={Math.PI / 2}>
-        <cylinderGeometry args={[0.035, 0.03, GATE_LENGTH, 10]} />
+      <mesh>
+        <cylinderGeometry args={[0.045, 0.04, GATE_LENGTH, 10]} />
         <meshBasicMaterial ref={mat} color={SPRUE} />
       </mesh>
       {/* fat invisible hit area so a thin gate is easy to click */}
       <mesh
-        rotation-x={Math.PI / 2}
         onPointerOver={(e) => (e.stopPropagation(), setHover(true))}
         onPointerOut={() => setHover(false)}
         onClick={(e) => (e.stopPropagation(), onCut())}
@@ -401,12 +432,12 @@ function Gate({ offset, hot, onCut }: { offset: Vec3; hot: boolean; onCut: () =>
 
 function Nub({ offset, height, active, onStart, gradient, color }: { offset: Vec3; height: number; active: boolean; onStart: () => void; gradient: THREE.Texture; color: string }) {
   if (height <= 0) return null;
-  const dir = Math.sign(offset[2]); // gate points away from the part along z
+  const dir = Math.sign(offset[1]); // the gate left the part along its local y
   const len = 0.02 + 0.1 * height;
-  const faceZ = offset[2] - dir * (GATE_LENGTH / 2);
+  const faceY = offset[1] - dir * (GATE_LENGTH / 2);
   return (
-    <group position={[offset[0], offset[1], faceZ + (dir * len) / 2]}>
-      <mesh rotation-x={Math.PI / 2}>
+    <group position={[offset[0], faceY + (dir * len) / 2, offset[2]]}>
+      <mesh>
         <cylinderGeometry args={[0.035, 0.04, len, 10]} />
         <meshToonMaterial color={color} gradientMap={gradient} />
         <Outlines thickness={0.01} color={INK} />

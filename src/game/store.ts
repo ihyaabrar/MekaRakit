@@ -44,7 +44,7 @@ export async function fetchProgress(): Promise<Progress> {
 
 /** The saved bench for one kit, or null when the player has not started it (or it no longer fits the kit). */
 export async function fetchRun(kitId: string): Promise<RunSnapshot | null> {
-  const kit = findKit(kitId)?.kit;
+  const kit = findKit(kitId)?.kit?.def;
   if (!kit) return null;
   const uid = await requireUserId();
   const rows = await sql()`select snapshot from kit_runs where user_id = ${uid} and kit_id = ${kitId}`;
@@ -56,7 +56,7 @@ export async function fetchRun(kitId: string): Promise<RunSnapshot | null> {
  * Totals are derived here from the snapshot, never sent as increments, so a lost save cannot skew them.
  */
 export async function saveRun(kitId: string, snapshot: RunSnapshot) {
-  const kit = findKit(kitId)?.kit;
+  const kit = findKit(kitId)?.kit?.def;
   if (!kit) throw new Error("unknown kit");
   const run = restoreRun(kit, snapshot);
   if (!run) throw new Error("snapshot does not fit kit");

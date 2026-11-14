@@ -186,3 +186,12 @@
     border-top: 4px solid var(--ink);
   }
 }
+
+/* parts still to place in the current step, under its title */
+.stepParts {
+  display: block;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ink-soft);
+}

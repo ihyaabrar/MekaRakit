@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --test src/game/logic.test.ts src/game/progress.test.ts",
+    "test": "node --test src/game/logic.test.ts src/game/progress.test.ts src/game/kitFormat.test.ts",
     "db:migrate": "node --env-file=.env.local db/migrate.mjs"
   },
   "dependencies": {

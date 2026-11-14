@@ -173,7 +173,7 @@
     },
     "hint": {
       "nipper": "Click a gate (the small connector) to cut the part off the runner. A part comes free once all its gates are cut.",
-      "sand": "Hold the mouse on a gate nub and rub back and forth until it is flush.",
+      "sand": "Hold the mouse on a gate nub and rub back and forth until it is flush. Sand before assembling: nubs covered by other parts cannot be reached.",
       "build": "Drag a free part onto the yellow outline."
     },
     "drop": {
@@ -182,13 +182,6 @@
     },
     "manual": "Manual",
     "step": "Step {n}",
-    "parts": {
-      "legs": "Legs",
-      "torso": "Torso",
-      "head": "Head",
-      "armL": "Left arm",
-      "armR": "Right arm"
-    },
     "nubsLeft": "Nubs left: {n}",
     "done": "Model complete!",
     "toShelf": "Put it on the shelf",
