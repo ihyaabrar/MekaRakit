@@ -15,6 +15,7 @@ import { useLoad } from "@/ui/useLoad";
 import { useRouter } from "next/navigation";
 import ui from "@/ui/ui.module.css";
 import * as sfx from "./sfx";
+import { startMusic, stopMusic } from "./music";
 import { HeldToolFollower, KitBox, RiseOnOpen, ToolTray, type HeldTool } from "./bench/Props";
 import LiftedPart from "./bench/LiftedPart";
 import ManualBook from "./bench/ManualBook";
@@ -71,7 +72,7 @@ export default function Workbench({ kitId }: { kitId: string }) {
     progress,
     kitId,
   );
-  if (entry?.kit && status !== "locked") return <Bench entry={entry} lk={entry.kit} sfxVolume={profile.sfx} saved={saved} />;
+  if (entry?.kit && status !== "locked") return <Bench entry={entry} lk={entry.kit} sfxVolume={profile.sfx} musicVolume={profile.music} saved={saved} />;
   return (
     <main className={styles.unavailable}>
       <section className={ui.sheet}>
@@ -88,7 +89,7 @@ export default function Workbench({ kitId }: { kitId: string }) {
 const SAVE_DELAY_MS = 600;
 const RETRY_MS = 5000;
 
-function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit; sfxVolume: number; saved: RunSnapshot | null }) {
+function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; lk: LoadedKit; sfxVolume: number; musicVolume: number; saved: RunSnapshot | null }) {
   const kit = lk.def;
   const lang = useLocale() === "en" ? "en" : "id";
   const t = useTranslations("workbench");
@@ -99,6 +100,15 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
   useEffect(() => {
     sfx.setSfxVolume(sfxVolume / 100);
   }, [sfxVolume]);
+  // music starts on the first interaction (browsers block autoplay) and stops when leaving the bench
+  useEffect(() => {
+    const begin = () => startMusic(musicVolume);
+    window.addEventListener("pointerdown", begin, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", begin);
+      stopMusic();
+    };
+  }, [musicVolume]);
   const [tool, setTool] = useState<Tool>("hand");
   // a resumed build skips the unboxing; a fresh one starts with the closed box
   const [opened, setOpened] = useState(saved !== null);

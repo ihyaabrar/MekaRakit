@@ -154,7 +154,7 @@
     "audio": "Sound",
     "music": "Music",
     "sfx": "Sound effects",
-    "musicNote": "Lo-fi music comes later; this setting is already saved.",
+    "musicNote": "Music plays from public/audio/music.mp3 once that file is added.",
     "save": "Save settings",
     "saved": "Saved.",
     "account": "Account",

@@ -154,7 +154,7 @@
     "audio": "Suara",
     "music": "Musik",
     "sfx": "Efek suara",
-    "musicNote": "Musik lo-fi menyusul; pengaturannya sudah disimpan.",
+    "musicNote": "Musik diputar dari file public/audio/music.mp3 kalau sudah ada.",
     "save": "Simpan pengaturan",
     "saved": "Tersimpan.",
     "account": "Akun",
