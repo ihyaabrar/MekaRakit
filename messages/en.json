@@ -1,7 +1,176 @@
 {
+  "common": {
+    "brand": "MekaRakit",
+    "nav": {
+      "dashboard": "Dashboard",
+      "settings": "Settings",
+      "logout": "Log out",
+      "main": "Main navigation"
+    },
+    "soon": "coming later",
+    "levels": {
+      "beginner": "Beginner",
+      "easy": "Easy",
+      "medium": "Intermediate"
+    },
+    "status": {
+      "locked": "Locked",
+      "new": "New",
+      "in-progress": "In progress",
+      "done": "Done"
+    }
+  },
+  "kits": {
+    "kr-01": {
+      "name": "Tunas",
+      "blurb": "First kit: cutting, sanding and basic snap-fit."
+    },
+    "kr-02": {
+      "name": "Sigap",
+      "blurb": "Movable joints and your first decals."
+    },
+    "kr-03": {
+      "name": "Benteng",
+      "blurb": "Sub-assemblies and per-part colors."
+    }
+  },
+  "landing": {
+    "login": "Log in",
+    "title": "Build mecha from the runner to the display shelf.",
+    "lead": "Clip parts with nippers, sand the gate marks, then assemble by the manual. No timer, no score, no parts lost under the desk.",
+    "cta": "Open your first box",
+    "haveAccount": "Already have an account?",
+    "manualTitle": "In the box: 6 steps",
+    "steps": {
+      "1": {
+        "t": "Open the box",
+        "d": "The runner lands on your workbench."
+      },
+      "2": {
+        "t": "Cut",
+        "d": "Click gates with the nipper until the part is free."
+      },
+      "3": {
+        "t": "Sand",
+        "d": "Rub the gate nubs away with sandpaper."
+      },
+      "4": {
+        "t": "Assemble",
+        "d": "Drag parts onto their joints, step by step."
+      },
+      "5": {
+        "t": "Paint and decals",
+        "d": "Color each part, place stickers where you like."
+      },
+      "6": {
+        "t": "Pose and display",
+        "d": "Set the joints, take a photo, shelve it."
+      }
+    },
+    "boxLabel": "Box {code}",
+    "footer": "Every mecha design here is original, not an official Gundam or other brand product."
+  },
+  "auth": {
+    "title": "Your workbench is waiting",
+    "tabs": {
+      "login": "Log in",
+      "register": "Sign up"
+    },
+    "name": "Display name",
+    "namePh": "Name shown on your shelf",
+    "email": "Email",
+    "emailPh": "email@example.com",
+    "password": "Password",
+    "passwordHint": "At least 8 characters.",
+    "submitLogin": "Go to the workbench",
+    "submitRegister": "Create account",
+    "forgot": "Forgot password",
+    "errors": {
+      "name": "Add a display name first.",
+      "email": "That email format is not right yet.",
+      "password": "Password needs at least 8 characters.",
+      "invalid": "Email or password does not match.",
+      "unconfirmed": "Email not confirmed yet. Check your inbox.",
+      "exists": "This email is already registered. Try logging in.",
+      "weak": "Password is too weak. Use a longer combination.",
+      "server": "The server cannot be reached right now. Try again shortly."
+    },
+    "opening": "Opening the workbench...",
+    "checkEmail": "Account created. Open the email sent to {email} and click the confirmation link to log in."
+  },
+  "dashboard": {
+    "greeting": "Hi, {name}.",
+    "anon": "builder",
+    "next": "Next kit",
+    "continue": "Continue building",
+    "open": "Open the box",
+    "allDone": "Every first-release kit is done. New kits are coming.",
+    "shelf": "Display shelf",
+    "shelfEmpty": "The shelf is empty. Finish {kit} to display your first model.",
+    "finishedOn": "Finished {date}",
+    "nubs": "{n, plural, =0 {Clean, no nubs} one {# nub left} other {# nubs left}}",
+    "kits": "All kits",
+    "lockedHint": "Finish {code} to unlock.",
+    "notDesigned": "This kit's parts are still being designed.",
+    "notes": "Workshop notes",
+    "kitsDone": "Kits finished",
+    "gatesCut": "Gates cut",
+    "achievements": "Achievements",
+    "achievementsNote": "Proposed list, awaiting approval.",
+    "ach": {
+      "first-cut": {
+        "t": "First cut",
+        "d": "Cut one gate."
+      },
+      "first-kit": {
+        "t": "First kit",
+        "d": "Finish one kit."
+      },
+      "flush": {
+        "t": "Perfectly flush",
+        "d": "Finish a kit with no nubs left."
+      },
+      "three-kits": {
+        "t": "Three on the shelf",
+        "d": "Finish three kits."
+      }
+    },
+    "unlocked": "Unlocked",
+    "lockedAch": "Not yet",
+    "loading": "Opening the progress drawer...",
+    "error": "Progress data in this browser cannot be read.",
+    "reset": "Clear progress",
+    "retry": "Try again",
+    "loadError": "Progress could not be loaded from the server."
+  },
+  "settings": {
+    "title": "Settings",
+    "profile": "Profile",
+    "avatarNote": "Your avatar uses your initial. Photo upload comes later.",
+    "language": "Language",
+    "audio": "Sound",
+    "music": "Music",
+    "sfx": "Sound effects",
+    "musicNote": "Lo-fi music comes later; this setting is already saved.",
+    "save": "Save settings",
+    "saved": "Saved.",
+    "account": "Account",
+    "deleteAccount": "Delete account",
+    "deleteNote": "Account deletion comes later.",
+    "resetProgress": "Clear progress",
+    "resetConfirm": "Clear all your progress and your shelf? This cannot be undone.",
+    "resetDone": "Progress cleared.",
+    "saveError": "Could not save. Check your connection and try again.",
+    "saving": "Saving..."
+  },
   "workbench": {
+    "back": "Dashboard",
     "toolsLabel": "Tools",
-    "tools": { "nipper": "Nipper", "sand": "Sandpaper", "build": "Build" },
+    "tools": {
+      "nipper": "Nipper",
+      "sand": "Sandpaper",
+      "build": "Build"
+    },
     "hint": {
       "nipper": "Click a gate (the small connector) to cut the part off the runner. A part comes free once all its gates are cut.",
       "sand": "Hold the mouse on a gate nub and rub back and forth until it is flush.",
@@ -13,8 +182,20 @@
     },
     "manual": "Manual",
     "step": "Step {n}",
-    "parts": { "legs": "Legs", "torso": "Torso", "head": "Head", "armL": "Left arm", "armR": "Right arm" },
+    "parts": {
+      "legs": "Legs",
+      "torso": "Torso",
+      "head": "Head",
+      "armL": "Left arm",
+      "armR": "Right arm"
+    },
     "nubsLeft": "Nubs left: {n}",
-    "done": "Model complete!"
+    "done": "Model complete!",
+    "toShelf": "Put it on the shelf",
+    "unavailable": "This kit cannot be built yet",
+    "lockedBody": "Finish the previous kit to open this box.",
+    "notDesignedBody": "This kit's parts are still being designed. The box comes later.",
+    "saveError": "Your latest progress is not saved to the server yet. Keep playing; it will retry later.",
+    "loading": "Opening the box..."
   }
 }

@@ -1,87 +1,182 @@
-/* shortcut: placeholder styling for the prototype; replaced by ChatGPT's tokens.css + screens when they arrive. */
+/* The 3D mat fills the screen; the manual is a printed sheet clipped to the right edge. */
 .shell {
   position: fixed;
   inset: 0;
   display: grid;
-  grid-template-columns: 1fr 300px;
+  grid-template-columns: minmax(0, 1fr) 320px;
   background: #10261f;
-  color: #f5f7f3;
-  font-family: system-ui, sans-serif;
 }
 
 .panel {
-  padding: 20px;
-  background: #14202b;
+  padding: var(--space-5);
+  background: var(--box);
+  color: var(--ink);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-4);
+  border-left: 4px solid var(--ink);
+}
+
+.back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-weight: 700;
+  color: var(--cobalt);
+}
+
+.kitTitle {
+  font-size: 34px;
+}
+
+.kitTitle span {
+  vertical-align: middle;
 }
 
 .panel h2 {
-  margin: 8px 0 0;
-  font-size: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 24px;
+  margin-top: var(--space-2);
 }
 
 .tools {
-  display: flex;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-control);
+  overflow: hidden;
 }
 
 .tools button {
-  flex: 1;
-  padding: 10px 8px;
-  border: 2px solid #f5f7f3;
+  min-height: 48px;
+  border: 0;
+  border-left: 2px solid var(--ink);
   background: transparent;
-  color: inherit;
-  font: inherit;
-  font-weight: 600;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 19px;
   cursor: pointer;
 }
 
+.tools button:first-child {
+  border-left: 0;
+}
+
 .tools button[aria-pressed="true"] {
-  background: #f2c230;
-  border-color: #f2c230;
-  color: #14202b;
+  background: var(--decal);
 }
 
 .tools button:focus-visible {
-  outline: 3px solid #2f5fb0;
-  outline-offset: 2px;
+  outline-offset: -5px;
 }
 
 .hint {
   margin: 0;
-  line-height: 1.45;
 }
 
+/* gentle nudge, not an error: yellow decal tone, never red */
 .warn {
   margin: 0;
-  padding: 8px 10px;
-  border-left: 4px solid #f2c230;
-  background: rgba(242, 194, 48, 0.12);
+  padding: var(--space-2) var(--space-3);
+  background: #fbefc4;
+  border: 2px solid var(--decal);
+  border-radius: var(--radius-sheet);
+  font-weight: 600;
 }
 
 .manual {
+  list-style: none;
   margin: 0;
-  padding-left: 20px;
-  line-height: 1.8;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+  counter-reset: step;
+}
+
+.manual li {
+  counter-increment: step;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 36px;
+}
+
+.manual li::before {
+  content: counter(step);
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  font-family: var(--font-display);
+  font-weight: 800;
 }
 
 .manual li[data-state="done"] {
-  opacity: 0.55;
+  color: var(--ink-soft);
   text-decoration: line-through;
 }
 
+.manual li[data-state="done"]::before {
+  background: var(--mat);
+  border-color: var(--mat);
+  color: var(--box);
+}
+
 .manual li[data-state="now"] {
-  color: #f2c230;
-  font-weight: 700;
+  font-weight: 800;
+}
+
+.manual li[data-state="now"]::before {
+  background: var(--decal);
 }
 
 .done {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #f2c230;
+  padding: var(--space-4);
+  border: 2px dashed var(--ink);
+  border-radius: var(--radius-sheet);
+}
+
+.done p {
+  margin: 0 0 var(--space-3);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 26px;
+}
+
+.unavailable {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: var(--space-4);
+}
+
+.unavailable section {
+  max-width: 460px;
+}
+
+.unavailable h1 {
+  font-size: 36px;
+}
+
+.unavailable p {
+  margin: var(--space-3) 0 var(--space-5);
+}
+
+/* PRD: desktop first. Narrow screens still work: the sheet drops below the mat. */
+@media (max-width: 760px) {
+  .shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: 55vh auto;
+    position: static;
+    min-height: 100vh;
+  }
+  .panel {
+    border-left: 0;
+    border-top: 4px solid var(--ink);
+  }
 }
