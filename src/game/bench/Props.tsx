@@ -3,7 +3,6 @@
 // Physical objects on the cutting mat: the kit box, the tool tray (manual, sandpaper, nipper)
 // and the tool currently held in the hand, which follows the pointer.
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
-import { Outlines } from "@react-three/drei";
 import { useEffect, useMemo, useRef, type ReactNode, type Ref } from "react";
 import * as THREE from "three";
 import type { Vec3 } from "../logic";
@@ -22,12 +21,11 @@ const SANDPAPER = "#C8B48A";
 // meshes of held/decorative props must never steal clicks from gates, parts or nubs
 const noRaycast = () => null;
 
-function Block({ size, at = [0, 0, 0], color, gradient, outline = 1.6, rot }: { size: Vec3; at?: Vec3; color: string; gradient: THREE.Texture; outline?: number; rot?: Vec3 }) {
+function Block({ size, at = [0, 0, 0], color, rot }: { size: Vec3; at?: Vec3; color: string; rot?: Vec3 }) {
   return (
     <mesh position={at} rotation={rot} raycast={noRaycast}>
       <boxGeometry args={size} />
-      <meshToonMaterial color={color} gradientMap={gradient} />
-      {outline > 0 && <Outlines thickness={outline} color={INK} />}
+      <meshStandardMaterial color={color} roughness={color === STEEL ? 0.28 : 0.45} metalness={color === STEEL ? 0.85 : 0} />
     </mesh>
   );
 }
@@ -35,62 +33,62 @@ function Block({ size, at = [0, 0, 0], color, gradient, outline = 1.6, rot }: { 
 /** Tip of the jaws sits at the local origin, handles run toward +z (toward the player). */
 const JAW_OPEN = 0.18;
 
-function NipperModel({ gradient, left, right }: { gradient: THREE.Texture; left?: Ref<THREE.Group>; right?: Ref<THREE.Group> }) {
+function NipperModel({ left, right }: { left?: Ref<THREE.Group>; right?: Ref<THREE.Group> }) {
   return (
     <group>
       <group ref={left} rotation-y={JAW_OPEN}>
-        <Block size={[0.05, 0.05, 0.16]} at={[-0.03, 0, 0.08]} color={STEEL} gradient={gradient} />
-        <Block size={[0.07, 0.06, 0.55]} at={[-0.05, 0, 0.45]} color={COBALT} gradient={gradient} />
+        <Block size={[0.05, 0.05, 0.16]} at={[-0.03, 0, 0.08]} color={STEEL} />
+        <Block size={[0.07, 0.06, 0.55]} at={[-0.05, 0, 0.45]} color={COBALT} />
       </group>
       <group ref={right} rotation-y={-JAW_OPEN}>
-        <Block size={[0.05, 0.05, 0.16]} at={[0.03, 0, 0.08]} color={STEEL} gradient={gradient} />
-        <Block size={[0.07, 0.06, 0.55]} at={[0.05, 0, 0.45]} color={COBALT} gradient={gradient} />
+        <Block size={[0.05, 0.05, 0.16]} at={[0.03, 0, 0.08]} color={STEEL} />
+        <Block size={[0.07, 0.06, 0.55]} at={[0.05, 0, 0.45]} color={COBALT} />
       </group>
-      <Block size={[0.1, 0.07, 0.07]} at={[0, 0, 0.17]} color={STEEL} gradient={gradient} />
+      <Block size={[0.1, 0.07, 0.07]} at={[0, 0, 0.17]} color={STEEL} />
     </group>
   );
 }
 
-function SandpaperModel({ gradient }: { gradient: THREE.Texture }) {
-  return <Block size={[0.6, 0.03, 0.8]} color={SANDPAPER} gradient={gradient} />;
+function SandpaperModel() {
+  return <Block size={[0.6, 0.03, 0.8]} color={SANDPAPER} />;
 }
 
 /** Brush tip at the local origin, handle toward +z. `tip` = the loaded paint colour. */
-function BrushModel({ gradient, tip }: { gradient: THREE.Texture; tip: string }) {
+function BrushModel({ tip }: { tip: string }) {
   return (
     <group rotation-x={Math.PI / 2}>
       <mesh position={[0, -0.06, 0]} raycast={noRaycast}>
         <coneGeometry args={[0.05, 0.14, 12]} />
-        <meshToonMaterial color={tip} gradientMap={gradient} />
+        <meshStandardMaterial roughness={0.45} color={tip} />
       </mesh>
-      <Block size={[0.07, 0.08, 0.07]} at={[0, 0.04, 0]} color={STEEL} gradient={gradient} />
+      <Block size={[0.07, 0.08, 0.07]} at={[0, 0.04, 0]} color={STEEL} />
       <mesh position={[0, 0.4, 0]} raycast={noRaycast}>
         <cylinderGeometry args={[0.035, 0.03, 0.62, 12]} />
-        <meshToonMaterial color={COBALT} gradientMap={gradient} />
+        <meshStandardMaterial roughness={0.45} color={COBALT} />
       </mesh>
     </group>
   );
 }
 
 /** Sheet of waterslide decals. */
-function DecalSheetModel({ gradient }: { gradient: THREE.Texture }) {
+function DecalSheetModel() {
   return (
     <group>
-      <Block size={[0.7, 0.02, 0.5]} color={BOX_WHITE} gradient={gradient} />
-      <Block size={[0.14, 0.01, 0.14]} at={[-0.2, 0.015, -0.1]} color={YELLOW} gradient={gradient} outline={0} />
-      <Block size={[0.14, 0.01, 0.14]} at={[0, 0.015, -0.1]} color="#C8402F" gradient={gradient} outline={0} />
-      <Block size={[0.14, 0.01, 0.14]} at={[0.2, 0.015, -0.1]} color={INK} gradient={gradient} outline={0} />
-      <Block size={[0.5, 0.01, 0.08]} at={[0, 0.015, 0.12]} color={COBALT} gradient={gradient} outline={0} />
+      <Block size={[0.7, 0.02, 0.5]} color={BOX_WHITE} />
+      <Block size={[0.14, 0.01, 0.14]} at={[-0.2, 0.015, -0.1]} color={YELLOW} />
+      <Block size={[0.14, 0.01, 0.14]} at={[0, 0.015, -0.1]} color="#C8402F" />
+      <Block size={[0.14, 0.01, 0.14]} at={[0.2, 0.015, -0.1]} color={INK} />
+      <Block size={[0.5, 0.01, 0.08]} at={[0, 0.015, 0.12]} color={COBALT} />
     </group>
   );
 }
 
-function BookModel({ gradient }: { gradient: THREE.Texture }) {
+function BookModel() {
   return (
     <group>
-      <Block size={[0.95, 0.08, 1.25]} color={BOX_WHITE} gradient={gradient} />
-      <Block size={[0.95, 0.01, 0.3]} at={[0, 0.045, -0.4]} color={COBALT} gradient={gradient} outline={0} />
-      <Block size={[0.5, 0.01, 0.08]} at={[0, 0.045, 0.1]} color={YELLOW} gradient={gradient} outline={0} />
+      <Block size={[0.95, 0.08, 1.25]} color={BOX_WHITE} />
+      <Block size={[0.95, 0.01, 0.3]} at={[0, 0.045, -0.4]} color={COBALT} />
+      <Block size={[0.5, 0.01, 0.08]} at={[0, 0.045, 0.1]} color={YELLOW} />
     </group>
   );
 }
@@ -118,7 +116,6 @@ function Rise({ children, delay, at }: { children: ReactNode; delay: number; at:
 }
 
 type TrayProps = {
-  gradient: THREE.Texture;
   held: HeldTool;
   animateIn: boolean;
   paint: string;
@@ -127,7 +124,7 @@ type TrayProps = {
 };
 
 /** The manual, sandpaper and nipper lying on the mat. A held tool leaves its spot empty. */
-export function ToolTray({ gradient, held, animateIn, paint, onPick, onOpenBook }: TrayProps) {
+export function ToolTray({ held, animateIn, paint, onPick, onOpenBook }: TrayProps) {
   const hit = (size: Vec3, onClick: () => void, label: string) => (
     <mesh
       onClick={(e: ThreeEvent<MouseEvent>) => {
@@ -146,7 +143,7 @@ export function ToolTray({ gradient, held, animateIn, paint, onPick, onOpenBook 
     [
       "book",
       <>
-        <BookModel gradient={gradient} />
+        <BookModel />
         {hit([1.05, 0.3, 1.35], onOpenBook, "manual")}
       </>,
     ],
@@ -154,7 +151,7 @@ export function ToolTray({ gradient, held, animateIn, paint, onPick, onOpenBook 
       "sand",
       held === "sand" ? null : (
         <>
-          <SandpaperModel gradient={gradient} />
+          <SandpaperModel />
           {hit([0.7, 0.3, 0.9], () => onPick("sand"), "sandpaper")}
         </>
       ),
@@ -163,7 +160,7 @@ export function ToolTray({ gradient, held, animateIn, paint, onPick, onOpenBook 
       "nipper",
       held === "nipper" ? null : (
         <group rotation-y={Math.PI * 0.85}>
-          <NipperModel gradient={gradient} />
+          <NipperModel />
           {hit([0.4, 0.3, 1.0], () => onPick("nipper"), "nipper")}
         </group>
       ),
@@ -173,7 +170,7 @@ export function ToolTray({ gradient, held, animateIn, paint, onPick, onOpenBook 
       held === "brush" ? null : (
         <group rotation-y={Math.PI * 0.8} position={[0, 0, 0]}>
           <group rotation-x={-Math.PI / 2}>
-            <BrushModel gradient={gradient} tip={paint} />
+            <BrushModel tip={paint} />
           </group>
           {hit([0.3, 0.3, 0.9], () => onPick("brush"), "brush")}
         </group>
@@ -183,7 +180,7 @@ export function ToolTray({ gradient, held, animateIn, paint, onPick, onOpenBook 
       "decal",
       held === "decal" ? null : (
         <>
-          <DecalSheetModel gradient={gradient} />
+          <DecalSheetModel />
           {hit([0.8, 0.3, 0.6], () => onPick("decal"), "decal sheet")}
         </>
       ),
@@ -207,7 +204,7 @@ export function ToolTray({ gradient, held, animateIn, paint, onPick, onOpenBook 
 }
 
 /** The held nipper or sandpaper floats just above whatever the pointer is over. `snips` counts cuts to animate the jaws. */
-export function HeldToolFollower({ gradient, held, snips, paint }: { gradient: THREE.Texture; held: HeldTool; snips: number; paint: string }) {
+export function HeldToolFollower({ held, snips, paint }: { held: HeldTool; snips: number; paint: string }) {
   const g = useRef<THREE.Group>(null);
   const snapAt = useRef(-1);
   const left = useRef<THREE.Group>(null);
@@ -233,19 +230,19 @@ export function HeldToolFollower({ gradient, held, snips, paint }: { gradient: T
     <group ref={g} scale={1.7}>
       {held === "nipper" ? (
         <group rotation-y={Math.PI * 0.15} rotation-x={-0.35}>
-          <NipperModel gradient={gradient} left={left} right={right} />
+          <NipperModel left={left} right={right} />
         </group>
       ) : held === "brush" ? (
         <group rotation-x={-0.5}>
-          <BrushModel gradient={gradient} tip={paint} />
+          <BrushModel tip={paint} />
         </group>
       ) : held === "decal" ? (
         <group rotation-x={-0.3} scale={0.6}>
-          <DecalSheetModel gradient={gradient} />
+          <DecalSheetModel />
         </group>
       ) : (
         <group rotation-x={-0.25}>
-          <SandpaperModel gradient={gradient} />
+          <SandpaperModel />
         </group>
       )}
     </group>
@@ -255,7 +252,7 @@ export function HeldToolFollower({ gradient, held, snips, paint }: { gradient: T
 /** Closed kit box covering the runners. Clicking it opens the lid; the lid then rests at the back of the mat. */
 type BoxLabel = { code: string; name: string; body: string; trim: string };
 
-export function KitBox({ gradient, opened, onOpen, center, label }: { gradient: THREE.Texture; opened: boolean; onOpen: () => void; center: Vec3; label: BoxLabel }) {
+export function KitBox({ opened, onOpen, center, label }: { opened: boolean; onOpen: () => void; center: Vec3; label: BoxLabel }) {
   const art = useMemo(() => makeBoxArt(label), [label]);
   const lid = useRef<THREE.Group>(null);
   const base = useRef<THREE.Group>(null);
@@ -280,15 +277,15 @@ export function KitBox({ gradient, opened, onOpen, center, label }: { gradient: 
   return (
     <>
       <group ref={base} position={[center[0], 0, center[2]]}>
-        <Block size={[w, 0.9, d]} at={[0, 0.45, 0]} color={BOX_WHITE} gradient={gradient} outline={2.4} />
+        <Block size={[w, 0.9, d]} at={[0, 0.45, 0]} color={BOX_WHITE} />
       </group>
       <group ref={lid} position={[center[0], 1.0, center[2]]}>
-        <Block size={[w + 0.08, 0.22, d + 0.08]} color={COBALT} gradient={gradient} outline={2.4} />
-        <Block size={[w + 0.09, 0.05, 0.6]} at={[0, 0.09, -1.6]} color={YELLOW} gradient={gradient} outline={0} />
+        <Block size={[w + 0.08, 0.22, d + 0.08]} color={COBALT} />
+        <Block size={[w + 0.09, 0.05, 0.6]} at={[0, 0.09, -1.6]} color={YELLOW} />
         {/* box art printed on the lid */}
         <mesh position={[0.4, 0.115, 0.35]} rotation-x={-Math.PI / 2} raycast={noRaycast}>
           <planeGeometry args={[4.4, 3.6]} />
-          {art ? <meshBasicMaterial map={art} toneMapped={false} /> : <meshBasicMaterial color={BOX_WHITE} />}
+          {art ? <meshStandardMaterial map={art} roughness={0.6} /> : <meshStandardMaterial color={BOX_WHITE} roughness={0.6} />}
         </mesh>
         {!opened && (
           <mesh

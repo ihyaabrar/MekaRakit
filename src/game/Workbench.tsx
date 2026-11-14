@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
-import { OrbitControls, Outlines } from "@react-three/drei";
+import { OrbitControls } from "@react-three/drei";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useLocale, useTranslations } from "next-intl";
@@ -22,27 +22,17 @@ import ManualBook from "./bench/ManualBook";
 import { Ghost, PopCue, type Pop } from "./bench/Feel";
 import { DecalMesh } from "./bench/Finish";
 import { PhotoRig, Posed, type PhotoApi } from "./bench/Pose";
+import { Studio } from "./bench/Studio";
 import styles from "./Workbench.module.css";
 
 type Tool = HeldTool;
 type Burst = { id: number; at: Vec3 };
 type Hint = ({ key: "wrongStep"; n: number } | { key: "wrongSpot"; part: string }) & { page: number | null };
 
-const INK = "#14202B";
-const MAT = "#214F43";
 const SPRUE = "#9AA3AB";
 const YELLOW = "#F2C230";
 
 const add = (a: Vec3, b: Vec3): Vec3 => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
-
-function useToonGradient() {
-  return useMemo(() => {
-    const t = new THREE.DataTexture(new Uint8Array([110, 190, 255]), 3, 1, THREE.RedFormat);
-    t.minFilter = t.magFilter = THREE.NearestFilter;
-    t.needsUpdate = true;
-    return t;
-  }, []);
-}
 
 export default function Workbench({ kitId }: { kitId: string }) {
   const t = useTranslations("workbench");
@@ -297,11 +287,10 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
         camera={{ position: [-1.7, 10, 7.2], fov: 48 }}
         dpr={[1, 2]}
         gl={{ preserveDrawingBuffer: true }}
+        shadows="soft"
       >
         <PhotoRig onReady={onPhotoReady} />
-        <color attach="background" args={["#10261F"]} />
-        <ambientLight intensity={0.9} />
-        <directionalLight position={[4, 8, 5]} intensity={1.6} />
+        <Studio lampTarget={[lk.assembly[0] - 2, 0, lk.assembly[2]]} />
         <OrbitControls makeDefault target={[-1.7, 0.6, -0.3]} maxPolarAngle={Math.PI / 2.1} minDistance={4} maxDistance={16} />
         <Scene
           lk={lk}
@@ -582,7 +571,6 @@ type SceneProps = {
 
 function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOpened, onOpenBox, onPickTool, onOpenBook, snips, lifted, liftRot, onLift, onTurn, pops, boxLabel, paint, paintColor, decals, selectedDecal, onPaint, onDecal, onSelectDecal, pose, photoMode, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
   const kit = lk.def;
-  const gradient = useToonGradient();
   const { camera, gl } = useThree();
   const get = useThree((s) => s.get);
 
@@ -661,24 +649,21 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
 
   return (
     <group>
-      <mesh rotation-x={-Math.PI / 2} position={[0, 0, 0]}>
-        <planeGeometry args={[14, 9]} />
-        <meshToonMaterial color={MAT} gradientMap={gradient} />
-      </mesh>
+
       <mesh position={[lk.assembly[0], 0.01, lk.assembly[2]]} rotation-x={-Math.PI / 2}>
         <circleGeometry args={[1.1, 40]} />
-        <meshToonMaterial color="#2A6656" gradientMap={gradient} />
+        <meshStandardMaterial roughness={0.35} metalness={0.2} color="#2b3a36" />
       </mesh>
-      <KitBox gradient={gradient} opened={opened} onOpen={onOpenBox} center={[-3.5, 0, -0.45]} label={boxLabel} />
+      <KitBox opened={opened} onOpen={onOpenBox} center={[-3.5, 0, -0.45]} label={boxLabel} />
       {opened && !photoMode && (
         <>
-          <ToolTray gradient={gradient} held={tool} animateIn={justOpened} paint={paintColor} onPick={onPickTool} onOpenBook={onOpenBook} />
-          <HeldToolFollower gradient={gradient} held={tool} snips={snips} paint={paintColor} />
+          <ToolTray held={tool} animateIn={justOpened} paint={paintColor} onPick={onPickTool} onOpenBook={onOpenBook} />
+          <HeldToolFollower held={tool} snips={snips} paint={paintColor} />
         </>
       )}
       {lifted && (
         <LiftedPart rotation={liftRot}>
-          <PartBody visual={lk.parts[lifted]} gradient={gradient} ghosted={false} paint={paint[lifted]} />
+          <PartBody visual={lk.parts[lifted]} ghosted={false} paint={paint[lifted]} />
           {decals
             .filter((d) => d.part === lifted)
             .map((d) => (
@@ -698,13 +683,13 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
           {kit.parts
             .find((p) => p.id === lifted)!
             .gates.map((g) => (
-              <Nub key={g.id} offset={g.offset} height={state.parts[lifted].nubs[g.id] ?? 0} active={tool === "sand"} onStart={() => startRub(lifted, g.id)} gradient={gradient} color={lk.parts[lifted].color} />
+              <Nub key={g.id} offset={g.offset} height={state.parts[lifted].nubs[g.id] ?? 0} active={tool === "sand"} onStart={() => startRub(lifted, g.id)} color={lk.parts[lifted].color} />
             ))}
         </LiftedPart>
       )}
       <RiseOnOpen animate={justOpened}>
       {opened && !photoMode && lk.runners.map((r) => (
-        <Runner key={r.id} runner={r} gradient={gradient} />
+        <Runner key={r.id} runner={r} />
       ))}
       {opened && kit.parts.map((p) => {
         if (p.id === lifted) return null;
@@ -718,7 +703,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
             <group position={pos[p.id]}>
             <PopCue pop={pops[p.id]}>
             <group rotation-x={ps.status !== "placed" && dragging !== p.id ? -Math.PI / 2 : 0}>
-              <PartBody visual={lk.parts[p.id]} gradient={gradient} ghosted={dragging === p.id} paint={paint[p.id]} />
+              <PartBody visual={lk.parts[p.id]} ghosted={dragging === p.id} paint={paint[p.id]} />
               {decals
                 .filter((d) => d.part === p.id)
                 .map((d) => (
@@ -739,7 +724,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
               {p.gates.map((g) => {
                 const cut = ps.cut.includes(g.id);
                 if (!cut) return <Gate key={g.id} offset={g.offset} hot={nextGate === `${p.id}/${g.id}` && tool === "nipper"} onCut={() => tool === "nipper" && onCut(p, g.id)} />;
-                return <Nub key={g.id} offset={g.offset} height={ps.nubs[g.id] ?? 0} active={false} onStart={() => {}} gradient={gradient} color={lk.parts[p.id].color} />;
+                return <Nub key={g.id} offset={g.offset} height={ps.nubs[g.id] ?? 0} active={false} onStart={() => {}} color={lk.parts[p.id].color} />;
               })}
             </group>
             </PopCue>
@@ -753,21 +738,20 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
   );
 }
 
-function PartBody({ visual, gradient, ghosted, paint }: { visual: PartVisual; gradient: THREE.Texture; ghosted: boolean; paint?: string }) {
+function PartBody({ visual, ghosted, paint }: { visual: PartVisual; ghosted: boolean; paint?: string }) {
   return (
     <>
       {visual.shape.map((prim, i) => (
         <mesh key={i} position={prim.at ?? [0, 0, 0]}>
           <boxGeometry args={prim.box} />
-          <meshToonMaterial color={prim.color ?? paint ?? visual.color} gradientMap={gradient} transparent={ghosted} opacity={ghosted ? 0.85 : 1} />
-          <Outlines thickness={2} color={INK} />
+          <meshStandardMaterial color={prim.color ?? paint ?? visual.color} roughness={0.38} metalness={0} transparent={ghosted} opacity={ghosted ? 0.85 : 1} />
         </mesh>
       ))}
     </>
   );
 }
 
-function Runner({ runner, gradient }: { runner: RunnerVisual; gradient: THREE.Texture }) {
+function Runner({ runner }: { runner: RunnerVisual }) {
   // frame + the middle bar every gate attaches to
   const [cx, cz] = runner.center;
   const [w, d] = runner.size;
@@ -784,7 +768,7 @@ function Runner({ runner, gradient }: { runner: RunnerVisual; gradient: THREE.Te
       {bars.map((b, i) => (
         <mesh key={i} position={b.p} rotation={b.axis === "x" ? [0, 0, Math.PI / 2] : [Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[r, r, b.len, 10]} />
-          <meshToonMaterial color={runner.color} gradientMap={gradient} />
+          <meshStandardMaterial roughness={0.45} color={runner.color} />
         </mesh>
       ))}
     </group>
@@ -818,7 +802,7 @@ function Gate({ offset, hot, onCut }: { offset: Vec3; hot: boolean; onCut: () =>
   );
 }
 
-function Nub({ offset, height, active, onStart, gradient, color }: { offset: Vec3; height: number; active: boolean; onStart: () => void; gradient: THREE.Texture; color: string }) {
+function Nub({ offset, height, active, onStart, color }: { offset: Vec3; height: number; active: boolean; onStart: () => void; color: string }) {
   if (height <= 0) return null;
   const dir = Math.sign(offset[1]); // the gate left the part along its local y
   const len = 0.02 + 0.1 * height;
@@ -827,8 +811,7 @@ function Nub({ offset, height, active, onStart, gradient, color }: { offset: Vec
     <group position={[offset[0], faceY + (dir * len) / 2, offset[2]]}>
       <mesh>
         <cylinderGeometry args={[0.035, 0.04, len, 10]} />
-        <meshToonMaterial color={color} gradientMap={gradient} />
-        <Outlines thickness={1.2} color={INK} />
+        <meshStandardMaterial roughness={0.45} color={color} />
       </mesh>
       <mesh
         visible={active}
