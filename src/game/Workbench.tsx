@@ -7,10 +7,10 @@ import * as THREE from "three";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { GATE_LENGTH, RUNNER_BAR_Y, ASSEMBLY_X } from "./prototypeKit";
-import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, type KitDef, type KitState, type PartDef, type Vec3 } from "./logic";
+import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, type KitDef, type KitState, type PartDef, type RunSnapshot, type Vec3 } from "./logic";
 import { catalog, findKit, type KitEntry } from "./kits";
 import { kitStatus } from "./progress";
-import { addGateCut, fetchProfile, fetchProgress, finishKit } from "./store";
+import { fetchProfile, fetchProgress, fetchRun, saveRun } from "./store";
 import { useLoad } from "@/ui/useLoad";
 import { useRouter } from "next/navigation";
 import ui from "@/ui/ui.module.css";
@@ -37,12 +37,10 @@ function useToonGradient() {
   }, []);
 }
 
-const loadAll = () => Promise.all([fetchProfile(), fetchProgress()]);
-
 export default function Workbench({ kitId }: { kitId: string }) {
   const t = useTranslations("workbench");
   const td = useTranslations("dashboard");
-  const [load, retry] = useLoad(loadAll);
+  const [load, retry] = useLoad(() => Promise.all([fetchProfile(), fetchProgress(), fetchRun(kitId)]));
   const entry = findKit(kitId);
   if (load.status === "loading")
     return (
@@ -61,13 +59,13 @@ export default function Workbench({ kitId }: { kitId: string }) {
         </section>
       </main>
     );
-  const [profile, progress] = load.data;
+  const [profile, progress, saved] = load.data;
   const status = kitStatus(
     catalog.map((k) => k.id),
     progress,
     kitId,
   );
-  if (entry?.kit && status !== "locked") return <Bench entry={entry} kit={entry.kit} sfxVolume={profile.sfx} />;
+  if (entry?.kit && status !== "locked") return <Bench entry={entry} kit={entry.kit} sfxVolume={profile.sfx} saved={saved} />;
   return (
     <main className={styles.unavailable}>
       <section className={ui.sheet}>
@@ -81,7 +79,10 @@ export default function Workbench({ kitId }: { kitId: string }) {
   );
 }
 
-function Bench({ entry, kit, sfxVolume }: { entry: KitEntry; kit: KitDef; sfxVolume: number }) {
+const SAVE_DELAY_MS = 600;
+const RETRY_MS = 5000;
+
+function Bench({ entry, kit, sfxVolume, saved }: { entry: KitEntry; kit: KitDef; sfxVolume: number; saved: RunSnapshot | null }) {
   const t = useTranslations("workbench");
   const tk = useTranslations("kits");
   const router = useRouter();
@@ -91,9 +92,44 @@ function Bench({ entry, kit, sfxVolume }: { entry: KitEntry; kit: KitDef; sfxVol
     sfx.setSfxVolume(sfxVolume / 100);
   }, [sfxVolume]);
   const [tool, setTool] = useState<Tool>("nipper");
-  const [state, setState] = useState<KitState>(() => initState(kit));
-  const [pos, setPos] = useState<Record<string, Vec3>>(() => Object.fromEntries(kit.parts.map((p) => [p.id, p.runnerPos])));
+  const [state, setState] = useState<KitState>(() => saved?.state ?? initState(kit));
+  const [pos, setPos] = useState<Record<string, Vec3>>(() => saved?.pos ?? Object.fromEntries(kit.parts.map((p) => [p.id, p.runnerPos])));
   const [dragging, setDragging] = useState<string | null>(null);
+
+  // Autosave: the whole bench, debounced, retried until it lands. Snapshots are idempotent, so retries are safe.
+  const snapshot = useMemo(() => JSON.stringify({ state, pos }), [state, pos]);
+  const lastSaved = useRef(saved ? JSON.stringify(saved) : JSON.stringify({ state, pos }));
+  const save = (snap: string) =>
+    saveRun(entry.id, JSON.parse(snap)).then(
+      () => {
+        lastSaved.current = snap;
+        setSaveError(false);
+      },
+      (e) => {
+        setSaveError(true);
+        throw e;
+      },
+    );
+  useEffect(() => {
+    if (dragging || snapshot === lastSaved.current) return;
+    let timer = setTimeout(function attempt() {
+      save(snapshot).catch(() => (timer = setTimeout(attempt, RETRY_MS)));
+    }, SAVE_DELAY_MS);
+    return () => clearTimeout(timer);
+    // save only depends on entry.id, which is fixed for this bench
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snapshot, dragging]);
+
+  /** Leaving the bench: write the latest state first so nothing done in the last moments is lost. */
+  async function leave() {
+    setShelving(true);
+    try {
+      if (snapshot !== lastSaved.current) await save(snapshot);
+      router.push("/dashboard");
+    } catch {
+      setShelving(false);
+    }
+  }
   const [bursts, setBursts] = useState<Burst[]>([]);
   const [hint, setHint] = useState<Hint>(null);
 
@@ -110,31 +146,7 @@ function Bench({ entry, kit, sfxVolume }: { entry: KitEntry; kit: KitDef; sfxVol
   function onCut(part: PartDef, gateId: string) {
     sfx.snip();
     setBursts((b) => [...b.slice(-6), { id: Date.now() + Math.random(), at: add(part.runnerPos, part.gates.find((g) => g.id === gateId)!.offset) }]);
-    if (state.parts[part.id].cut.includes(gateId)) return;
     setState((s) => cutGate(kit, s, part.id, gateId));
-    // a failed save never interrupts play (PRD: losing the connection must not lose the session)
-    addGateCut(entry.id).then(() => setSaveError(false), () => setSaveError(true));
-  }
-
-  // record the finished model on the shelf (re-recorded if the player keeps sanding afterwards)
-  function shelve(nubs: number) {
-    return finishKit(entry.id, nubs).then(
-      () => setSaveError(false),
-      () => {
-        setSaveError(true);
-        throw new Error("finish not saved");
-      },
-    );
-  }
-
-  async function toShelf() {
-    setShelving(true);
-    try {
-      await shelve(nubsLeft);
-      router.push("/dashboard");
-    } catch {
-      setShelving(false);
-    }
   }
 
   function onDrop(partId: string, at: Vec3) {
@@ -146,9 +158,7 @@ function Bench({ entry, kit, sfxVolume }: { entry: KitEntry; kit: KitDef; sfxVol
       sfx.snap();
       setHint(null);
       setPos((p) => ({ ...p, [partId]: part.target }));
-      const next = placePart(kit, state, partId);
-      setState(next);
-      if (isComplete(kit, next)) shelve(nubsLeft).catch(() => {});
+      setState(placePart(kit, state, partId));
       return;
     }
     if (res.kind !== "none") sfx.bump();
@@ -186,9 +196,9 @@ function Bench({ entry, kit, sfxVolume }: { entry: KitEntry; kit: KitDef; sfxVol
       </Canvas>
 
       <aside className={styles.panel}>
-        <Link className={styles.back} href="/dashboard">
+        <button className={styles.back} type="button" onClick={leave} disabled={shelving}>
           {t("back")}
-        </Link>
+        </button>
         <h1 className={styles.kitTitle}>
           <span className={ui.code}>{entry.code}</span> {tk(`${entry.id}.name`)}
         </h1>
@@ -218,7 +228,7 @@ function Bench({ entry, kit, sfxVolume }: { entry: KitEntry; kit: KitDef; sfxVol
         {done && (
           <div className={styles.done} role="status">
             <p>{t("done")}</p>
-            <button className={ui.btn} type="button" onClick={toShelf} disabled={shelving}>
+            <button className={ui.btn} type="button" onClick={leave} disabled={shelving}>
               {t("toShelf")}
             </button>
           </div>

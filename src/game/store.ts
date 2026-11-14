@@ -5,10 +5,11 @@
 import { requireUser, requireUserId } from "@/lib/auth/server";
 import { sql } from "@/lib/db";
 import { toProgress, type KitRun, type Progress } from "./progress";
+import { restoreRun, runSummary, type RunSnapshot } from "./logic";
+import { findKit } from "./kits";
 
 export type Profile = { name: string; music: number; sfx: number }; // volumes 0..100
 
-const KIT_ID = /^kr-\d{2}$/;
 const clamp = (n: number) => Math.min(100, Math.max(0, Math.round(Number(n) || 0)));
 
 export async function fetchProfile(): Promise<Profile> {
@@ -41,22 +42,33 @@ export async function fetchProgress(): Promise<Progress> {
   );
 }
 
-/** Atomic +1 on this player's run for the kit (creates the run on the first cut). */
-export async function addGateCut(kitId: string) {
-  if (!KIT_ID.test(kitId)) throw new Error("bad kit id");
+/** The saved bench for one kit, or null when the player has not started it (or it no longer fits the kit). */
+export async function fetchRun(kitId: string): Promise<RunSnapshot | null> {
+  const kit = findKit(kitId)?.kit;
+  if (!kit) return null;
   const uid = await requireUserId();
-  await sql()`insert into kit_runs (user_id, kit_id, gates_cut) values (${uid}, ${kitId}, 1)
-              on conflict (user_id, kit_id) do update set gates_cut = kit_runs.gates_cut + 1`;
+  const rows = await sql()`select snapshot from kit_runs where user_id = ${uid} and kit_id = ${kitId}`;
+  return rows[0] ? restoreRun(kit, rows[0].snapshot) : null;
 }
 
-/** Marks the kit finished; called again later (after more sanding) it updates the nub count. */
-export async function finishKit(kitId: string, nubsLeft: number) {
-  if (!KIT_ID.test(kitId)) throw new Error("bad kit id");
-  const nubs = Math.max(0, Math.round(Number(nubsLeft) || 0));
+/**
+ * Stores the whole bench. Idempotent (same snapshot = same row), so the client can retry freely.
+ * Totals are derived here from the snapshot, never sent as increments, so a lost save cannot skew them.
+ */
+export async function saveRun(kitId: string, snapshot: RunSnapshot) {
+  const kit = findKit(kitId)?.kit;
+  if (!kit) throw new Error("unknown kit");
+  const run = restoreRun(kit, snapshot);
+  if (!run) throw new Error("snapshot does not fit kit");
+  const { gatesCut, nubsLeft, complete } = runSummary(kit, run.state);
   const uid = await requireUserId();
-  await sql()`insert into kit_runs (user_id, kit_id, finished_at, nubs_left) values (${uid}, ${kitId}, now(), ${nubs})
-              on conflict (user_id, kit_id) do update
-                set finished_at = coalesce(kit_runs.finished_at, now()), nubs_left = excluded.nubs_left`;
+  await sql()`insert into kit_runs (user_id, kit_id, gates_cut, snapshot, finished_at, nubs_left)
+              values (${uid}, ${kitId}, ${gatesCut}, ${JSON.stringify(run)}::jsonb, ${complete ? new Date().toISOString() : null}, ${complete ? nubsLeft : null})
+              on conflict (user_id, kit_id) do update set
+                gates_cut = excluded.gates_cut,
+                snapshot = excluded.snapshot,
+                finished_at = coalesce(kit_runs.finished_at, excluded.finished_at),
+                nubs_left = coalesce(excluded.nubs_left, kit_runs.nubs_left)`;
 }
 
 export async function clearProgress() {

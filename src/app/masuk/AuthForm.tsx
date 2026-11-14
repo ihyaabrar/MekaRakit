@@ -38,7 +38,15 @@ export default function AuthForm() {
     if (Object.keys(next).length) return;
 
     setBusy(true);
-    const res: AuthResult = mode === "login" ? await signIn(email, password) : await signUp(name, email, password);
+    let res: AuthResult;
+    try {
+      res = mode === "login" ? await signIn(email, password) : await signUp(name, email, password);
+    } catch {
+      // the server action itself could not be reached (offline, deploy in progress): keep the form usable
+      setBusy(false);
+      setMessage({ kind: "error", text: t("errors.server") });
+      return;
+    }
     if (!res.ok) {
       setBusy(false);
       setMessage({ kind: "error", text: t(`errors.${res.code}`) });

@@ -18,3 +18,6 @@ create table if not exists kit_runs (
   nubs_left integer check (nubs_left >= 0),
   primary key (user_id, kit_id)
 );
+
+-- whole-bench snapshot so an unfinished build resumes exactly (see restoreRun in src/game/logic.ts)
+alter table kit_runs add column if not exists snapshot jsonb;

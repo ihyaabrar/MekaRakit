@@ -23,8 +23,14 @@
   display: inline-flex;
   align-items: center;
   min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
   font-weight: 700;
   color: var(--cobalt);
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 .kitTitle {
