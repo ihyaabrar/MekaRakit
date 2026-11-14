@@ -45,3 +45,23 @@ test("drop rules: snap, wrong step, wrong spot, step advance, completion", () =>
   s = placePart(kit, s, "b");
   assert.ok(isComplete(kit, s));
 });
+
+test("saved runs restore exactly and reject snapshots that do not fit the kit", async () => {
+  const { restoreRun, runSummary } = await import("./logic.ts");
+  let s = cutGate(kit, initState(kit), "a", "g1");
+  s = cutGate(kit, s, "a", "g2");
+  s = rubNub(s, "a", "g1", 10_000);
+  const snap = { state: s, pos: { a: [9, 9, 9], b: [1, 2, 3] } };
+  const back = restoreRun(kit, JSON.parse(JSON.stringify(snap)));
+  assert.deepEqual(back?.state, s);
+  assert.deepEqual(back?.pos.a, [9, 9, 9]); // free part keeps where it lay
+  assert.deepEqual(back?.pos.b, kit.parts[1].runnerPos); // runner part snaps back to its slot
+  assert.deepEqual(runSummary(kit, s), { gatesCut: 2, nubsLeft: 1, complete: false });
+
+  assert.equal(restoreRun(kit, null), null);
+  assert.equal(restoreRun(kit, { ...snap, state: { ...s, step: 0 } }), null);
+  assert.equal(restoreRun(kit, { ...snap, pos: { a: [1, 2] } }), null);
+  const badGate = JSON.parse(JSON.stringify(snap));
+  badGate.state.parts.b.cut = ["nope"];
+  assert.equal(restoreRun(kit, badGate), null);
+});

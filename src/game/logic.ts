@@ -85,3 +85,45 @@ export function placePart(kit: KitDef, s: KitState, partId: string): KitState {
 }
 
 export const isComplete = (kit: KitDef, s: KitState) => kit.parts.every((p) => s.parts[p.id].status === "placed");
+
+// ---- saved runs: the whole bench (part states + where loose parts lie), so a build resumes exactly ----
+
+export type RunSnapshot = { state: KitState; pos: Record<string, Vec3> };
+
+const isVec3 = (v: unknown): v is Vec3 => Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === "number" && Number.isFinite(n));
+const STATUSES: PartStatus[] = ["runner", "free", "placed"];
+
+/** Validates a stored snapshot against the kit; null if it does not fit (then the bench starts fresh). */
+export function restoreRun(kit: KitDef, raw: unknown): RunSnapshot | null {
+  const r = raw as Partial<RunSnapshot> | null;
+  const step = r?.state?.step;
+  if (!r?.state || !r.pos || typeof step !== "number" || !Number.isInteger(step) || step < 1) return null;
+  const parts: Record<string, PartState> = {};
+  const pos: Record<string, Vec3> = {};
+  for (const p of kit.parts) {
+    const ps = r.state.parts?.[p.id];
+    const gateIds = p.gates.map((g) => g.id);
+    if (!ps || !STATUSES.includes(ps.status) || !Array.isArray(ps.cut) || !ps.cut.every((g) => gateIds.includes(g))) return null;
+    const nubs: Record<string, number> = {};
+    for (const [g, h] of Object.entries(ps.nubs ?? {})) {
+      if (!gateIds.includes(g) || typeof h !== "number" || !(h >= 0 && h <= 1)) return null;
+      nubs[g] = h;
+    }
+    const at = r.pos[p.id];
+    if (!isVec3(at)) return null;
+    parts[p.id] = { status: ps.status, cut: [...new Set(ps.cut)], nubs };
+    // a placed part always sits on its target; a part still on the runner stays in its slot
+    pos[p.id] = ps.status === "placed" ? p.target : ps.status === "runner" ? p.runnerPos : at;
+  }
+  return { state: { parts, step }, pos };
+}
+
+export function runSummary(kit: KitDef, s: KitState) {
+  let gatesCut = 0;
+  let nubsLeft = 0;
+  for (const p of kit.parts) {
+    gatesCut += s.parts[p.id].cut.length;
+    nubsLeft += Object.values(s.parts[p.id].nubs).filter((h) => h > 0).length;
+  }
+  return { gatesCut, nubsLeft, complete: isComplete(kit, s) };
+}

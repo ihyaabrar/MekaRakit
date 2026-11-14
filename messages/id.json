@@ -1,7 +1,176 @@
 {
+  "common": {
+    "brand": "MekaRakit",
+    "nav": {
+      "dashboard": "Dashboard",
+      "settings": "Pengaturan",
+      "logout": "Keluar",
+      "main": "Navigasi utama"
+    },
+    "soon": "menyusul",
+    "levels": {
+      "beginner": "Pemula",
+      "easy": "Mudah",
+      "medium": "Menengah"
+    },
+    "status": {
+      "locked": "Terkunci",
+      "new": "Baru",
+      "in-progress": "Sedang dirakit",
+      "done": "Selesai"
+    }
+  },
+  "kits": {
+    "kr-01": {
+      "name": "Tunas",
+      "blurb": "Kit pertama: potong, haluskan, dan snap dasar."
+    },
+    "kr-02": {
+      "name": "Sigap",
+      "blurb": "Sendi yang bisa digerakkan dan decal pertama."
+    },
+    "kr-03": {
+      "name": "Benteng",
+      "blurb": "Sub-rakitan dan warna per part."
+    }
+  },
+  "landing": {
+    "login": "Masuk",
+    "title": "Rakit mecha dari runner sampai rak pajang.",
+    "lead": "Potong part pakai nipper, haluskan bekas gate, lalu rakit sesuai manual. Tanpa timer, tanpa skor, tanpa part yang hilang di kolong meja.",
+    "cta": "Buka kotak pertama",
+    "haveAccount": "Sudah punya akun?",
+    "manualTitle": "Isi kotak: 6 langkah",
+    "steps": {
+      "1": {
+        "t": "Buka kotak",
+        "d": "Runner muncul di meja kerja."
+      },
+      "2": {
+        "t": "Potong",
+        "d": "Klik gate dengan nipper sampai part lepas."
+      },
+      "3": {
+        "t": "Haluskan",
+        "d": "Gosok nub bekas gate dengan amplas."
+      },
+      "4": {
+        "t": "Rakit",
+        "d": "Seret part ke titik sambung sesuai manual."
+      },
+      "5": {
+        "t": "Cat dan decal",
+        "d": "Warna per part, stiker di posisi pilihanmu."
+      },
+      "6": {
+        "t": "Pose dan pajang",
+        "d": "Atur sendi, foto, simpan ke rak."
+      }
+    },
+    "boxLabel": "Kotak {code}",
+    "footer": "Semua desain mecha di sini orisinal, bukan produk resmi Gundam atau merek lain."
+  },
+  "auth": {
+    "title": "Meja kerjamu menunggu",
+    "tabs": {
+      "login": "Masuk",
+      "register": "Daftar"
+    },
+    "name": "Nama tampilan",
+    "namePh": "Nama yang tampil di rak",
+    "email": "Email",
+    "emailPh": "email@contoh.com",
+    "password": "Password",
+    "passwordHint": "Minimal 8 karakter.",
+    "submitLogin": "Masuk ke meja kerja",
+    "submitRegister": "Buat akun",
+    "forgot": "Lupa password",
+    "errors": {
+      "name": "Isi nama tampilan dulu.",
+      "email": "Format email belum benar.",
+      "password": "Password minimal 8 karakter.",
+      "invalid": "Email atau password tidak cocok.",
+      "unconfirmed": "Email belum dikonfirmasi. Cek kotak masukmu.",
+      "exists": "Email ini sudah terdaftar. Coba masuk.",
+      "weak": "Password terlalu lemah. Pakai kombinasi yang lebih panjang.",
+      "server": "Server sedang tidak bisa dihubungi. Coba lagi sebentar."
+    },
+    "opening": "Membuka meja kerja...",
+    "checkEmail": "Akun dibuat. Buka email {email} dan klik tautan konfirmasi untuk masuk."
+  },
+  "dashboard": {
+    "greeting": "Halo, {name}.",
+    "anon": "perakit",
+    "next": "Kit berikutnya",
+    "continue": "Lanjutkan merakit",
+    "open": "Buka kotak",
+    "allDone": "Semua kit versi pertama sudah selesai. Kit baru menyusul.",
+    "shelf": "Rak pajang",
+    "shelfEmpty": "Rak masih kosong. Selesaikan {kit} untuk memajang model pertamamu.",
+    "finishedOn": "Selesai {date}",
+    "nubs": "{n, plural, =0 {Mulus tanpa nub} other {# nub tersisa}}",
+    "kits": "Semua kit",
+    "lockedHint": "Selesaikan {code} untuk membuka.",
+    "notDesigned": "Part kit ini masih dirancang.",
+    "notes": "Catatan bengkel",
+    "kitsDone": "Kit selesai",
+    "gatesCut": "Gate terpotong",
+    "achievements": "Pencapaian",
+    "achievementsNote": "Daftar usulan, menunggu persetujuan.",
+    "ach": {
+      "first-cut": {
+        "t": "Potongan pertama",
+        "d": "Potong satu gate."
+      },
+      "first-kit": {
+        "t": "Kit pertama",
+        "d": "Selesaikan satu kit."
+      },
+      "flush": {
+        "t": "Rata sempurna",
+        "d": "Selesaikan kit tanpa nub tersisa."
+      },
+      "three-kits": {
+        "t": "Tiga di rak",
+        "d": "Selesaikan tiga kit."
+      }
+    },
+    "unlocked": "Terbuka",
+    "lockedAch": "Belum",
+    "loading": "Membuka laci progres...",
+    "error": "Data progres di browser ini tidak bisa dibaca.",
+    "reset": "Kosongkan progres",
+    "retry": "Coba lagi",
+    "loadError": "Progres tidak bisa dimuat dari server."
+  },
+  "settings": {
+    "title": "Pengaturan",
+    "profile": "Profil",
+    "avatarNote": "Avatar memakai inisial nama. Unggah foto menyusul.",
+    "language": "Bahasa",
+    "audio": "Suara",
+    "music": "Musik",
+    "sfx": "Efek suara",
+    "musicNote": "Musik lo-fi menyusul; pengaturannya sudah disimpan.",
+    "save": "Simpan pengaturan",
+    "saved": "Tersimpan.",
+    "account": "Akun",
+    "deleteAccount": "Hapus akun",
+    "deleteNote": "Hapus akun menyusul.",
+    "resetProgress": "Kosongkan progres",
+    "resetConfirm": "Kosongkan semua progres dan rak pajangmu? Ini tidak bisa dibatalkan.",
+    "resetDone": "Progres dikosongkan.",
+    "saveError": "Gagal menyimpan. Periksa koneksi lalu coba lagi.",
+    "saving": "Menyimpan..."
+  },
   "workbench": {
+    "back": "Dashboard",
     "toolsLabel": "Alat",
-    "tools": { "nipper": "Nipper", "sand": "Amplas", "build": "Rakit" },
+    "tools": {
+      "nipper": "Nipper",
+      "sand": "Amplas",
+      "build": "Rakit"
+    },
     "hint": {
       "nipper": "Klik gate (penghubung kecil) untuk memotong part dari runner. Part lepas setelah semua gate-nya terpotong.",
       "sand": "Tahan klik di nub bekas gate, lalu gosok bolak-balik sampai rata.",
@@ -13,8 +182,20 @@
     },
     "manual": "Manual",
     "step": "Langkah {n}",
-    "parts": { "legs": "Kaki", "torso": "Badan", "head": "Kepala", "armL": "Lengan kiri", "armR": "Lengan kanan" },
+    "parts": {
+      "legs": "Kaki",
+      "torso": "Badan",
+      "head": "Kepala",
+      "armL": "Lengan kiri",
+      "armR": "Lengan kanan"
+    },
     "nubsLeft": "Nub tersisa: {n}",
-    "done": "Model selesai dirakit!"
+    "done": "Model selesai dirakit!",
+    "toShelf": "Pajang di rak",
+    "unavailable": "Kit ini belum bisa dirakit",
+    "lockedBody": "Selesaikan kit sebelumnya untuk membuka kotak ini.",
+    "notDesignedBody": "Part kit ini masih dirancang. Kotaknya menyusul.",
+    "saveError": "Progres terakhir belum tersimpan ke server. Permainan tetap jalan; coba lagi nanti.",
+    "loading": "Membuka kotak..."
   }
 }

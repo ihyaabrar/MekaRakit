@@ -1,0 +1,159 @@
+.main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-4) var(--space-7);
+}
+
+.title {
+  font-size: clamp(36px, 5vw, 56px);
+  margin: var(--space-4) 0 var(--space-5);
+}
+
+.form fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.form legend {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 26px;
+  margin-bottom: var(--space-3);
+}
+
+.profileRow {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-4);
+}
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid var(--ink);
+  background: var(--decal);
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 34px;
+}
+
+.field {
+  flex: 1;
+  display: grid;
+  gap: var(--space-1);
+}
+
+.field label,
+.slider label {
+  font-weight: 700;
+}
+
+.field input {
+  min-height: 46px;
+  padding: 0 var(--space-3);
+  border: 2px solid var(--ink-soft);
+  border-radius: var(--radius-control);
+  background: #fff;
+  color: var(--ink);
+}
+
+.note {
+  margin: var(--space-2) 0 0;
+  font-size: 14px;
+  color: var(--ink-soft);
+}
+
+.choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 44px;
+  padding: 0 var(--space-4);
+  border: 2px solid var(--ink-soft);
+  border-radius: var(--radius-control);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.choice:has(input:checked) {
+  border-color: var(--ink);
+  background: var(--decal);
+}
+
+.choice input {
+  accent-color: var(--ink);
+  width: 18px;
+  height: 18px;
+}
+
+.slider {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 44px;
+}
+
+.slider input {
+  accent-color: var(--cobalt);
+  width: 100%;
+}
+
+.slider output {
+  text-align: right;
+  font-weight: 700;
+}
+
+.saveRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.notice {
+  margin: 0;
+  font-weight: 700;
+}
+
+.account {
+  margin-top: var(--space-5);
+  display: grid;
+  gap: var(--space-4);
+  justify-items: start;
+}
+
+.account h2 {
+  font-size: 26px;
+}
+
+.account button {
+  font-size: 18px;
+}
+
+.account button:disabled {
+  background: transparent;
+  color: var(--ink-soft);
+  border-color: var(--box-shade);
+}
+
+@media (max-width: 560px) {
+  .slider {
+    grid-template-columns: minmax(0, 1fr) 48px;
+  }
+  .slider label {
+    grid-column: 1 / -1;
+  }
+}

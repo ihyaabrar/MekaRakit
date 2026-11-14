@@ -1,0 +1,150 @@
+.page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  width: 100%;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--space-5) var(--space-4) var(--space-7);
+}
+
+/* Asymmetric hero: text takes the wide column, the kit box sits tilted on the mat like it was just put down. */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: var(--space-6);
+  align-items: center;
+  padding: var(--space-6) 0 var(--space-7);
+}
+
+.copy h1 {
+  font-size: clamp(44px, 7vw, 84px);
+  max-width: 12ch;
+}
+
+.lead {
+  max-width: 46ch;
+  margin: var(--space-5) 0 var(--space-6);
+  font-size: 19px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4) var(--space-5);
+}
+
+.actions p {
+  margin: 0;
+}
+
+.box {
+  justify-self: center;
+  margin: 0;
+  width: min(100%, 300px);
+  background: var(--box);
+  color: var(--ink);
+  border: 3px solid var(--ink);
+  border-radius: var(--radius-sheet);
+  transform: rotate(-4deg);
+  box-shadow: 8px 10px 0 var(--mat-deep);
+  display: grid;
+  justify-items: center;
+}
+
+.boxLid {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 3px solid var(--ink);
+  background: var(--decal);
+}
+
+.boxName {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 28px;
+}
+
+.box svg {
+  margin: var(--space-4) 0;
+  max-width: 70%;
+  height: auto;
+}
+
+.boxSide {
+  width: 100%;
+  padding: var(--space-2) var(--space-4);
+  border-top: 3px solid var(--ink);
+  font-weight: 700;
+  text-align: right;
+}
+
+.manual h2 {
+  font-size: 34px;
+  margin-bottom: var(--space-5);
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-5) var(--space-6);
+}
+
+.steps li {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.steps li[data-soon] {
+  color: var(--ink-soft);
+}
+
+.steps h3 {
+  font-size: 24px;
+  margin-top: 4px;
+}
+
+.steps p {
+  margin: var(--space-1) 0 0;
+}
+
+.soon {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.footer {
+  padding: var(--space-5) var(--space-4);
+  text-align: center;
+  font-size: 14px;
+  background: var(--mat-deep);
+}
+
+@media (max-width: 860px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding-top: var(--space-4);
+  }
+  .steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .steps {
+    grid-template-columns: 1fr;
+  }
+}

@@ -2,11 +2,18 @@
 
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Outlines } from "@react-three/drei";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useTranslations } from "next-intl";
-import { prototypeKit as kit, GATE_LENGTH, RUNNER_BAR_Y, ASSEMBLY_X } from "./prototypeKit";
-import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, type KitState, type PartDef, type Vec3 } from "./logic";
+import Link from "next/link";
+import { GATE_LENGTH, RUNNER_BAR_Y, ASSEMBLY_X } from "./prototypeKit";
+import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, type KitDef, type KitState, type PartDef, type RunSnapshot, type Vec3 } from "./logic";
+import { catalog, findKit, type KitEntry } from "./kits";
+import { kitStatus } from "./progress";
+import { fetchProfile, fetchProgress, fetchRun, saveRun } from "./store";
+import { useLoad } from "@/ui/useLoad";
+import { useRouter } from "next/navigation";
+import ui from "@/ui/ui.module.css";
 import * as sfx from "./sfx";
 import styles from "./Workbench.module.css";
 
@@ -30,12 +37,99 @@ function useToonGradient() {
   }, []);
 }
 
-export default function Workbench() {
+export default function Workbench({ kitId }: { kitId: string }) {
   const t = useTranslations("workbench");
+  const td = useTranslations("dashboard");
+  const [load, retry] = useLoad(() => Promise.all([fetchProfile(), fetchProgress(), fetchRun(kitId)]));
+  const entry = findKit(kitId);
+  if (load.status === "loading")
+    return (
+      <main className={styles.unavailable}>
+        <p role="status">{t("loading")}</p>
+      </main>
+    );
+  if (load.status === "error")
+    return (
+      <main className={styles.unavailable}>
+        <section className={ui.sheet} role="alert">
+          <p>{td("loadError")}</p>
+          <button className={ui.btn} type="button" onClick={retry}>
+            {td("retry")}
+          </button>
+        </section>
+      </main>
+    );
+  const [profile, progress, saved] = load.data;
+  const status = kitStatus(
+    catalog.map((k) => k.id),
+    progress,
+    kitId,
+  );
+  if (entry?.kit && status !== "locked") return <Bench entry={entry} kit={entry.kit} sfxVolume={profile.sfx} saved={saved} />;
+  return (
+    <main className={styles.unavailable}>
+      <section className={ui.sheet}>
+        <h1>{t("unavailable")}</h1>
+        <p>{status === "locked" ? t("lockedBody") : t("notDesignedBody")}</p>
+        <Link className={ui.btn} href="/dashboard">
+          {t("back")}
+        </Link>
+      </section>
+    </main>
+  );
+}
+
+const SAVE_DELAY_MS = 600;
+const RETRY_MS = 5000;
+
+function Bench({ entry, kit, sfxVolume, saved }: { entry: KitEntry; kit: KitDef; sfxVolume: number; saved: RunSnapshot | null }) {
+  const t = useTranslations("workbench");
+  const tk = useTranslations("kits");
+  const router = useRouter();
+  const [saveError, setSaveError] = useState(false);
+  const [shelving, setShelving] = useState(false);
+  useEffect(() => {
+    sfx.setSfxVolume(sfxVolume / 100);
+  }, [sfxVolume]);
   const [tool, setTool] = useState<Tool>("nipper");
-  const [state, setState] = useState<KitState>(() => initState(kit));
-  const [pos, setPos] = useState<Record<string, Vec3>>(() => Object.fromEntries(kit.parts.map((p) => [p.id, p.runnerPos])));
+  const [state, setState] = useState<KitState>(() => saved?.state ?? initState(kit));
+  const [pos, setPos] = useState<Record<string, Vec3>>(() => saved?.pos ?? Object.fromEntries(kit.parts.map((p) => [p.id, p.runnerPos])));
   const [dragging, setDragging] = useState<string | null>(null);
+
+  // Autosave: the whole bench, debounced, retried until it lands. Snapshots are idempotent, so retries are safe.
+  const snapshot = useMemo(() => JSON.stringify({ state, pos }), [state, pos]);
+  const lastSaved = useRef(saved ? JSON.stringify(saved) : JSON.stringify({ state, pos }));
+  const save = (snap: string) =>
+    saveRun(entry.id, JSON.parse(snap)).then(
+      () => {
+        lastSaved.current = snap;
+        setSaveError(false);
+      },
+      (e) => {
+        setSaveError(true);
+        throw e;
+      },
+    );
+  useEffect(() => {
+    if (dragging || snapshot === lastSaved.current) return;
+    let timer = setTimeout(function attempt() {
+      save(snapshot).catch(() => (timer = setTimeout(attempt, RETRY_MS)));
+    }, SAVE_DELAY_MS);
+    return () => clearTimeout(timer);
+    // save only depends on entry.id, which is fixed for this bench
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [snapshot, dragging]);
+
+  /** Leaving the bench: write the latest state first so nothing done in the last moments is lost. */
+  async function leave() {
+    setShelving(true);
+    try {
+      if (snapshot !== lastSaved.current) await save(snapshot);
+      router.push("/dashboard");
+    } catch {
+      setShelving(false);
+    }
+  }
   const [bursts, setBursts] = useState<Burst[]>([]);
   const [hint, setHint] = useState<Hint>(null);
 
@@ -43,7 +137,7 @@ export default function Workbench() {
   const nextGate = useMemo(() => {
     for (const p of kit.parts) for (const g of p.gates) if (!state.parts[p.id].cut.includes(g.id)) return `${p.id}/${g.id}`;
     return null;
-  }, [state]);
+  }, [kit, state]);
 
   const nubsLeft = kit.parts.reduce((n, p) => n + Object.values(state.parts[p.id].nubs).filter((h) => h > 0).length, 0);
   const maxStep = Math.max(...kit.parts.map((p) => p.step));
@@ -64,7 +158,7 @@ export default function Workbench() {
       sfx.snap();
       setHint(null);
       setPos((p) => ({ ...p, [partId]: part.target }));
-      setState((s) => placePart(kit, s, partId));
+      setState(placePart(kit, state, partId));
       return;
     }
     if (res.kind !== "none") sfx.bump();
@@ -80,6 +174,7 @@ export default function Workbench() {
         <directionalLight position={[4, 8, 5]} intensity={1.6} />
         <OrbitControls makeDefault target={[-1, 0.6, 0]} maxPolarAngle={Math.PI / 2.1} minDistance={4} maxDistance={16} />
         <Scene
+          kit={kit}
           tool={tool}
           state={state}
           pos={pos}
@@ -101,6 +196,12 @@ export default function Workbench() {
       </Canvas>
 
       <aside className={styles.panel}>
+        <button className={styles.back} type="button" onClick={leave} disabled={shelving}>
+          {t("back")}
+        </button>
+        <h1 className={styles.kitTitle}>
+          <span className={ui.code}>{entry.code}</span> {tk(`${entry.id}.name`)}
+        </h1>
         <div className={styles.tools} role="toolbar" aria-label={t("toolsLabel")}>
           {(["nipper", "sand", "build"] as const).map((k) => (
             <button key={k} aria-pressed={tool === k} onClick={() => setTool(k)}>
@@ -109,6 +210,11 @@ export default function Workbench() {
           ))}
         </div>
         <p className={styles.hint}>{t(`hint.${tool}`)}</p>
+        {saveError && (
+          <p className={styles.warn} role="status">
+            {t("saveError")}
+          </p>
+        )}
         {hint && <p className={styles.warn}>{hint.key === "wrongStep" ? t("drop.wrongStep", { n: hint.n }) : t("drop.wrongSpot", { part: t(`parts.${hint.part}`) })}</p>}
         <h2>{t("manual")}</h2>
         <ol className={styles.manual}>
@@ -119,13 +225,21 @@ export default function Workbench() {
           ))}
         </ol>
         <p>{t("nubsLeft", { n: nubsLeft })}</p>
-        {done && <p className={styles.done}>{t("done")}</p>}
+        {done && (
+          <div className={styles.done} role="status">
+            <p>{t("done")}</p>
+            <button className={ui.btn} type="button" onClick={leave} disabled={shelving}>
+              {t("toShelf")}
+            </button>
+          </div>
+        )}
       </aside>
     </div>
   );
 }
 
 type SceneProps = {
+  kit: KitDef;
   tool: Tool;
   state: KitState;
   pos: Record<string, Vec3>;
@@ -139,7 +253,7 @@ type SceneProps = {
   onRub: (partId: string, gateId: string, pixels: number) => void;
 };
 
-function Scene({ tool, state, pos, nextGate, dragging, onCut, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
+function Scene({ kit, tool, state, pos, nextGate, dragging, onCut, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
   const gradient = useToonGradient();
   const { camera, gl } = useThree();
   const get = useThree((s) => s.get);
