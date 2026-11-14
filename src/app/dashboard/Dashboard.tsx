@@ -7,13 +7,13 @@ import KitArt from "@/ui/KitArt";
 import ui from "@/ui/ui.module.css";
 import { catalog, type KitEntry } from "@/game/kits";
 import { achievements, kitStatus, type AchievementId } from "@/game/progress";
-import { fetchProfile, fetchProgress } from "@/game/store";
+import { fetchProfile, fetchProgress, fetchShelfPhotos } from "@/game/store";
 import { useLoad } from "@/ui/useLoad";
 import s from "./dashboard.module.css";
 
 const order = catalog.map((k) => k.id);
 const variantOf = (k: KitEntry) => order.indexOf(k.id) + 1;
-const loadAll = () => Promise.all([fetchProfile(), fetchProgress()]);
+const loadAll = () => Promise.all([fetchProfile(), fetchProgress(), fetchShelfPhotos()]);
 
 export default function Dashboard() {
   const t = useTranslations("dashboard");
@@ -44,7 +44,7 @@ export default function Dashboard() {
     );
   }
 
-  const [profile, progress] = load.data;
+  const [profile, progress, photos] = load.data;
   const rows = catalog.map((k) => ({ k, status: kitStatus(order, progress, k.id) }));
   const next = rows.find((r) => r.status === "new" || r.status === "in-progress");
   const ach = achievements(progress);
@@ -99,6 +99,10 @@ export default function Dashboard() {
                 <dd>{progress.finished.length}</dd>
               </div>
               <div>
+                <dt>{t("playTime")}</dt>
+                <dd>{t("minutes", { n: Math.round(progress.playSeconds / 60) })}</dd>
+              </div>
+              <div>
                 <dt>{t("gatesCut")}</dt>
                 <dd>{progress.gatesCut}</dd>
               </div>
@@ -135,7 +139,12 @@ export default function Dashboard() {
                 if (!k) return null;
                 return (
                   <li key={f.kitId}>
-                    <KitArt body={k.colors.body} trim={k.colors.trim} variant={variantOf(k)} label={tk(`${k.id}.name`)} size={84} />
+                    {photos[k.id] ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- player photo stored as a data URL
+                      <img className={s.shelfPhoto} src={photos[k.id]} alt={t("photoAlt", { name: tk(`${k.id}.name`) })} />
+                    ) : (
+                      <KitArt body={k.colors.body} trim={k.colors.trim} variant={variantOf(k)} label={tk(`${k.id}.name`)} size={84} />
+                    )}
                     <p>
                       <span className={ui.code}>{k.code}</span> {tk(`${k.id}.name`)}
                     </p>

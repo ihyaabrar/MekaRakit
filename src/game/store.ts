@@ -31,13 +31,14 @@ export async function saveProfile(p: Profile) {
 
 export async function fetchProgress(): Promise<Progress> {
   const uid = await requireUserId();
-  const rows = await sql()`select kit_id, gates_cut, finished_at, nubs_left from kit_runs where user_id = ${uid}`;
+  const rows = await sql()`select kit_id, gates_cut, finished_at, nubs_left, play_seconds from kit_runs where user_id = ${uid}`;
   return toProgress(
     rows.map((r) => ({
       kit_id: r.kit_id,
       gates_cut: r.gates_cut,
       finished_at: r.finished_at ? new Date(r.finished_at).toISOString() : null,
       nubs_left: r.nubs_left,
+      play_seconds: r.play_seconds,
     })) as KitRun[],
   );
 }
@@ -62,10 +63,11 @@ export async function saveRun(kitId: string, snapshot: RunSnapshot) {
   if (!run) throw new Error("snapshot does not fit kit");
   const { gatesCut, nubsLeft, complete } = runSummary(kit, run.state);
   const uid = await requireUserId();
-  await sql()`insert into kit_runs (user_id, kit_id, gates_cut, snapshot, finished_at, nubs_left)
-              values (${uid}, ${kitId}, ${gatesCut}, ${JSON.stringify(run)}::jsonb, ${complete ? new Date().toISOString() : null}, ${complete ? nubsLeft : null})
+  await sql()`insert into kit_runs (user_id, kit_id, gates_cut, snapshot, finished_at, nubs_left, play_seconds)
+              values (${uid}, ${kitId}, ${gatesCut}, ${JSON.stringify(run)}::jsonb, ${complete ? new Date().toISOString() : null}, ${complete ? nubsLeft : null}, ${run.playSeconds ?? 0})
               on conflict (user_id, kit_id) do update set
                 gates_cut = excluded.gates_cut,
+                play_seconds = greatest(kit_runs.play_seconds, excluded.play_seconds),
                 snapshot = excluded.snapshot,
                 finished_at = coalesce(kit_runs.finished_at, excluded.finished_at),
                 nubs_left = coalesce(excluded.nubs_left, kit_runs.nubs_left)`;
@@ -74,4 +76,24 @@ export async function saveRun(kitId: string, snapshot: RunSnapshot) {
 export async function clearProgress() {
   const uid = await requireUserId();
   await sql()`delete from kit_runs where user_id = ${uid}`;
+}
+
+const MAX_PHOTOS = 30;
+const MAX_PHOTO_CHARS = 700_000;
+
+/** Stores a JPEG of a finished model; keeps the newest MAX_PHOTOS per player. */
+export async function savePhoto(kitId: string, dataUrl: string) {
+  if (!findKit(kitId)?.kit) throw new Error("unknown kit");
+  if (typeof dataUrl !== "string" || !dataUrl.startsWith("data:image/jpeg;base64,") || dataUrl.length > MAX_PHOTO_CHARS) throw new Error("bad photo");
+  const uid = await requireUserId();
+  const db = sql();
+  await db`insert into photos (user_id, kit_id, image) values (${uid}, ${kitId}, ${dataUrl})`;
+  await db`delete from photos where user_id = ${uid} and id not in (select id from photos where user_id = ${uid} order by created_at desc limit ${MAX_PHOTOS})`;
+}
+
+/** Newest photo per kit, for the display shelf. */
+export async function fetchShelfPhotos(): Promise<Record<string, string>> {
+  const uid = await requireUserId();
+  const rows = await sql()`select distinct on (kit_id) kit_id, image from photos where user_id = ${uid} order by kit_id, created_at desc`;
+  return Object.fromEntries(rows.map((r) => [r.kit_id, r.image]));
 }

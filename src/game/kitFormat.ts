@@ -29,11 +29,15 @@ export type KitFileV1 = {
     target: Vec3; // relative to assemblyAt (y absolute)
     step: number;
   }[];
+  /** Posable joints, outermost first: each turns its parts around a pivot (relative to assemblyAt, y absolute). */
+  poses?: { id: string; name: Text; parts: string[]; pivot: Vec3; axis: "x" | "y" | "z"; min: number; max: number }[];
 };
+
+export type PoseJoint = { id: string; name: Text; parts: string[]; pivot: Vec3; axis: "x" | "y" | "z"; min: number; max: number }; // min/max in radians
 
 export type PartVisual = { name: Text; color: string; shape: Prim[]; runner: string };
 export type RunnerVisual = KitFileV1["runners"][number];
-export type LoadedKit = { def: KitDef; parts: Record<string, PartVisual>; runners: RunnerVisual[]; steps: KitFileV1["steps"]; assembly: Vec3 };
+export type LoadedKit = { def: KitDef; parts: Record<string, PartVisual>; runners: RunnerVisual[]; steps: KitFileV1["steps"]; assembly: Vec3; poses: PoseJoint[] };
 
 const EPS = 1e-9;
 
@@ -80,12 +84,23 @@ export function loadKit(file: KitFileV1): LoadedKit {
 
   for (const n of steps) if (!file.parts.some((p) => p.step === n)) fail(`step ${n} has no parts`);
 
+  const poseIds = new Set<string>();
+  const poses: PoseJoint[] = (file.poses ?? []).map((j) => {
+    if (poseIds.has(j.id) || !/^[a-z0-9-]{1,20}$/i.test(j.id)) fail(`pose ${j.id}: bad or duplicate id`);
+    poseIds.add(j.id);
+    if (!j.parts.length || j.parts.some((id) => !ids.has(id))) fail(`pose ${j.id}: unknown part`);
+    if (!(j.min < j.max)) fail(`pose ${j.id}: min must be below max`);
+    const rad = Math.PI / 180;
+    return { id: j.id, name: j.name, parts: j.parts, axis: j.axis, pivot: [ax + j.pivot[0], j.pivot[1], az + j.pivot[2]], min: j.min * rad, max: j.max * rad };
+  });
+
   return {
     def: { id: file.id, name: file.code, parts },
     parts: Object.fromEntries(file.parts.map((p) => [p.id, { name: p.name, color: p.color, shape: p.shape ?? [{ box: p.size }], runner: p.runner }])),
     runners: file.runners,
     steps: [...file.steps].sort((a, b) => a.n - b.n),
     assembly: [ax, 0, az],
+    poses,
   };
 }
 

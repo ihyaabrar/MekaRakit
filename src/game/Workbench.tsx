@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Outlines } from "@react-three/drei";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -10,7 +10,7 @@ import { GATE_LENGTH, RUNNER_BAR_Y, lyingOffset, type LoadedKit, type PartVisual
 import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, magnetPull, pageForDrop, PAINTS, DECAL_KINDS, MAX_DECALS, type Decal, type DecalKind, type KitState, type PartDef, type RunSnapshot, type Vec3 } from "./logic";
 import { catalog, findKit, type KitEntry } from "./kits";
 import { kitStatus } from "./progress";
-import { fetchProfile, fetchProgress, fetchRun, saveRun } from "./store";
+import { fetchProfile, fetchProgress, fetchRun, savePhoto, saveRun } from "./store";
 import { useLoad } from "@/ui/useLoad";
 import { useRouter } from "next/navigation";
 import ui from "@/ui/ui.module.css";
@@ -20,6 +20,7 @@ import LiftedPart from "./bench/LiftedPart";
 import ManualBook from "./bench/ManualBook";
 import { Ghost, PopCue, type Pop } from "./bench/Feel";
 import { DecalMesh } from "./bench/Finish";
+import { PhotoRig, Posed, type PhotoApi } from "./bench/Pose";
 import styles from "./Workbench.module.css";
 
 type Tool = HeldTool;
@@ -112,6 +113,46 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
   const [paintColor, setPaintColor] = useState<string>(PAINTS[2]);
   const [decalKind, setDecalKind] = useState<DecalKind>("code");
   const [selectedDecal, setSelectedDecal] = useState<string | null>(null);
+  const [pose, setPose] = useState<Record<string, number>>(() => saved?.pose ?? {});
+  const [playSeconds, setPlaySeconds] = useState(() => saved?.playSeconds ?? 0);
+  const [photoMode, setPhotoMode] = useState(false);
+  const [photo, setPhoto] = useState<{ url: string; saved: "saving" | "saved" | "error" } | null>(null);
+  const photoApi = useRef<PhotoApi | null>(null);
+  const onPhotoReady = useCallback((api: PhotoApi) => (photoApi.current = api), []);
+
+  // play time: counted in 30 s ticks while the tab is visible, so autosave is not triggered every second
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!document.hidden) setPlaySeconds((n) => n + 30);
+    }, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  function enterPhoto() {
+    setLifted(null);
+    setTool("hand");
+    setPhotoMode(true);
+    photoApi.current?.frame([lk.assembly[0], 1.9, lk.assembly[2]]);
+  }
+
+  function leavePhoto() {
+    setPhotoMode(false);
+    setPhoto(null);
+    photoApi.current?.restore();
+  }
+
+  async function snapPhoto() {
+    const url = photoApi.current?.capture();
+    if (!url) return;
+    sfx.snip();
+    setPhoto({ url, saved: "saving" });
+    try {
+      await savePhoto(entry.id, url);
+      setPhoto({ url, saved: "saved" });
+    } catch {
+      setPhoto({ url, saved: "error" });
+    }
+  }
 
   function paintPart(id: string) {
     sfx.brush();
@@ -157,8 +198,12 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
   const [dragging, setDragging] = useState<string | null>(null);
 
   // Autosave: the whole bench, debounced, retried until it lands. Snapshots are idempotent, so retries are safe.
-  const snapshot = useMemo(() => JSON.stringify({ state, pos, paint, decals }), [state, pos, paint, decals]);
-  const lastSaved = useRef(saved ? JSON.stringify({ state: saved.state, pos: saved.pos, paint: saved.paint ?? {}, decals: saved.decals ?? [] }) : JSON.stringify({ state, pos, paint, decals }));
+  const snapshot = useMemo(() => JSON.stringify({ state, pos, paint, decals, pose, playSeconds }), [state, pos, paint, decals, pose, playSeconds]);
+  const lastSaved = useRef(
+    saved
+      ? JSON.stringify({ state: saved.state, pos: saved.pos, paint: saved.paint ?? {}, decals: saved.decals ?? [], pose: saved.pose ?? {}, playSeconds: saved.playSeconds ?? 0 })
+      : JSON.stringify({ state, pos, paint, decals, pose, playSeconds }),
+  );
   const save = (snap: string) =>
     saveRun(entry.id, JSON.parse(snap)).then(
       () => {
@@ -238,7 +283,12 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
         onContextMenu={(e) => {
           e.preventDefault();
           setTool("hand");
-        }} camera={{ position: [-1.7, 10, 7.2], fov: 48 }} dpr={[1, 2]}>
+        }}
+        camera={{ position: [-1.7, 10, 7.2], fov: 48 }}
+        dpr={[1, 2]}
+        gl={{ preserveDrawingBuffer: true }}
+      >
+        <PhotoRig onReady={onPhotoReady} />
         <color attach="background" args={["#10261F"]} />
         <ambientLight intensity={0.9} />
         <directionalLight position={[4, 8, 5]} intensity={1.6} />
@@ -273,6 +323,8 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
           onPaint={paintPart}
           onDecal={placeDecal}
           onSelectDecal={setSelectedDecal}
+          pose={pose}
+          photoMode={photoMode}
           onDrop={onDrop}
           onRub={(part, gate, px) => {
             sfx.sand();
@@ -423,6 +475,54 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
         {done && (
           <div className={styles.done} role="status">
             <p>{t("done")}</p>
+            {lk.poses.length > 0 && (
+              <fieldset className={styles.pose}>
+                <legend>{t("pose.title")}</legend>
+                {lk.poses.map((j) => (
+                  <label key={j.id}>
+                    {j.name[lang]}
+                    <input
+                      type="range"
+                      min={Math.round((j.min * 180) / Math.PI)}
+                      max={Math.round((j.max * 180) / Math.PI)}
+                      step={5}
+                      value={Math.round(((pose[j.id] ?? 0) * 180) / Math.PI)}
+                      onChange={(e) => setPose((p) => ({ ...p, [j.id]: (Number(e.target.value) * Math.PI) / 180 }))}
+                    />
+                  </label>
+                ))}
+                <button className={styles.linkBtn} type="button" onClick={() => setPose({})}>
+                  {t("pose.reset")}
+                </button>
+              </fieldset>
+            )}
+            {!photoMode ? (
+              <button className={ui.btnLine} type="button" onClick={enterPhoto}>
+                {t("photo.enter")}
+              </button>
+            ) : (
+              <div className={styles.photo}>
+                <p className={styles.hint}>{t("photo.hint")}</p>
+                <button className={ui.btn} type="button" onClick={snapPhoto} disabled={photo?.saved === "saving"}>
+                  {t("photo.snap")}
+                </button>
+                {photo && (
+                  <figure>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- a local data URL just captured */}
+                    <img src={photo.url} alt={t("photo.alt", { name: tk(`${entry.id}.name`) })} />
+                    <figcaption>
+                      {t(`photo.${photo.saved}`)}{" "}
+                      <a href={photo.url} download={`${entry.code}.jpg`}>
+                        {t("photo.download")}
+                      </a>
+                    </figcaption>
+                  </figure>
+                )}
+                <button className={styles.linkBtn} type="button" onClick={leavePhoto}>
+                  {t("photo.leave")}
+                </button>
+              </div>
+            )}
             <button className={ui.btn} type="button" onClick={leave} disabled={shelving}>
               {t("toShelf")}
             </button>
@@ -461,6 +561,8 @@ type SceneProps = {
   onPaint: (partId: string) => void;
   onDecal: (partId: string, at: Vec3, normal: Vec3) => void;
   onSelectDecal: (id: string) => void;
+  pose: Record<string, number>;
+  photoMode: boolean;
   canDrag: (partId: string) => boolean;
   onDragStart: (partId: string) => void;
   onDragMove: (partId: string, at: Vec3) => void;
@@ -468,7 +570,7 @@ type SceneProps = {
   onRub: (partId: string, gateId: string, pixels: number) => void;
 };
 
-function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOpened, onOpenBox, onPickTool, onOpenBook, snips, lifted, liftRot, onLift, onTurn, pops, boxLabel, paint, paintColor, decals, selectedDecal, onPaint, onDecal, onSelectDecal, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
+function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOpened, onOpenBox, onPickTool, onOpenBook, snips, lifted, liftRot, onLift, onTurn, pops, boxLabel, paint, paintColor, decals, selectedDecal, onPaint, onDecal, onSelectDecal, pose, photoMode, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
   const kit = lk.def;
   const gradient = useToonGradient();
   const { camera, gl } = useThree();
@@ -558,7 +660,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
         <meshToonMaterial color="#2A6656" gradientMap={gradient} />
       </mesh>
       <KitBox gradient={gradient} opened={opened} onOpen={onOpenBox} center={[-3.5, 0, -0.45]} label={boxLabel} />
-      {opened && (
+      {opened && !photoMode && (
         <>
           <ToolTray gradient={gradient} held={tool} animateIn={justOpened} paint={paintColor} onPick={onPickTool} onOpenBook={onOpenBook} />
           <HeldToolFollower gradient={gradient} held={tool} snips={snips} paint={paintColor} />
@@ -591,7 +693,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
         </LiftedPart>
       )}
       <RiseOnOpen animate={justOpened}>
-      {opened && lk.runners.map((r) => (
+      {opened && !photoMode && lk.runners.map((r) => (
         <Runner key={r.id} runner={r} gradient={gradient} />
       ))}
       {opened && kit.parts.map((p) => {
@@ -602,6 +704,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
           <group key={p.id}>
             {ghost && <Ghost size={p.size} at={p.target} hot={dragging === p.id} dim={dragging !== null && dragging !== p.id} />}
             {/* on the runner or loose on the mat a part lies face-up; held or assembled it stands upright */}
+            <Posed chain={ps.status === "placed" ? lk.poses.filter((j) => j.parts.includes(p.id)) : []} angles={pose}>
             <group position={pos[p.id]}>
             <PopCue pop={pops[p.id]}>
             <group rotation-x={ps.status !== "placed" && dragging !== p.id ? -Math.PI / 2 : 0}>
@@ -631,6 +734,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
             </group>
             </PopCue>
             </group>
+            </Posed>
           </group>
         );
       })}

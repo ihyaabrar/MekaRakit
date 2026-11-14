@@ -141,7 +141,10 @@
     "error": "Data progres di browser ini tidak bisa dibaca.",
     "reset": "Kosongkan progres",
     "retry": "Coba lagi",
-    "loadError": "Progres tidak bisa dimuat dari server."
+    "loadError": "Progres tidak bisa dimuat dari server.",
+    "playTime": "Waktu main",
+    "minutes": "{n} mnt",
+    "photoAlt": "Foto model {name} di rak"
   },
   "settings": {
     "title": "Pengaturan",
@@ -252,6 +255,21 @@
       "rotate": "Putar",
       "size": "Ukuran",
       "remove": "Lepas stiker ini"
+    },
+    "pose": {
+      "title": "Pose",
+      "reset": "Kembalikan pose"
+    },
+    "photo": {
+      "enter": "Mode foto",
+      "hint": "Putar kamera dengan drag untuk mencari sudut terbaik, lalu jepret.",
+      "snap": "Jepret foto",
+      "alt": "Foto model {name}",
+      "saving": "Menyimpan ke rak...",
+      "saved": "Tersimpan di rak.",
+      "error": "Foto belum tersimpan, coba jepret lagi.",
+      "download": "Unduh",
+      "leave": "Keluar mode foto"
     }
   }
 }

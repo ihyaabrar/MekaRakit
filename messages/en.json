@@ -141,7 +141,10 @@
     "error": "Progress data in this browser cannot be read.",
     "reset": "Clear progress",
     "retry": "Try again",
-    "loadError": "Progress could not be loaded from the server."
+    "loadError": "Progress could not be loaded from the server.",
+    "playTime": "Play time",
+    "minutes": "{n} min",
+    "photoAlt": "Photo of the {name} model on the shelf"
   },
   "settings": {
     "title": "Settings",
@@ -252,6 +255,21 @@
       "rotate": "Rotate",
       "size": "Size",
       "remove": "Remove this sticker"
+    },
+    "pose": {
+      "title": "Pose",
+      "reset": "Reset pose"
+    },
+    "photo": {
+      "enter": "Photo mode",
+      "hint": "Drag to orbit the camera for the best angle, then take the shot.",
+      "snap": "Take photo",
+      "alt": "Photo of the {name} model",
+      "saving": "Saving to the shelf...",
+      "saved": "Saved to the shelf.",
+      "error": "Photo not saved, try again.",
+      "download": "Download",
+      "leave": "Leave photo mode"
     }
   }
 }

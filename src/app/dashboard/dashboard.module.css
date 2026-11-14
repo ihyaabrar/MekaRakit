@@ -90,7 +90,7 @@
 
 .counts {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--space-4);
   margin: 0;
 }
@@ -105,7 +105,7 @@
   margin: 0;
   font-family: var(--font-display);
   font-weight: 900;
-  font-size: 44px;
+  font-size: 36px;
   line-height: 1;
 }
 
@@ -260,4 +260,13 @@
     grid-column: 2;
     justify-self: start;
   }
+}
+
+.shelfPhoto {
+  display: block;
+  width: 180px;
+  height: 120px;
+  object-fit: cover;
+  border: 3px solid var(--box);
+  border-radius: var(--radius-sheet);
 }

@@ -2,88 +2,1175 @@
   "format": 1,
   "id": "kr-01",
   "code": "KR-01",
-  "assemblyAt": [3, 0],
+  "assemblyAt": [
+    3,
+    0
+  ],
   "runners": [
-    { "id": "A", "color": "#2F5FB0", "center": [-3.5, -2.2], "size": [6.0, 3.4] },
-    { "id": "B", "color": "#E3E8E1", "center": [-3.5, 1.3], "size": [6.0, 2.6] }
+    {
+      "id": "A",
+      "color": "#2F5FB0",
+      "center": [
+        -3.5,
+        -2.2
+      ],
+      "size": [
+        6.0,
+        3.4
+      ]
+    },
+    {
+      "id": "B",
+      "color": "#E3E8E1",
+      "center": [
+        -3.5,
+        1.3
+      ],
+      "size": [
+        6.0,
+        2.6
+      ]
+    }
   ],
   "steps": [
-    { "n": 1, "title": { "id": "Kaki", "en": "Feet and shins" } },
-    { "n": 2, "title": { "id": "Paha dan pinggul", "en": "Thighs and hip" } },
-    { "n": 3, "title": { "id": "Badan", "en": "Torso" } },
-    { "n": 4, "title": { "id": "Ransel dan panel dada", "en": "Backpack and chest vent" } },
-    { "n": 5, "title": { "id": "Kepala", "en": "Head" } },
-    { "n": 6, "title": { "id": "Lengan", "en": "Arms" } },
-    { "n": 7, "title": { "id": "Perisai dan senapan", "en": "Shield and rifle" } }
+    {
+      "n": 1,
+      "title": {
+        "id": "Kaki",
+        "en": "Feet and shins"
+      }
+    },
+    {
+      "n": 2,
+      "title": {
+        "id": "Paha dan pinggul",
+        "en": "Thighs and hip"
+      }
+    },
+    {
+      "n": 3,
+      "title": {
+        "id": "Badan",
+        "en": "Torso"
+      }
+    },
+    {
+      "n": 4,
+      "title": {
+        "id": "Ransel dan panel dada",
+        "en": "Backpack and chest vent"
+      }
+    },
+    {
+      "n": 5,
+      "title": {
+        "id": "Kepala",
+        "en": "Head"
+      }
+    },
+    {
+      "n": 6,
+      "title": {
+        "id": "Lengan",
+        "en": "Arms"
+      }
+    },
+    {
+      "n": 7,
+      "title": {
+        "id": "Perisai dan senapan",
+        "en": "Shield and rifle"
+      }
+    }
   ],
   "parts": [
-    { "id": "A3", "name": { "id": "Telapak kiri", "en": "Left foot" }, "runner": "A", "row": 1, "x": -2.4, "gates": [-0.12, 0.12], "color": "#2F5FB0", "size": [0.44, 0.16, 0.62],
-      "shape": [{ "box": [0.44, 0.16, 0.5], "at": [0, 0, -0.06] }, { "box": [0.36, 0.1, 0.12], "at": [0, -0.03, 0.25] }],
-      "target": [-0.28, 0.08, 0.05], "step": 1 },
-    { "id": "A4", "name": { "id": "Telapak kanan", "en": "Right foot" }, "runner": "A", "row": 1, "x": -1.8, "gates": [-0.12, 0.12], "color": "#2F5FB0", "size": [0.44, 0.16, 0.62],
-      "shape": [{ "box": [0.44, 0.16, 0.5], "at": [0, 0, -0.06] }, { "box": [0.36, 0.1, 0.12], "at": [0, -0.03, 0.25] }],
-      "target": [0.28, 0.08, 0.05], "step": 1 },
-    { "id": "A1", "name": { "id": "Betis kiri", "en": "Left shin" }, "runner": "A", "row": -1, "x": -2.4, "gates": [0], "color": "#F5F7F3", "size": [0.36, 0.9, 0.4],
-      "shape": [{ "box": [0.36, 0.82, 0.4], "at": [0, -0.04, 0] }, { "box": [0.28, 0.16, 0.04], "at": [0, 0.3, 0.18], "color": "#2F5FB0" }],
-      "target": [-0.28, 0.61, 0], "step": 1 },
-    { "id": "A2", "name": { "id": "Betis kanan", "en": "Right shin" }, "runner": "A", "row": -1, "x": -1.8, "gates": [0], "color": "#F5F7F3", "size": [0.36, 0.9, 0.4],
-      "shape": [{ "box": [0.36, 0.82, 0.4], "at": [0, -0.04, 0] }, { "box": [0.28, 0.16, 0.04], "at": [0, 0.3, 0.18], "color": "#2F5FB0" }],
-      "target": [0.28, 0.61, 0], "step": 1 },
-
-    { "id": "A5", "name": { "id": "Paha kiri", "en": "Left thigh" }, "runner": "A", "row": -1, "x": -1.2, "gates": [0], "color": "#9AA3AB", "size": [0.32, 0.6, 0.34],
-      "target": [-0.28, 1.36, 0], "step": 2 },
-    { "id": "A6", "name": { "id": "Paha kanan", "en": "Right thigh" }, "runner": "A", "row": -1, "x": -0.7, "gates": [0], "color": "#9AA3AB", "size": [0.32, 0.6, 0.34],
-      "target": [0.28, 1.36, 0], "step": 2 },
-    { "id": "A7", "name": { "id": "Pinggul", "en": "Hip" }, "runner": "A", "row": -1, "x": 0.1, "gates": [-0.3, 0.3], "color": "#2F5FB0", "size": [0.9, 0.3, 0.45],
-      "shape": [{ "box": [0.9, 0.24, 0.42], "at": [0, 0.03, -0.015] }, { "box": [0.3, 0.3, 0.45], "at": [0, 0, 0], "color": "#F5F7F3" }],
-      "target": [0, 1.81, 0], "step": 2 },
-
-    { "id": "B2", "name": { "id": "Perut", "en": "Abdomen" }, "runner": "B", "row": -1, "x": -0.6, "gates": [0], "color": "#9AA3AB", "size": [0.7, 0.35, 0.45],
-      "target": [0, 2.135, 0], "step": 3 },
-    { "id": "B1", "name": { "id": "Dada", "en": "Chest" }, "runner": "B", "row": -1, "x": -1.8, "gates": [-0.3, 0.3], "color": "#2F5FB0", "size": [1.0, 0.7, 0.6],
-      "shape": [{ "box": [1.0, 0.6, 0.6], "at": [0, -0.05, 0] }, { "box": [0.6, 0.1, 0.5], "at": [0, 0.3, 0], "color": "#F5F7F3" }],
-      "target": [0, 2.66, 0], "step": 3 },
-
-    { "id": "B3", "name": { "id": "Ransel", "en": "Backpack" }, "runner": "B", "row": -1, "x": 0.45, "gates": [0], "color": "#F5F7F3", "size": [0.7, 0.6, 0.25],
-      "shape": [{ "box": [0.7, 0.6, 0.17], "at": [0, 0, 0.04] }, { "box": [0.16, 0.4, 0.08], "at": [-0.2, -0.05, -0.085], "color": "#9AA3AB" }, { "box": [0.16, 0.4, 0.08], "at": [0.2, -0.05, -0.085], "color": "#9AA3AB" }],
-      "target": [0, 2.7, -0.425], "step": 4 },
-    { "id": "B4", "name": { "id": "Panel dada", "en": "Chest vent" }, "runner": "B", "row": 1, "x": 0.1, "gates": [0], "color": "#F2C230", "size": [0.5, 0.2, 0.08],
-      "target": [0, 2.72, 0.34], "step": 4 },
-
-    { "id": "B5", "name": { "id": "Kepala", "en": "Head" }, "runner": "B", "row": 1, "x": -1.8, "gates": [0], "color": "#F5F7F3", "size": [0.45, 0.42, 0.45],
-      "shape": [{ "box": [0.45, 0.36, 0.45], "at": [0, -0.03, 0] }, { "box": [0.5, 0.06, 0.4], "at": [0, 0.18, -0.02], "color": "#2F5FB0" }],
-      "target": [0, 3.22, 0], "step": 5 },
-    { "id": "B6", "name": { "id": "Visor", "en": "Visor" }, "runner": "B", "row": 1, "x": -1.1, "gates": [0], "color": "#1D2B38", "size": [0.34, 0.1, 0.06],
-      "target": [0, 3.24, 0.255], "step": 5 },
-    { "id": "B7", "name": { "id": "Antena", "en": "Antenna" }, "runner": "B", "row": 1, "x": -0.6, "gates": [0], "color": "#F2C230", "size": [0.08, 0.3, 0.08],
-      "target": [0, 3.58, 0], "step": 5 },
-
-    { "id": "A8", "name": { "id": "Bahu kiri", "en": "Left shoulder" }, "runner": "A", "row": 1, "x": -1.15, "gates": [0], "color": "#2F5FB0", "size": [0.42, 0.34, 0.46],
-      "shape": [{ "box": [0.42, 0.28, 0.46], "at": [0, -0.03, 0] }, { "box": [0.42, 0.06, 0.46], "at": [0, 0.14, 0], "color": "#F5F7F3" }],
-      "target": [-0.71, 2.83, 0], "step": 6 },
-    { "id": "A9", "name": { "id": "Bahu kanan", "en": "Right shoulder" }, "runner": "A", "row": 1, "x": -0.5, "gates": [0], "color": "#2F5FB0", "size": [0.42, 0.34, 0.46],
-      "shape": [{ "box": [0.42, 0.28, 0.46], "at": [0, -0.03, 0] }, { "box": [0.42, 0.06, 0.46], "at": [0, 0.14, 0], "color": "#F5F7F3" }],
-      "target": [0.71, 2.83, 0], "step": 6 },
-    { "id": "A10", "name": { "id": "Lengan atas kiri", "en": "Left upper arm" }, "runner": "A", "row": 1, "x": 0.15, "gates": [0], "color": "#9AA3AB", "size": [0.26, 0.5, 0.28],
-      "target": [-0.71, 2.41, 0], "step": 6 },
-    { "id": "A11", "name": { "id": "Lengan atas kanan", "en": "Right upper arm" }, "runner": "A", "row": 1, "x": 0.65, "gates": [0], "color": "#9AA3AB", "size": [0.26, 0.5, 0.28],
-      "target": [0.71, 2.41, 0], "step": 6 },
-    { "id": "A12", "name": { "id": "Lengan bawah kiri", "en": "Left forearm" }, "runner": "A", "row": -1, "x": 1.0, "gates": [0], "color": "#F5F7F3", "size": [0.3, 0.55, 0.32],
-      "shape": [{ "box": [0.3, 0.45, 0.32], "at": [0, 0.05, 0] }, { "box": [0.3, 0.1, 0.32], "at": [0, -0.225, 0], "color": "#2F5FB0" }],
-      "target": [-0.71, 1.885, 0], "step": 6 },
-    { "id": "A13", "name": { "id": "Lengan bawah kanan", "en": "Right forearm" }, "runner": "A", "row": -1, "x": 1.6, "gates": [0], "color": "#F5F7F3", "size": [0.3, 0.55, 0.32],
-      "shape": [{ "box": [0.3, 0.45, 0.32], "at": [0, 0.05, 0] }, { "box": [0.3, 0.1, 0.32], "at": [0, -0.225, 0], "color": "#2F5FB0" }],
-      "target": [0.71, 1.885, 0], "step": 6 },
-    { "id": "A14", "name": { "id": "Tangan kiri", "en": "Left hand" }, "runner": "A", "row": 1, "x": 1.2, "gates": [0], "color": "#9AA3AB", "size": [0.24, 0.24, 0.24],
-      "target": [-0.71, 1.49, 0], "step": 6 },
-    { "id": "A15", "name": { "id": "Tangan kanan", "en": "Right hand" }, "runner": "A", "row": 1, "x": 1.7, "gates": [0], "color": "#9AA3AB", "size": [0.24, 0.24, 0.24],
-      "target": [0.71, 1.49, 0], "step": 6 },
-
-    { "id": "B8", "name": { "id": "Perisai", "en": "Shield" }, "runner": "B", "row": -1, "x": 1.6, "gates": [0], "color": "#2F5FB0", "size": [0.5, 0.8, 0.1],
-      "shape": [{ "box": [0.5, 0.8, 0.1] }, { "box": [0.12, 0.5, 0.02], "at": [0, 0, 0.06], "color": "#F2C230" }],
-      "target": [-0.71, 1.9, 0.21], "step": 7 },
-    { "id": "B9", "name": { "id": "Senapan", "en": "Rifle" }, "runner": "B", "row": 1, "x": 1.0, "gates": [0], "color": "#9AA3AB", "size": [0.14, 0.9, 0.2],
-      "shape": [{ "box": [0.14, 0.6, 0.2], "at": [0, 0.15, 0] }, { "box": [0.08, 0.3, 0.08], "at": [0, -0.3, 0], "color": "#1D2B38" }],
-      "target": [0.9, 1.35, 0], "step": 7 }
+    {
+      "id": "A3",
+      "name": {
+        "id": "Telapak kiri",
+        "en": "Left foot"
+      },
+      "runner": "A",
+      "row": 1,
+      "x": -2.4,
+      "gates": [
+        -0.12,
+        0.12
+      ],
+      "color": "#2F5FB0",
+      "size": [
+        0.44,
+        0.16,
+        0.62
+      ],
+      "shape": [
+        {
+          "box": [
+            0.44,
+            0.16,
+            0.5
+          ],
+          "at": [
+            0,
+            0,
+            -0.06
+          ]
+        },
+        {
+          "box": [
+            0.36,
+            0.1,
+            0.12
+          ],
+          "at": [
+            0,
+            -0.03,
+            0.25
+          ]
+        }
+      ],
+      "target": [
+        -0.28,
+        0.08,
+        0.05
+      ],
+      "step": 1
+    },
+    {
+      "id": "A4",
+      "name": {
+        "id": "Telapak kanan",
+        "en": "Right foot"
+      },
+      "runner": "A",
+      "row": 1,
+      "x": -1.8,
+      "gates": [
+        -0.12,
+        0.12
+      ],
+      "color": "#2F5FB0",
+      "size": [
+        0.44,
+        0.16,
+        0.62
+      ],
+      "shape": [
+        {
+          "box": [
+            0.44,
+            0.16,
+            0.5
+          ],
+          "at": [
+            0,
+            0,
+            -0.06
+          ]
+        },
+        {
+          "box": [
+            0.36,
+            0.1,
+            0.12
+          ],
+          "at": [
+            0,
+            -0.03,
+            0.25
+          ]
+        }
+      ],
+      "target": [
+        0.28,
+        0.08,
+        0.05
+      ],
+      "step": 1
+    },
+    {
+      "id": "A1",
+      "name": {
+        "id": "Betis kiri",
+        "en": "Left shin"
+      },
+      "runner": "A",
+      "row": -1,
+      "x": -2.4,
+      "gates": [
+        0
+      ],
+      "color": "#F5F7F3",
+      "size": [
+        0.36,
+        0.9,
+        0.4
+      ],
+      "shape": [
+        {
+          "box": [
+            0.36,
+            0.82,
+            0.4
+          ],
+          "at": [
+            0,
+            -0.04,
+            0
+          ]
+        },
+        {
+          "box": [
+            0.28,
+            0.16,
+            0.04
+          ],
+          "at": [
+            0,
+            0.3,
+            0.18
+          ],
+          "color": "#2F5FB0"
+        }
+      ],
+      "target": [
+        -0.28,
+        0.61,
+        0
+      ],
+      "step": 1
+    },
+    {
+      "id": "A2",
+      "name": {
+        "id": "Betis kanan",
+        "en": "Right shin"
+      },
+      "runner": "A",
+      "row": -1,
+      "x": -1.8,
+      "gates": [
+        0
+      ],
+      "color": "#F5F7F3",
+      "size": [
+        0.36,
+        0.9,
+        0.4
+      ],
+      "shape": [
+        {
+          "box": [
+            0.36,
+            0.82,
+            0.4
+          ],
+          "at": [
+            0,
+            -0.04,
+            0
+          ]
+        },
+        {
+          "box": [
+            0.28,
+            0.16,
+            0.04
+          ],
+          "at": [
+            0,
+            0.3,
+            0.18
+          ],
+          "color": "#2F5FB0"
+        }
+      ],
+      "target": [
+        0.28,
+        0.61,
+        0
+      ],
+      "step": 1
+    },
+    {
+      "id": "A5",
+      "name": {
+        "id": "Paha kiri",
+        "en": "Left thigh"
+      },
+      "runner": "A",
+      "row": -1,
+      "x": -1.2,
+      "gates": [
+        0
+      ],
+      "color": "#9AA3AB",
+      "size": [
+        0.32,
+        0.6,
+        0.34
+      ],
+      "target": [
+        -0.28,
+        1.36,
+        0
+      ],
+      "step": 2
+    },
+    {
+      "id": "A6",
+      "name": {
+        "id": "Paha kanan",
+        "en": "Right thigh"
+      },
+      "runner": "A",
+      "row": -1,
+      "x": -0.7,
+      "gates": [
+        0
+      ],
+      "color": "#9AA3AB",
+      "size": [
+        0.32,
+        0.6,
+        0.34
+      ],
+      "target": [
+        0.28,
+        1.36,
+        0
+      ],
+      "step": 2
+    },
+    {
+      "id": "A7",
+      "name": {
+        "id": "Pinggul",
+        "en": "Hip"
+      },
+      "runner": "A",
+      "row": -1,
+      "x": 0.1,
+      "gates": [
+        -0.3,
+        0.3
+      ],
+      "color": "#2F5FB0",
+      "size": [
+        0.9,
+        0.3,
+        0.45
+      ],
+      "shape": [
+        {
+          "box": [
+            0.9,
+            0.24,
+            0.42
+          ],
+          "at": [
+            0,
+            0.03,
+            -0.015
+          ]
+        },
+        {
+          "box": [
+            0.3,
+            0.3,
+            0.45
+          ],
+          "at": [
+            0,
+            0,
+            0
+          ],
+          "color": "#F5F7F3"
+        }
+      ],
+      "target": [
+        0,
+        1.81,
+        0
+      ],
+      "step": 2
+    },
+    {
+      "id": "B2",
+      "name": {
+        "id": "Perut",
+        "en": "Abdomen"
+      },
+      "runner": "B",
+      "row": -1,
+      "x": -0.6,
+      "gates": [
+        0
+      ],
+      "color": "#9AA3AB",
+      "size": [
+        0.7,
+        0.35,
+        0.45
+      ],
+      "target": [
+        0,
+        2.135,
+        0
+      ],
+      "step": 3
+    },
+    {
+      "id": "B1",
+      "name": {
+        "id": "Dada",
+        "en": "Chest"
+      },
+      "runner": "B",
+      "row": -1,
+      "x": -1.8,
+      "gates": [
+        -0.3,
+        0.3
+      ],
+      "color": "#2F5FB0",
+      "size": [
+        1.0,
+        0.7,
+        0.6
+      ],
+      "shape": [
+        {
+          "box": [
+            1.0,
+            0.6,
+            0.6
+          ],
+          "at": [
+            0,
+            -0.05,
+            0
+          ]
+        },
+        {
+          "box": [
+            0.6,
+            0.1,
+            0.5
+          ],
+          "at": [
+            0,
+            0.3,
+            0
+          ],
+          "color": "#F5F7F3"
+        }
+      ],
+      "target": [
+        0,
+        2.66,
+        0
+      ],
+      "step": 3
+    },
+    {
+      "id": "B3",
+      "name": {
+        "id": "Ransel",
+        "en": "Backpack"
+      },
+      "runner": "B",
+      "row": -1,
+      "x": 0.45,
+      "gates": [
+        0
+      ],
+      "color": "#F5F7F3",
+      "size": [
+        0.7,
+        0.6,
+        0.25
+      ],
+      "shape": [
+        {
+          "box": [
+            0.7,
+            0.6,
+            0.17
+          ],
+          "at": [
+            0,
+            0,
+            0.04
+          ]
+        },
+        {
+          "box": [
+            0.16,
+            0.4,
+            0.08
+          ],
+          "at": [
+            -0.2,
+            -0.05,
+            -0.085
+          ],
+          "color": "#9AA3AB"
+        },
+        {
+          "box": [
+            0.16,
+            0.4,
+            0.08
+          ],
+          "at": [
+            0.2,
+            -0.05,
+            -0.085
+          ],
+          "color": "#9AA3AB"
+        }
+      ],
+      "target": [
+        0,
+        2.7,
+        -0.425
+      ],
+      "step": 4
+    },
+    {
+      "id": "B4",
+      "name": {
+        "id": "Panel dada",
+        "en": "Chest vent"
+      },
+      "runner": "B",
+      "row": 1,
+      "x": 0.1,
+      "gates": [
+        0
+      ],
+      "color": "#F2C230",
+      "size": [
+        0.5,
+        0.2,
+        0.08
+      ],
+      "target": [
+        0,
+        2.72,
+        0.34
+      ],
+      "step": 4
+    },
+    {
+      "id": "B5",
+      "name": {
+        "id": "Kepala",
+        "en": "Head"
+      },
+      "runner": "B",
+      "row": 1,
+      "x": -1.8,
+      "gates": [
+        0
+      ],
+      "color": "#F5F7F3",
+      "size": [
+        0.45,
+        0.42,
+        0.45
+      ],
+      "shape": [
+        {
+          "box": [
+            0.45,
+            0.36,
+            0.45
+          ],
+          "at": [
+            0,
+            -0.03,
+            0
+          ]
+        },
+        {
+          "box": [
+            0.5,
+            0.06,
+            0.4
+          ],
+          "at": [
+            0,
+            0.18,
+            -0.02
+          ],
+          "color": "#2F5FB0"
+        }
+      ],
+      "target": [
+        0,
+        3.22,
+        0
+      ],
+      "step": 5
+    },
+    {
+      "id": "B6",
+      "name": {
+        "id": "Visor",
+        "en": "Visor"
+      },
+      "runner": "B",
+      "row": 1,
+      "x": -1.1,
+      "gates": [
+        0
+      ],
+      "color": "#1D2B38",
+      "size": [
+        0.34,
+        0.1,
+        0.06
+      ],
+      "target": [
+        0,
+        3.24,
+        0.255
+      ],
+      "step": 5
+    },
+    {
+      "id": "B7",
+      "name": {
+        "id": "Antena",
+        "en": "Antenna"
+      },
+      "runner": "B",
+      "row": 1,
+      "x": -0.6,
+      "gates": [
+        0
+      ],
+      "color": "#F2C230",
+      "size": [
+        0.08,
+        0.3,
+        0.08
+      ],
+      "target": [
+        0,
+        3.58,
+        0
+      ],
+      "step": 5
+    },
+    {
+      "id": "A8",
+      "name": {
+        "id": "Bahu kiri",
+        "en": "Left shoulder"
+      },
+      "runner": "A",
+      "row": 1,
+      "x": -1.15,
+      "gates": [
+        0
+      ],
+      "color": "#2F5FB0",
+      "size": [
+        0.42,
+        0.34,
+        0.46
+      ],
+      "shape": [
+        {
+          "box": [
+            0.42,
+            0.28,
+            0.46
+          ],
+          "at": [
+            0,
+            -0.03,
+            0
+          ]
+        },
+        {
+          "box": [
+            0.42,
+            0.06,
+            0.46
+          ],
+          "at": [
+            0,
+            0.14,
+            0
+          ],
+          "color": "#F5F7F3"
+        }
+      ],
+      "target": [
+        -0.71,
+        2.83,
+        0
+      ],
+      "step": 6
+    },
+    {
+      "id": "A9",
+      "name": {
+        "id": "Bahu kanan",
+        "en": "Right shoulder"
+      },
+      "runner": "A",
+      "row": 1,
+      "x": -0.5,
+      "gates": [
+        0
+      ],
+      "color": "#2F5FB0",
+      "size": [
+        0.42,
+        0.34,
+        0.46
+      ],
+      "shape": [
+        {
+          "box": [
+            0.42,
+            0.28,
+            0.46
+          ],
+          "at": [
+            0,
+            -0.03,
+            0
+          ]
+        },
+        {
+          "box": [
+            0.42,
+            0.06,
+            0.46
+          ],
+          "at": [
+            0,
+            0.14,
+            0
+          ],
+          "color": "#F5F7F3"
+        }
+      ],
+      "target": [
+        0.71,
+        2.83,
+        0
+      ],
+      "step": 6
+    },
+    {
+      "id": "A10",
+      "name": {
+        "id": "Lengan atas kiri",
+        "en": "Left upper arm"
+      },
+      "runner": "A",
+      "row": 1,
+      "x": 0.15,
+      "gates": [
+        0
+      ],
+      "color": "#9AA3AB",
+      "size": [
+        0.26,
+        0.5,
+        0.28
+      ],
+      "target": [
+        -0.71,
+        2.41,
+        0
+      ],
+      "step": 6
+    },
+    {
+      "id": "A11",
+      "name": {
+        "id": "Lengan atas kanan",
+        "en": "Right upper arm"
+      },
+      "runner": "A",
+      "row": 1,
+      "x": 0.65,
+      "gates": [
+        0
+      ],
+      "color": "#9AA3AB",
+      "size": [
+        0.26,
+        0.5,
+        0.28
+      ],
+      "target": [
+        0.71,
+        2.41,
+        0
+      ],
+      "step": 6
+    },
+    {
+      "id": "A12",
+      "name": {
+        "id": "Lengan bawah kiri",
+        "en": "Left forearm"
+      },
+      "runner": "A",
+      "row": -1,
+      "x": 1.0,
+      "gates": [
+        0
+      ],
+      "color": "#F5F7F3",
+      "size": [
+        0.3,
+        0.55,
+        0.32
+      ],
+      "shape": [
+        {
+          "box": [
+            0.3,
+            0.45,
+            0.32
+          ],
+          "at": [
+            0,
+            0.05,
+            0
+          ]
+        },
+        {
+          "box": [
+            0.3,
+            0.1,
+            0.32
+          ],
+          "at": [
+            0,
+            -0.225,
+            0
+          ],
+          "color": "#2F5FB0"
+        }
+      ],
+      "target": [
+        -0.71,
+        1.885,
+        0
+      ],
+      "step": 6
+    },
+    {
+      "id": "A13",
+      "name": {
+        "id": "Lengan bawah kanan",
+        "en": "Right forearm"
+      },
+      "runner": "A",
+      "row": -1,
+      "x": 1.6,
+      "gates": [
+        0
+      ],
+      "color": "#F5F7F3",
+      "size": [
+        0.3,
+        0.55,
+        0.32
+      ],
+      "shape": [
+        {
+          "box": [
+            0.3,
+            0.45,
+            0.32
+          ],
+          "at": [
+            0,
+            0.05,
+            0
+          ]
+        },
+        {
+          "box": [
+            0.3,
+            0.1,
+            0.32
+          ],
+          "at": [
+            0,
+            -0.225,
+            0
+          ],
+          "color": "#2F5FB0"
+        }
+      ],
+      "target": [
+        0.71,
+        1.885,
+        0
+      ],
+      "step": 6
+    },
+    {
+      "id": "A14",
+      "name": {
+        "id": "Tangan kiri",
+        "en": "Left hand"
+      },
+      "runner": "A",
+      "row": 1,
+      "x": 1.2,
+      "gates": [
+        0
+      ],
+      "color": "#9AA3AB",
+      "size": [
+        0.24,
+        0.24,
+        0.24
+      ],
+      "target": [
+        -0.71,
+        1.49,
+        0
+      ],
+      "step": 6
+    },
+    {
+      "id": "A15",
+      "name": {
+        "id": "Tangan kanan",
+        "en": "Right hand"
+      },
+      "runner": "A",
+      "row": 1,
+      "x": 1.7,
+      "gates": [
+        0
+      ],
+      "color": "#9AA3AB",
+      "size": [
+        0.24,
+        0.24,
+        0.24
+      ],
+      "target": [
+        0.71,
+        1.49,
+        0
+      ],
+      "step": 6
+    },
+    {
+      "id": "B8",
+      "name": {
+        "id": "Perisai",
+        "en": "Shield"
+      },
+      "runner": "B",
+      "row": -1,
+      "x": 1.6,
+      "gates": [
+        0
+      ],
+      "color": "#2F5FB0",
+      "size": [
+        0.5,
+        0.8,
+        0.1
+      ],
+      "shape": [
+        {
+          "box": [
+            0.5,
+            0.8,
+            0.1
+          ]
+        },
+        {
+          "box": [
+            0.12,
+            0.5,
+            0.02
+          ],
+          "at": [
+            0,
+            0,
+            0.06
+          ],
+          "color": "#F2C230"
+        }
+      ],
+      "target": [
+        -0.71,
+        1.9,
+        0.21
+      ],
+      "step": 7
+    },
+    {
+      "id": "B9",
+      "name": {
+        "id": "Senapan",
+        "en": "Rifle"
+      },
+      "runner": "B",
+      "row": 1,
+      "x": 1.0,
+      "gates": [
+        0
+      ],
+      "color": "#9AA3AB",
+      "size": [
+        0.14,
+        0.9,
+        0.2
+      ],
+      "shape": [
+        {
+          "box": [
+            0.14,
+            0.6,
+            0.2
+          ],
+          "at": [
+            0,
+            0.15,
+            0
+          ]
+        },
+        {
+          "box": [
+            0.08,
+            0.3,
+            0.08
+          ],
+          "at": [
+            0,
+            -0.3,
+            0
+          ],
+          "color": "#1D2B38"
+        }
+      ],
+      "target": [
+        0.9,
+        1.35,
+        0
+      ],
+      "step": 7
+    }
+  ],
+  "poses": [
+    {
+      "id": "waist",
+      "name": {
+        "id": "Pinggang",
+        "en": "Waist"
+      },
+      "parts": [
+        "B1",
+        "B2",
+        "B3",
+        "B4",
+        "B5",
+        "B6",
+        "B7",
+        "A8",
+        "A9",
+        "A10",
+        "A11",
+        "A12",
+        "A13",
+        "A14",
+        "A15",
+        "B8",
+        "B9"
+      ],
+      "pivot": [
+        0,
+        1.96,
+        0
+      ],
+      "axis": "y",
+      "min": -45,
+      "max": 45
+    },
+    {
+      "id": "head",
+      "name": {
+        "id": "Kepala",
+        "en": "Head"
+      },
+      "parts": [
+        "B5",
+        "B6",
+        "B7"
+      ],
+      "pivot": [
+        0,
+        3.01,
+        0
+      ],
+      "axis": "y",
+      "min": -70,
+      "max": 70
+    },
+    {
+      "id": "arm-l",
+      "name": {
+        "id": "Lengan kiri",
+        "en": "Left arm"
+      },
+      "parts": [
+        "A8",
+        "A10",
+        "A12",
+        "A14",
+        "B8"
+      ],
+      "pivot": [
+        -0.71,
+        2.83,
+        0
+      ],
+      "axis": "x",
+      "min": -150,
+      "max": 40
+    },
+    {
+      "id": "arm-r",
+      "name": {
+        "id": "Lengan kanan",
+        "en": "Right arm"
+      },
+      "parts": [
+        "A9",
+        "A11",
+        "A13",
+        "A15",
+        "B9"
+      ],
+      "pivot": [
+        0.71,
+        2.83,
+        0
+      ],
+      "axis": "x",
+      "min": -150,
+      "max": 40
+    }
   ]
 }
