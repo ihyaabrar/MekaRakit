@@ -178,7 +178,8 @@
     },
     "drop": {
       "wrongStep": "Almost! Finish step {n} first.",
-      "wrongSpot": "That spot is for the {part}."
+      "wrongSpot": "That spot is for the {part}.",
+      "seePage": "See step {n} in the manual"
     },
     "manual": "Manual",
     "step": "Step {n}",

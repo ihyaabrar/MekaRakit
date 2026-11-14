@@ -65,3 +65,20 @@ test("saved runs restore exactly and reject snapshots that do not fit the kit", 
   badGate.state.parts.b.cut = ["nope"];
   assert.equal(restoreRun(kit, badGate), null);
 });
+
+test("magnet pulls a free part toward its allowed spot, harder when closer", async () => {
+  const { magnetPull, pageForDrop, MAGNET_DIST } = await import("./logic.ts");
+  let s = cutGate(kit, cutGate(kit, initState(kit), "a", "g1"), "a", "g2");
+  // part a, target [0,0,0], step 1
+  const far: [number, number, number] = [MAGNET_DIST + 0.5, 0, 0];
+  assert.deepEqual(magnetPull(kit, s, "a", far), far);
+  const near = magnetPull(kit, s, "a", [0.5, 0, 0]);
+  assert.ok(Math.abs(near[0] - 0.25) < 1e-9, `pulled to ${near[0]}`);
+  // still on the runner, or a later step: no pull
+  assert.deepEqual(magnetPull(kit, initState(kit), "a", [0.5, 0, 0]), [0.5, 0, 0]);
+  s = cutGate(kit, s, "b", "g1");
+  assert.deepEqual(magnetPull(kit, s, "b", [0, 2.2, 0]), [0, 2.2, 0]);
+  assert.equal(pageForDrop(kit, s, { kind: "wrong-step" }), 1);
+  assert.equal(pageForDrop(kit, s, { kind: "wrong-spot", spotOf: "b" }), 2);
+  assert.equal(pageForDrop(kit, s, { kind: "none" }), null);
+});

@@ -178,7 +178,8 @@
     },
     "drop": {
       "wrongStep": "Hampir! Selesaikan langkah {n} dulu.",
-      "wrongSpot": "Tempat itu untuk {part}."
+      "wrongSpot": "Tempat itu untuk {part}.",
+      "seePage": "Lihat di buku panduan, halaman langkah {n}"
     },
     "manual": "Manual",
     "step": "Langkah {n}",

@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { GATE_LENGTH, RUNNER_BAR_Y, lyingOffset, type LoadedKit, type PartVisual, type RunnerVisual } from "./kitFormat";
-import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, type KitState, type PartDef, type RunSnapshot, type Vec3 } from "./logic";
+import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, magnetPull, pageForDrop, type KitState, type PartDef, type RunSnapshot, type Vec3 } from "./logic";
 import { catalog, findKit, type KitEntry } from "./kits";
 import { kitStatus } from "./progress";
 import { fetchProfile, fetchProgress, fetchRun, saveRun } from "./store";
@@ -18,11 +18,12 @@ import * as sfx from "./sfx";
 import { HeldToolFollower, KitBox, RiseOnOpen, ToolTray, type HeldTool } from "./bench/Props";
 import LiftedPart from "./bench/LiftedPart";
 import ManualBook from "./bench/ManualBook";
+import { Ghost, PopCue, type Pop } from "./bench/Feel";
 import styles from "./Workbench.module.css";
 
 type Tool = HeldTool;
 type Burst = { id: number; at: Vec3 };
-type Hint = { key: "wrongStep"; n: number } | { key: "wrongSpot"; part: string } | null;
+type Hint = ({ key: "wrongStep"; n: number } | { key: "wrongSpot"; part: string }) & { page: number | null };
 
 const INK = "#14202B";
 const MAT = "#214F43";
@@ -103,6 +104,10 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
   const [lifted, setLifted] = useState<string | null>(null);
   const [liftRot, setLiftRot] = useState<[number, number]>([0, 0]);
   const [bookOpen, setBookOpen] = useState(false);
+  const [bookPage, setBookPage] = useState<number | null>(null);
+  const [pops, setPops] = useState<Record<string, Pop>>({});
+  const kitName = tk(`${entry.id}.name`);
+  const boxLabel = useMemo(() => ({ code: entry.code, name: kitName, body: entry.colors.body, trim: entry.colors.trim }), [entry, kitName]);
   const [snips, setSnips] = useState(0);
 
   useEffect(() => {
@@ -165,7 +170,7 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
     }
   }
   const [bursts, setBursts] = useState<Burst[]>([]);
-  const [hint, setHint] = useState<Hint>(null);
+  const [hint, setHint] = useState<Hint | null>(null);
 
   // first uncut gate gets a soft highlight: the non-punishing "what next" cue from the PRD
   const nextGate = useMemo(() => {
@@ -186,17 +191,23 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
   function onDrop(partId: string, at: Vec3) {
     setDragging(null);
     const part = kit.parts.find((p) => p.id === partId)!;
-    const rest: Vec3 = [at[0], part.size[2] / 2, 0]; // lies face-up on the mat if it does not snap
-    const res = checkDrop(kit, state, partId, at);
+    const held = magnetPull(kit, state, partId, at); // where the player saw it when letting go
+    const rest: Vec3 = [held[0], part.size[2] / 2, 0]; // lies face-up on the mat if it does not snap
+    const res = checkDrop(kit, state, partId, held);
     if (res.kind === "snap" || checkDrop(kit, state, partId, rest).kind === "snap") {
       sfx.snap();
       setHint(null);
+      setPops((p) => ({ ...p, [partId]: { kind: "snap", at: performance.now() } }));
       setPos((p) => ({ ...p, [partId]: part.target }));
       setState(placePart(kit, state, partId));
       return;
     }
-    if (res.kind !== "none") sfx.bump();
-    setHint(res.kind === "wrong-step" ? { key: "wrongStep", n: state.step } : res.kind === "wrong-spot" ? { key: "wrongSpot", part: res.spotOf } : null);
+    if (res.kind !== "none") {
+      sfx.bump();
+      setPops((p) => ({ ...p, [partId]: { kind: "bump", at: performance.now() } }));
+    }
+    const page = pageForDrop(kit, state, res);
+    setHint(res.kind === "wrong-step" ? { key: "wrongStep", n: state.step, page } : res.kind === "wrong-spot" ? { key: "wrongSpot", part: res.spotOf, page } : null);
     setPos((p) => ({ ...p, [partId]: rest }));
   }
 
@@ -231,7 +242,9 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
           onTurn={(dx, dy) => setLiftRot(([pitch, yaw]) => [Math.max(-1.4, Math.min(1.4, pitch + dy * 0.01)), yaw + dx * 0.012])}
           canDrag={(id) => tool === "hand" && state.parts[id].status === "free"}
           onDragStart={setDragging}
-          onDragMove={(id, at) => setPos((p) => ({ ...p, [id]: at }))}
+          onDragMove={(id, at) => setPos((p) => ({ ...p, [id]: magnetPull(kit, state, id, at) }))}
+          pops={pops}
+          boxLabel={boxLabel}
           onDrop={onDrop}
           onRub={(part, gate, px) => {
             sfx.sand();
@@ -272,7 +285,14 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
                 {t("lift.putDown", { part: lk.parts[lifted].name[lang] })}
               </button>
             )}
-            <button className={ui.btnLine} type="button" onClick={() => setBookOpen(true)}>
+            <button
+              className={ui.btnLine}
+              type="button"
+              onClick={() => {
+                setBookPage(null);
+                setBookOpen(true);
+              }}
+            >
               {t("book.open")}
             </button>
           </>
@@ -282,7 +302,23 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
             {t("saveError")}
           </p>
         )}
-        {hint && <p className={styles.warn}>{hint.key === "wrongStep" ? t("drop.wrongStep", { n: hint.n }) : t("drop.wrongSpot", { part: lk.parts[hint.part].name[lang] })}</p>}
+        {hint && (
+          <div className={styles.warn}>
+            <p>{hint.key === "wrongStep" ? t("drop.wrongStep", { n: hint.n }) : t("drop.wrongSpot", { part: lk.parts[hint.part].name[lang] })}</p>
+            {hint.page !== null && (
+              <button
+                className={styles.linkBtn}
+                type="button"
+                onClick={() => {
+                  setBookPage(hint.page);
+                  setBookOpen(true);
+                }}
+              >
+                {t("drop.seePage", { n: hint.page })}
+              </button>
+            )}
+          </div>
+        )}
         <h2>{t("manual")}</h2>
         <ol className={styles.manual}>
           {lk.steps.map(({ n, title }) => (
@@ -311,7 +347,7 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
           </div>
         )}
       </aside>
-      {bookOpen && <ManualBook lk={lk} state={state} lang={lang} code={entry.code} name={tk(`${entry.id}.name`)} onClose={() => setBookOpen(false)} />}
+      {bookOpen && <ManualBook initialPage={bookPage ?? undefined} lk={lk} state={state} lang={lang} code={entry.code} name={tk(`${entry.id}.name`)} onClose={() => setBookOpen(false)} />}
     </div>
   );
 }
@@ -334,6 +370,8 @@ type SceneProps = {
   liftRot: [number, number];
   onLift: (partId: string) => void;
   onTurn: (dx: number, dy: number) => void;
+  pops: Record<string, Pop>;
+  boxLabel: { code: string; name: string; body: string; trim: string };
   canDrag: (partId: string) => boolean;
   onDragStart: (partId: string) => void;
   onDragMove: (partId: string, at: Vec3) => void;
@@ -341,7 +379,7 @@ type SceneProps = {
   onRub: (partId: string, gateId: string, pixels: number) => void;
 };
 
-function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOpened, onOpenBox, onPickTool, onOpenBook, snips, lifted, liftRot, onLift, onTurn, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
+function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOpened, onOpenBox, onPickTool, onOpenBook, snips, lifted, liftRot, onLift, onTurn, pops, boxLabel, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
   const kit = lk.def;
   const gradient = useToonGradient();
   const { camera, gl } = useThree();
@@ -413,7 +451,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
         <circleGeometry args={[1.1, 40]} />
         <meshToonMaterial color="#2A6656" gradientMap={gradient} />
       </mesh>
-      <KitBox gradient={gradient} opened={opened} onOpen={onOpenBox} center={[-3.5, 0, -0.45]} />
+      <KitBox gradient={gradient} opened={opened} onOpen={onOpenBox} center={[-3.5, 0, -0.45]} label={boxLabel} />
       {opened && (
         <>
           <ToolTray gradient={gradient} held={tool} animateIn={justOpened} onPick={onPickTool} onOpenBook={onOpenBook} />
@@ -450,14 +488,11 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
         const ghost = ps.status !== "placed" && p.step === state.step;
         return (
           <group key={p.id}>
-            {ghost && (
-              <mesh position={p.target}>
-                <boxGeometry args={p.size} />
-                <meshBasicMaterial color={YELLOW} transparent opacity={0.22} depthWrite={false} />
-              </mesh>
-            )}
+            {ghost && <Ghost size={p.size} at={p.target} hot={dragging === p.id} dim={dragging !== null && dragging !== p.id} />}
             {/* on the runner or loose on the mat a part lies face-up; held or assembled it stands upright */}
-            <group position={pos[p.id]} rotation-x={ps.status !== "placed" && dragging !== p.id ? -Math.PI / 2 : 0}>
+            <group position={pos[p.id]}>
+            <PopCue pop={pops[p.id]}>
+            <group rotation-x={ps.status !== "placed" && dragging !== p.id ? -Math.PI / 2 : 0}>
               <PartBody visual={lk.parts[p.id]} gradient={gradient} ghosted={dragging === p.id} />
               {/* one invisible box over the whole part: the grab target */}
               <mesh
@@ -476,6 +511,8 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
                 return <Nub key={g.id} offset={g.offset} height={ps.nubs[g.id] ?? 0} active={false} onStart={() => {}} gradient={gradient} color={lk.parts[p.id].color} />;
               })}
             </group>
+            </PopCue>
+            </group>
           </group>
         );
       })}
@@ -491,7 +528,7 @@ function PartBody({ visual, gradient, ghosted }: { visual: PartVisual; gradient:
         <mesh key={i} position={prim.at ?? [0, 0, 0]}>
           <boxGeometry args={prim.box} />
           <meshToonMaterial color={prim.color ?? visual.color} gradientMap={gradient} transparent={ghosted} opacity={ghosted ? 0.85 : 1} />
-          <Outlines thickness={0.025} color={INK} />
+          <Outlines thickness={2} color={INK} />
         </mesh>
       ))}
     </>
@@ -559,7 +596,7 @@ function Nub({ offset, height, active, onStart, gradient, color }: { offset: Vec
       <mesh>
         <cylinderGeometry args={[0.035, 0.04, len, 10]} />
         <meshToonMaterial color={color} gradientMap={gradient} />
-        <Outlines thickness={0.01} color={INK} />
+        <Outlines thickness={1.2} color={INK} />
       </mesh>
       <mesh
         visible={active}
