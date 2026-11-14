@@ -1,4 +1,4 @@
-// Box-art for the 3D kit lid, drawn on a canvas with the same blocky mecha as the dashboard's KitArt (variant 1),
+// Box-art for the 3D kit lid: title band plus the same mech render the dashboard shows,
 // so the box on the bench and the box in the dashboard are the same product.
 import * as THREE from "three";
 
@@ -6,7 +6,7 @@ const INK = "#14202B";
 const YELLOW = "#F2C230";
 const WHITE = "#F5F7F3";
 
-export function makeBoxArt({ code, name, body, trim }: { code: string; name: string; body: string; trim: string }): THREE.CanvasTexture | null {
+export function makeBoxArt({ code, name, art }: { code: string; name: string; art: string }): THREE.CanvasTexture | null {
   if (typeof document === "undefined") return null;
   const W = 640;
   const H = 520;
@@ -40,33 +40,17 @@ export function makeBoxArt({ code, name, body, trim }: { code: string; name: str
   g.strokeRect(W - cw - 56, 28, cw + 24, 44);
   g.fillText(code, W - cw - 44, 51);
 
-  // the mecha (KitArt geometry, viewBox 120x150), centered under the band
-  const s = 2.6;
-  const ox = W / 2 - 60 * s;
-  const oy = 112;
-  const rect = (x: number, y: number, w: number, h: number, fill: string) => {
-    g.fillStyle = fill;
-    g.fillRect(ox + x * s, oy + y * s, w * s, h * s);
-    g.lineWidth = 3 * s;
-    g.strokeStyle = INK;
-    g.strokeRect(ox + x * s, oy + y * s, w * s, h * s);
-  };
-  rect(40, 92, 17, 46, trim);
-  rect(63, 92, 17, 46, trim);
-  rect(36, 132, 23, 9, body);
-  rect(61, 132, 23, 9, body);
-  rect(18, 52, 14, 40, body);
-  rect(88, 52, 14, 40, body);
-  rect(14, 44, 22, 16, trim);
-  rect(84, 44, 22, 16, trim);
-  rect(34, 44, 52, 50, body);
-  rect(48, 56, 24, 14, YELLOW);
-  rect(47, 18, 26, 26, trim);
-  g.fillStyle = INK;
-  g.fillRect(ox + 51 * s, oy + 27 * s, 18 * s, 6 * s);
-
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 4;
+  // the kit's own render (public/art, made by scripts/build-mech-kit.mjs) lands once it has loaded
+  const img = new Image();
+  img.onload = () => {
+    const h = H - 96 - 24;
+    const w = (img.width / img.height) * h;
+    g.drawImage(img, (W - w) / 2, 104, w, h);
+    tex.needsUpdate = true;
+  };
+  img.src = art;
   return tex;
 }

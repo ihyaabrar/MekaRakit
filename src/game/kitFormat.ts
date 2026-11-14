@@ -26,18 +26,21 @@ export type KitFileV1 = {
     color: string;
     size: Vec3; // bounding box w, h, d (upright)
     shape?: Prim[]; // defaults to one box of `size`
+    model?: string; // piece key in the kit's model file; drawn instead of `shape`
     target: Vec3; // relative to assemblyAt (y absolute)
     step: number;
   }[];
+  /** Part geometry file under /public (see scripts/build-mech-kit.mjs). */
+  model?: string;
   /** Posable joints, outermost first: each turns its parts around a pivot (relative to assemblyAt, y absolute). */
   poses?: { id: string; name: Text; parts: string[]; pivot: Vec3; axis: "x" | "y" | "z"; min: number; max: number }[];
 };
 
 export type PoseJoint = { id: string; name: Text; parts: string[]; pivot: Vec3; axis: "x" | "y" | "z"; min: number; max: number }; // min/max in radians
 
-export type PartVisual = { name: Text; color: string; shape: Prim[]; runner: string };
+export type PartVisual = { name: Text; color: string; shape: Prim[]; runner: string; model?: string };
 export type RunnerVisual = KitFileV1["runners"][number];
-export type LoadedKit = { def: KitDef; parts: Record<string, PartVisual>; runners: RunnerVisual[]; steps: KitFileV1["steps"]; assembly: Vec3; poses: PoseJoint[] };
+export type LoadedKit = { def: KitDef; parts: Record<string, PartVisual>; runners: RunnerVisual[]; steps: KitFileV1["steps"]; assembly: Vec3; poses: PoseJoint[]; model?: string };
 
 const EPS = 1e-9;
 
@@ -96,11 +99,12 @@ export function loadKit(file: KitFileV1): LoadedKit {
 
   return {
     def: { id: file.id, name: file.code, parts },
-    parts: Object.fromEntries(file.parts.map((p) => [p.id, { name: p.name, color: p.color, shape: p.shape ?? [{ box: p.size }], runner: p.runner }])),
+    parts: Object.fromEntries(file.parts.map((p) => [p.id, { name: p.name, color: p.color, shape: p.shape ?? [{ box: p.size }], runner: p.runner, model: file.model ? p.model : undefined }])),
     runners: file.runners,
     steps: [...file.steps].sort((a, b) => a.n - b.n),
     assembly: [ax, 0, az],
     poses,
+    model: file.model,
   };
 }
 

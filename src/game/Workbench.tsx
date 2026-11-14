@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -26,6 +26,7 @@ import { Studio } from "./bench/Studio";
 import styles from "./Workbench.module.css";
 import hud from "./bench/Hud.module.css";
 import { ToolIcon } from "./bench/ToolIcons";
+import { MechPiece, loadModel } from "./bench/Model";
 
 type Tool = HeldTool;
 type Burst = { id: number; at: Vec3 };
@@ -92,6 +93,10 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
   useEffect(() => {
     sfx.setSfxVolume(sfxVolume / 100);
   }, [sfxVolume]);
+  // start fetching the part geometry while the box is still closed
+  useEffect(() => {
+    if (lk.model) loadModel(lk.model).catch(() => {});
+  }, [lk.model]);
   // music starts on the first interaction (browsers block autoplay) and stops when leaving the bench
   useEffect(() => {
     const begin = () => startMusic(musicVolume);
@@ -178,7 +183,7 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
 
   const editDecal = (patch: Partial<Decal>) => setDecals((all) => all.map((d) => (d.id === selectedDecal ? { ...d, ...patch } : d)));
   const kitName = tk(`${entry.id}.name`);
-  const boxLabel = useMemo(() => ({ code: entry.code, name: kitName, body: entry.colors.body, trim: entry.colors.trim }), [entry, kitName]);
+  const boxLabel = useMemo(() => ({ code: entry.code, name: kitName, body: entry.colors.body, trim: entry.colors.trim, art: `/art/${entry.id}.png` }), [entry, kitName]);
   const [snips, setSnips] = useState(0);
 
   useEffect(() => {
@@ -320,6 +325,8 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
         <PhotoRig onReady={onPhotoReady} />
         <Studio lampTarget={[lk.assembly[0] - 2, 0, lk.assembly[2]]} />
         <OrbitControls makeDefault target={[-1.2, 0.2, 0.9]} maxPolarAngle={Math.PI / 2.1} minDistance={4} maxDistance={16} />
+        {/* the mech model file streams in; the desk and box render meanwhile */}
+        <Suspense fallback={null}>
         <Scene
           lk={lk}
           tool={tool}
@@ -358,6 +365,7 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
             setState((s) => rubNub(s, part, gate, px));
           }}
         />
+        </Suspense>
         {bursts.map((b) => (
           <Sparks key={b.id} seed={b.id} at={b.at} />
         ))}
@@ -433,7 +441,7 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
 
       {!opened ? (
         <div className={hud.boxPrompt}>
-          <p>{t("box.hint")}</p>
+          <p>{t("box.hint", { code: entry.code })}</p>
           <button className={hud.primary} type="button" onClick={openBox}>
             {t("box.open")}
           </button>
@@ -596,7 +604,7 @@ type SceneProps = {
   onLift: (partId: string) => void;
   onTurn: (dx: number, dy: number) => void;
   pops: Record<string, Pop>;
-  boxLabel: { code: string; name: string; body: string; trim: string };
+  boxLabel: { code: string; name: string; body: string; trim: string; art: string };
   paint: Record<string, string>;
   paintColor: string;
   decals: Decal[];
@@ -632,20 +640,21 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
     window.addEventListener("pointerup", up, { once: true });
   }
 
-  // drag happens on the vertical plane z = 0, where every assembly target sits
-  const plane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 0, 1), 0), []);
-  function toWorld(e: PointerEvent): Vec3 | null {
+  // drag happens on a vertical plane through the carried part's assembly target
+  function toWorld(e: PointerEvent, depth: number): Vec3 | null {
+    const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -depth);
     const r = gl.domElement.getBoundingClientRect();
     const ray = new THREE.Raycaster();
     ray.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera);
     const hit = ray.ray.intersectPlane(plane, new THREE.Vector3());
-    return hit ? [hit.x, Math.max(0.1, hit.y), 0] : null;
+    return hit ? [hit.x, Math.max(0.1, hit.y), hit.z] : null;
   }
 
   function startGrab(id: string, e0: PointerEvent) {
     const [x0, y0] = [e0.clientX, e0.clientY];
     let moving = false;
     let last: Vec3 = pos[id];
+    const depth = kit.parts.find((q) => q.id === id)?.target[2] ?? 0;
     session(
       (e) => {
         if (!moving && Math.hypot(e.clientX - x0, e.clientY - y0) < 6) return; // still a click
@@ -653,10 +662,10 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
           moving = true;
           onDragStart(id);
         }
-        const at = toWorld(e);
+        const at = toWorld(e, depth);
         if (at) onDragMove(id, (last = at));
       },
-      (e) => (moving ? onDrop(id, toWorld(e) ?? last) : onLift(id)),
+      (e) => (moving ? onDrop(id, toWorld(e, depth) ?? last) : onLift(id)),
     );
   }
 
@@ -707,13 +716,14 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
       )}
       {lifted && (
         <LiftedPart rotation={liftRot}>
-          <PartBody visual={lk.parts[lifted]} ghosted={false} paint={paint[lifted]} />
+          <PartBody visual={lk.parts[lifted]} ghosted={false} paint={paint[lifted]} model={lk.model} onSurface={(e) => finishClick(lifted, e)} />
           {decals
             .filter((d) => d.part === lifted)
             .map((d) => (
               <DecalMesh key={d.id} decal={d} code={boxLabel.code} selected={d.id === selectedDecal} onSelect={tool === "decal" ? () => onSelectDecal(d.id) : undefined} />
             ))}
           <mesh
+            raycast={tool === "hand" ? THREE.Mesh.prototype.raycast : () => null}
             onPointerDown={(e: ThreeEvent<PointerEvent>) => {
               if (finishClick(lifted, e)) return;
               if (tool !== "hand") return;
@@ -747,7 +757,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
             <group position={pos[p.id]}>
             <PopCue pop={pops[p.id]}>
             <group rotation-x={ps.status !== "placed" && dragging !== p.id ? -Math.PI / 2 : 0}>
-              <PartBody visual={lk.parts[p.id]} ghosted={dragging === p.id} paint={paint[p.id]} />
+              <PartBody visual={lk.parts[p.id]} ghosted={dragging === p.id} paint={paint[p.id]} model={lk.model} onSurface={(e) => finishClick(p.id, e)} />
               {decals
                 .filter((d) => d.part === p.id)
                 .map((d) => (
@@ -755,6 +765,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
                 ))}
               {/* one invisible box over the whole part: the grab target */}
               <mesh
+                raycast={tool === "hand" ? THREE.Mesh.prototype.raycast : () => null}
                 onPointerDown={(e: ThreeEvent<PointerEvent>) => {
                   if (finishClick(p.id, e)) return;
                   if (!canDrag(p.id)) return;
@@ -782,7 +793,8 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
   );
 }
 
-function PartBody({ visual, ghosted, paint }: { visual: PartVisual; ghosted: boolean; paint?: string }) {
+function PartBody({ visual, ghosted, paint, model, onSurface }: { visual: PartVisual; ghosted: boolean; paint?: string; model?: string; onSurface?: (e: ThreeEvent<PointerEvent>) => void }) {
+  if (model && visual.model) return <MechPiece url={model} piece={visual.model} color={paint ?? visual.color} ghosted={ghosted} onPointerDown={onSurface} />;
   return (
     <>
       {visual.shape.map((prim, i) => (
