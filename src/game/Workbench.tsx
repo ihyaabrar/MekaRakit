@@ -506,7 +506,7 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
             )}
             <div className={hud.hotbar} role="toolbar" aria-label={t("toolsLabel")}>
               {(["hand", "nipper", "sand", "brush", "decal"] as const).map((k, i) => (
-                <button key={k} className={hud.slot} aria-pressed={tool === k} onClick={() => setTool(k)}>
+                <button key={k} className={hud.slot} aria-pressed={tool === k} aria-label={t(`tools.${k}`)} onClick={() => setTool(k)}>
                   <kbd>{i + 1}</kbd>
                   <ToolIcon tool={k} />
                   <span>{t(`tools.${k}`)}</span>

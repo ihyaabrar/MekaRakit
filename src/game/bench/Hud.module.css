@@ -356,10 +356,11 @@
   margin: 0;
 }
 
+/* sits under the top-right chips and above the hotbar row, so it never covers other controls */
 .finish {
-  top: 16px;
+  top: 72px;
   right: 16px;
-  bottom: 16px;
+  max-height: calc(100vh - 72px - 112px);
   width: min(320px, calc(100vw - 32px));
   overflow-y: auto;
   display: grid;
@@ -395,10 +396,6 @@
   color: #f2c230;
 }
 
-/* when the finish card is open the top-right chips move out of its way */
-.finish ~ .topRight {
-  display: none;
-}
 
 @media (max-width: 760px) {
   .slot {
@@ -410,5 +407,8 @@
   }
   .notices {
     bottom: 100px;
+  }
+  .finish {
+    max-height: calc(100vh - 72px - 96px);
   }
 }
