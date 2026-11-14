@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -14,7 +15,6 @@ type Errors = Partial<Record<Field, string>>;
 
 export default function AuthForm() {
   const t = useTranslations("auth");
-  const tc = useTranslations("common");
   const router = useRouter();
   const params = useSearchParams();
   const [mode, setMode] = useState<Mode>(params.get("mode") === "daftar" ? "register" : "login");
@@ -128,7 +128,7 @@ export default function AuthForm() {
           {/* TODO: password reset needs its own "set new password" page; labelled until built */}
           {mode === "login" && (
             <p className={s.forgot}>
-              {t("forgot")} ({tc("soon")})
+              <Link href="/lupa-password">{t("forgot")}</Link>
             </p>
           )}
         </section>

@@ -48,7 +48,7 @@
 
 .tools {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   border: 2px solid var(--ink);
   border-radius: var(--radius-control);
   overflow: hidden;
@@ -62,7 +62,7 @@
   color: var(--ink);
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 19px;
+  font-size: 16px;
   cursor: pointer;
 }
 
@@ -217,4 +217,118 @@
 /* the panel scrolls instead of squeezing its rows (the toolbar collapsed to 0px when content grew) */
 .panel > * {
   flex-shrink: 0;
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-2);
+}
+
+.swatches button {
+  aspect-ratio: 1;
+  min-height: 44px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.swatches button[aria-checked="true"] {
+  outline: 3px solid var(--decal);
+  outline-offset: 2px;
+}
+
+.decalKinds {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.decalKinds button {
+  min-height: 44px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.decalKinds button[aria-checked="true"] {
+  background: var(--decal);
+}
+
+.decalEdit {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.decalEdit label {
+  display: grid;
+  gap: var(--space-1);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.decalEdit input {
+  accent-color: var(--cobalt);
+}
+
+.pose {
+  border: 0;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.pose legend {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 20px;
+  margin-bottom: var(--space-1);
+}
+
+.pose label {
+  display: grid;
+  gap: 2px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pose input {
+  accent-color: var(--cobalt);
+}
+
+.photo {
+  display: grid;
+  gap: var(--space-2);
+  margin: var(--space-3) 0;
+}
+
+.photo figure {
+  margin: 0;
+}
+
+.photo img {
+  width: 100%;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-sheet);
+}
+
+.photo figcaption {
+  font-size: 14px;
+}
+
+.done > * + * {
+  margin-top: var(--space-2);
+}
+
+/* the big display font is for the "done" headline only, not for hints inside the box */
+.done .hint,
+.done .photo figcaption {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 15px;
+  margin: 0;
 }

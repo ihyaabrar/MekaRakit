@@ -141,7 +141,10 @@
     "error": "Data progres di browser ini tidak bisa dibaca.",
     "reset": "Kosongkan progres",
     "retry": "Coba lagi",
-    "loadError": "Progres tidak bisa dimuat dari server."
+    "loadError": "Progres tidak bisa dimuat dari server.",
+    "playTime": "Waktu main",
+    "minutes": "{n} mnt",
+    "photoAlt": "Foto model {name} di rak"
   },
   "settings": {
     "title": "Pengaturan",
@@ -151,17 +154,26 @@
     "audio": "Suara",
     "music": "Musik",
     "sfx": "Efek suara",
-    "musicNote": "Musik lo-fi menyusul; pengaturannya sudah disimpan.",
+    "musicNote": "Musik diputar dari file public/audio/music.mp3 kalau sudah ada.",
     "save": "Simpan pengaturan",
     "saved": "Tersimpan.",
     "account": "Akun",
     "deleteAccount": "Hapus akun",
-    "deleteNote": "Hapus akun menyusul.",
+    "deleteNote": "Semua progres, foto, dan akunmu dihapus permanen. Ini tidak bisa dibatalkan.",
     "resetProgress": "Kosongkan progres",
     "resetConfirm": "Kosongkan semua progres dan rak pajangmu? Ini tidak bisa dibatalkan.",
     "resetDone": "Progres dikosongkan.",
     "saveError": "Gagal menyimpan. Periksa koneksi lalu coba lagi.",
-    "saving": "Menyimpan..."
+    "saving": "Menyimpan...",
+    "deletePassword": "Ketik password untuk konfirmasi",
+    "deleteConfirm": "Hapus akun permanen",
+    "deleteAsk": "Hapus akun beserta semua progres dan foto? Ini tidak bisa dibatalkan.",
+    "deleteError": {
+      "password": "Password salah.",
+      "server": "Akun belum terhapus. Coba lagi sebentar."
+    },
+    "deleteReally": "Ya, hapus permanen",
+    "deleteCancel": "Batal"
   },
   "workbench": {
     "back": "Dashboard",
@@ -169,12 +181,16 @@
     "tools": {
       "hand": "Tangan",
       "nipper": "Nipper",
-      "sand": "Amplas"
+      "sand": "Amplas",
+      "brush": "Kuas",
+      "decal": "Decal"
     },
     "hint": {
       "hand": "Seret part yang sudah lepas ke kerangka kuning. Klik part itu untuk mengangkat dan melihatnya dari dekat.",
       "nipper": "Nipper di tangan: arahkan ke gate (penghubung kecil) lalu klik untuk memotong. Klik kanan atau Esc untuk menaruhnya.",
-      "sand": "Amplas di tangan: angkat part yang sudah lepas (pakai Tangan), lalu gosok nubnya bolak-balik sampai rata."
+      "sand": "Amplas di tangan: angkat part yang sudah lepas (pakai Tangan), lalu gosok nubnya bolak-balik sampai rata.",
+      "brush": "Kuas di tangan: pilih warna di bawah, lalu klik part untuk mengecatnya.",
+      "decal": "Lembar decal di tangan: pilih stiker, lalu klik permukaan part untuk menempelnya. Klik stiker yang sudah ada untuk mengaturnya."
     },
     "drop": {
       "wrongStep": "Hampir! Selesaikan langkah {n} dulu.",
@@ -220,6 +236,66 @@
       "prev": "Sebelumnya",
       "next": "Berikutnya",
       "page": "Halaman {n} dari {total}"
+    },
+    "paint": {
+      "label": "Warna cat",
+      "colors": {
+        "F5F7F3": "Putih",
+        "2F5FB0": "Biru kobalt",
+        "C8402F": "Merah",
+        "F2C230": "Kuning",
+        "9AA3AB": "Abu-abu",
+        "4A5560": "Gunmetal",
+        "1D2B38": "Hitam",
+        "E07B2E": "Oranye",
+        "4C7A4A": "Hijau"
+      }
+    },
+    "decal": {
+      "label": "Jenis stiker",
+      "kinds": {
+        "code": "Kode",
+        "stripes": "Garis",
+        "chevron": "Peringatan",
+        "ring": "Lingkaran",
+        "number": "Nomor",
+        "line": "Strip"
+      },
+      "rotate": "Putar",
+      "size": "Ukuran",
+      "remove": "Lepas stiker ini"
+    },
+    "pose": {
+      "title": "Pose",
+      "reset": "Kembalikan pose"
+    },
+    "photo": {
+      "enter": "Mode foto",
+      "hint": "Putar kamera dengan drag untuk mencari sudut terbaik, lalu jepret.",
+      "snap": "Jepret foto",
+      "alt": "Foto model {name}",
+      "saving": "Menyimpan ke rak...",
+      "saved": "Tersimpan di rak.",
+      "error": "Foto belum tersimpan, coba jepret lagi.",
+      "download": "Unduh",
+      "leave": "Keluar mode foto"
     }
+  },
+  "account": {
+    "forgotTitle": "Lupa password",
+    "forgotLead": "Masukkan email akunmu. Kami kirim tautan untuk membuat password baru.",
+    "email": "Email",
+    "sendLink": "Kirim tautan",
+    "sending": "Mengirim...",
+    "sent": "Kalau email itu terdaftar, tautan sudah dikirim. Cek kotak masuk dan folder spam.",
+    "error": "Gagal mengirim. Coba lagi sebentar.",
+    "backToLogin": "Kembali ke halaman masuk",
+    "resetTitle": "Buat password baru",
+    "newPassword": "Password baru",
+    "passwordHint": "Minimal 8 karakter.",
+    "savePassword": "Simpan password",
+    "resetDone": "Password baru tersimpan. Silakan masuk.",
+    "expired": "Tautan ini tidak valid atau sudah kedaluwarsa.",
+    "askAgain": "Minta tautan baru"
   }
 }

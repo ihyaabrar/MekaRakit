@@ -2,23 +2,26 @@
 
 import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { OrbitControls, Outlines } from "@react-three/drei";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { GATE_LENGTH, RUNNER_BAR_Y, lyingOffset, type LoadedKit, type PartVisual, type RunnerVisual } from "./kitFormat";
-import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, magnetPull, pageForDrop, type KitState, type PartDef, type RunSnapshot, type Vec3 } from "./logic";
+import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, magnetPull, pageForDrop, PAINTS, DECAL_KINDS, MAX_DECALS, type Decal, type DecalKind, type KitState, type PartDef, type RunSnapshot, type Vec3 } from "./logic";
 import { catalog, findKit, type KitEntry } from "./kits";
 import { kitStatus } from "./progress";
-import { fetchProfile, fetchProgress, fetchRun, saveRun } from "./store";
+import { fetchProfile, fetchProgress, fetchRun, savePhoto, saveRun } from "./store";
 import { useLoad } from "@/ui/useLoad";
 import { useRouter } from "next/navigation";
 import ui from "@/ui/ui.module.css";
 import * as sfx from "./sfx";
+import { startMusic, stopMusic } from "./music";
 import { HeldToolFollower, KitBox, RiseOnOpen, ToolTray, type HeldTool } from "./bench/Props";
 import LiftedPart from "./bench/LiftedPart";
 import ManualBook from "./bench/ManualBook";
 import { Ghost, PopCue, type Pop } from "./bench/Feel";
+import { DecalMesh } from "./bench/Finish";
+import { PhotoRig, Posed, type PhotoApi } from "./bench/Pose";
 import styles from "./Workbench.module.css";
 
 type Tool = HeldTool;
@@ -69,7 +72,7 @@ export default function Workbench({ kitId }: { kitId: string }) {
     progress,
     kitId,
   );
-  if (entry?.kit && status !== "locked") return <Bench entry={entry} lk={entry.kit} sfxVolume={profile.sfx} saved={saved} />;
+  if (entry?.kit && status !== "locked") return <Bench entry={entry} lk={entry.kit} sfxVolume={profile.sfx} musicVolume={profile.music} saved={saved} />;
   return (
     <main className={styles.unavailable}>
       <section className={ui.sheet}>
@@ -86,7 +89,7 @@ export default function Workbench({ kitId }: { kitId: string }) {
 const SAVE_DELAY_MS = 600;
 const RETRY_MS = 5000;
 
-function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit; sfxVolume: number; saved: RunSnapshot | null }) {
+function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; lk: LoadedKit; sfxVolume: number; musicVolume: number; saved: RunSnapshot | null }) {
   const kit = lk.def;
   const lang = useLocale() === "en" ? "en" : "id";
   const t = useTranslations("workbench");
@@ -97,6 +100,15 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
   useEffect(() => {
     sfx.setSfxVolume(sfxVolume / 100);
   }, [sfxVolume]);
+  // music starts on the first interaction (browsers block autoplay) and stops when leaving the bench
+  useEffect(() => {
+    const begin = () => startMusic(musicVolume);
+    window.addEventListener("pointerdown", begin, { once: true });
+    return () => {
+      window.removeEventListener("pointerdown", begin);
+      stopMusic();
+    };
+  }, [musicVolume]);
   const [tool, setTool] = useState<Tool>("hand");
   // a resumed build skips the unboxing; a fresh one starts with the closed box
   const [opened, setOpened] = useState(saved !== null);
@@ -106,6 +118,73 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
   const [bookOpen, setBookOpen] = useState(false);
   const [bookPage, setBookPage] = useState<number | null>(null);
   const [pops, setPops] = useState<Record<string, Pop>>({});
+  const [paint, setPaint] = useState<Record<string, string>>(() => saved?.paint ?? {});
+  const [decals, setDecals] = useState<Decal[]>(() => saved?.decals ?? []);
+  const [paintColor, setPaintColor] = useState<string>(PAINTS[2]);
+  const [decalKind, setDecalKind] = useState<DecalKind>("code");
+  const [selectedDecal, setSelectedDecal] = useState<string | null>(null);
+  const [pose, setPose] = useState<Record<string, number>>(() => {
+    const out: Record<string, number> = {};
+    for (const j of lk.poses) {
+      const a = saved?.pose?.[j.id];
+      if (typeof a === "number") out[j.id] = Math.min(j.max, Math.max(j.min, a));
+    }
+    return out;
+  });
+  const [playSeconds, setPlaySeconds] = useState(() => saved?.playSeconds ?? 0);
+  const [photoMode, setPhotoMode] = useState(false);
+  const [photo, setPhoto] = useState<{ url: string; saved: "saving" | "saved" | "error" } | null>(null);
+  const photoApi = useRef<PhotoApi | null>(null);
+  const onPhotoReady = useCallback((api: PhotoApi) => (photoApi.current = api), []);
+
+  // play time: counted in 30 s ticks while the tab is visible, so autosave is not triggered every second
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (!document.hidden) setPlaySeconds((n) => n + 30);
+    }, 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  function enterPhoto() {
+    setLifted(null);
+    setTool("hand");
+    setPhotoMode(true);
+    photoApi.current?.frame([lk.assembly[0], 1.9, lk.assembly[2]]);
+  }
+
+  function leavePhoto() {
+    setPhotoMode(false);
+    setPhoto(null);
+    photoApi.current?.restore();
+  }
+
+  async function snapPhoto() {
+    const url = photoApi.current?.capture();
+    if (!url) return;
+    sfx.snip();
+    setPhoto({ url, saved: "saving" });
+    try {
+      await savePhoto(entry.id, url);
+      setPhoto({ url, saved: "saved" });
+    } catch {
+      setPhoto({ url, saved: "error" });
+    }
+  }
+
+  function paintPart(id: string) {
+    sfx.brush();
+    setPaint((p) => ({ ...p, [id]: paintColor }));
+  }
+
+  function placeDecal(part: string, at: Vec3, normal: Vec3) {
+    if (decals.length >= MAX_DECALS) return;
+    sfx.snap();
+    const d: Decal = { id: `d${Date.now().toString(36)}`, part, kind: decalKind, at, normal, rot: 0, size: 0.22 };
+    setDecals((all) => [...all, d]);
+    setSelectedDecal(d.id);
+  }
+
+  const editDecal = (patch: Partial<Decal>) => setDecals((all) => all.map((d) => (d.id === selectedDecal ? { ...d, ...patch } : d)));
   const kitName = tk(`${entry.id}.name`);
   const boxLabel = useMemo(() => ({ code: entry.code, name: kitName, body: entry.colors.body, trim: entry.colors.trim }), [entry, kitName]);
   const [snips, setSnips] = useState(0);
@@ -136,8 +215,12 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
   const [dragging, setDragging] = useState<string | null>(null);
 
   // Autosave: the whole bench, debounced, retried until it lands. Snapshots are idempotent, so retries are safe.
-  const snapshot = useMemo(() => JSON.stringify({ state, pos }), [state, pos]);
-  const lastSaved = useRef(saved ? JSON.stringify(saved) : JSON.stringify({ state, pos }));
+  const snapshot = useMemo(() => JSON.stringify({ state, pos, paint, decals, pose, playSeconds }), [state, pos, paint, decals, pose, playSeconds]);
+  const lastSaved = useRef(
+    saved
+      ? JSON.stringify({ state: saved.state, pos: saved.pos, paint: saved.paint ?? {}, decals: saved.decals ?? [], pose: saved.pose ?? {}, playSeconds: saved.playSeconds ?? 0 })
+      : JSON.stringify({ state, pos, paint, decals, pose, playSeconds }),
+  );
   const save = (snap: string) =>
     saveRun(entry.id, JSON.parse(snap)).then(
       () => {
@@ -217,7 +300,12 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
         onContextMenu={(e) => {
           e.preventDefault();
           setTool("hand");
-        }} camera={{ position: [-1.7, 10, 7.2], fov: 48 }} dpr={[1, 2]}>
+        }}
+        camera={{ position: [-1.7, 10, 7.2], fov: 48 }}
+        dpr={[1, 2]}
+        gl={{ preserveDrawingBuffer: true }}
+      >
+        <PhotoRig onReady={onPhotoReady} />
         <color attach="background" args={["#10261F"]} />
         <ambientLight intensity={0.9} />
         <directionalLight position={[4, 8, 5]} intensity={1.6} />
@@ -245,6 +333,15 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
           onDragMove={(id, at) => setPos((p) => ({ ...p, [id]: magnetPull(kit, state, id, at) }))}
           pops={pops}
           boxLabel={boxLabel}
+          paint={paint}
+          paintColor={paintColor}
+          decals={decals}
+          selectedDecal={selectedDecal}
+          onPaint={paintPart}
+          onDecal={placeDecal}
+          onSelectDecal={setSelectedDecal}
+          pose={pose}
+          photoMode={photoMode}
           onDrop={onDrop}
           onRub={(part, gate, px) => {
             sfx.sand();
@@ -273,13 +370,67 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
         ) : (
           <>
             <div className={styles.tools} role="toolbar" aria-label={t("toolsLabel")}>
-              {(["hand", "nipper", "sand"] as const).map((k) => (
+              {(["hand", "nipper", "sand", "brush", "decal"] as const).map((k) => (
                 <button key={k} aria-pressed={tool === k} onClick={() => setTool(k)}>
                   {t(`tools.${k}`)}
                 </button>
               ))}
             </div>
             <p className={styles.hint}>{lifted ? t(tool === "sand" ? "lift.sand" : "lift.turn") : t(`hint.${tool}`)}</p>
+            {tool === "brush" && (
+              <div className={styles.swatches} role="radiogroup" aria-label={t("paint.label")}>
+                {PAINTS.map((c) => (
+                  <button key={c} type="button" role="radio" aria-checked={paintColor === c} aria-label={t(`paint.colors.${c.slice(1)}`)} style={{ background: c }} onClick={() => setPaintColor(c)} />
+                ))}
+              </div>
+            )}
+            {tool === "decal" && (
+              <>
+                <div className={styles.decalKinds} role="radiogroup" aria-label={t("decal.label")}>
+                  {DECAL_KINDS.map((k) => (
+                    <button key={k} type="button" role="radio" aria-checked={decalKind === k} onClick={() => setDecalKind(k)}>
+                      {t(`decal.kinds.${k}`)}
+                    </button>
+                  ))}
+                </div>
+                {selectedDecal && decals.some((d) => d.id === selectedDecal) && (
+                  <div className={styles.decalEdit}>
+                    <label>
+                      {t("decal.rotate")}
+                      <input
+                        type="range"
+                        min={-180}
+                        max={180}
+                        step={5}
+                        value={Math.round((decals.find((d) => d.id === selectedDecal)!.rot * 180) / Math.PI)}
+                        onChange={(e) => editDecal({ rot: (Number(e.target.value) * Math.PI) / 180 })}
+                      />
+                    </label>
+                    <label>
+                      {t("decal.size")}
+                      <input
+                        type="range"
+                        min={6}
+                        max={60}
+                        step={1}
+                        value={Math.round(decals.find((d) => d.id === selectedDecal)!.size * 100)}
+                        onChange={(e) => editDecal({ size: Number(e.target.value) / 100 })}
+                      />
+                    </label>
+                    <button
+                      className={styles.linkBtn}
+                      type="button"
+                      onClick={() => {
+                        setDecals((all) => all.filter((d) => d.id !== selectedDecal));
+                        setSelectedDecal(null);
+                      }}
+                    >
+                      {t("decal.remove")}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
             {lifted && (
               <button className={ui.btnLine} type="button" onClick={() => setLifted(null)}>
                 {t("lift.putDown", { part: lk.parts[lifted].name[lang] })}
@@ -341,6 +492,54 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
         {done && (
           <div className={styles.done} role="status">
             <p>{t("done")}</p>
+            {lk.poses.length > 0 && (
+              <fieldset className={styles.pose}>
+                <legend>{t("pose.title")}</legend>
+                {lk.poses.map((j) => (
+                  <label key={j.id}>
+                    {j.name[lang]}
+                    <input
+                      type="range"
+                      min={Math.round((j.min * 180) / Math.PI)}
+                      max={Math.round((j.max * 180) / Math.PI)}
+                      step={5}
+                      value={Math.round(((pose[j.id] ?? 0) * 180) / Math.PI)}
+                      onChange={(e) => setPose((p) => ({ ...p, [j.id]: (Number(e.target.value) * Math.PI) / 180 }))}
+                    />
+                  </label>
+                ))}
+                <button className={styles.linkBtn} type="button" onClick={() => setPose({})}>
+                  {t("pose.reset")}
+                </button>
+              </fieldset>
+            )}
+            {!photoMode ? (
+              <button className={ui.btnLine} type="button" onClick={enterPhoto}>
+                {t("photo.enter")}
+              </button>
+            ) : (
+              <div className={styles.photo}>
+                <p className={styles.hint}>{t("photo.hint")}</p>
+                <button className={ui.btn} type="button" onClick={snapPhoto} disabled={photo?.saved === "saving"}>
+                  {t("photo.snap")}
+                </button>
+                {photo && (
+                  <figure>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- a local data URL just captured */}
+                    <img src={photo.url} alt={t("photo.alt", { name: tk(`${entry.id}.name`) })} />
+                    <figcaption>
+                      {t(`photo.${photo.saved}`)}{" "}
+                      <a href={photo.url} download={`${entry.code}.jpg`}>
+                        {t("photo.download")}
+                      </a>
+                    </figcaption>
+                  </figure>
+                )}
+                <button className={styles.linkBtn} type="button" onClick={leavePhoto}>
+                  {t("photo.leave")}
+                </button>
+              </div>
+            )}
             <button className={ui.btn} type="button" onClick={leave} disabled={shelving}>
               {t("toShelf")}
             </button>
@@ -372,6 +571,15 @@ type SceneProps = {
   onTurn: (dx: number, dy: number) => void;
   pops: Record<string, Pop>;
   boxLabel: { code: string; name: string; body: string; trim: string };
+  paint: Record<string, string>;
+  paintColor: string;
+  decals: Decal[];
+  selectedDecal: string | null;
+  onPaint: (partId: string) => void;
+  onDecal: (partId: string, at: Vec3, normal: Vec3) => void;
+  onSelectDecal: (id: string) => void;
+  pose: Record<string, number>;
+  photoMode: boolean;
   canDrag: (partId: string) => boolean;
   onDragStart: (partId: string) => void;
   onDragMove: (partId: string, at: Vec3) => void;
@@ -379,7 +587,7 @@ type SceneProps = {
   onRub: (partId: string, gateId: string, pixels: number) => void;
 };
 
-function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOpened, onOpenBox, onPickTool, onOpenBook, snips, lifted, liftRot, onLift, onTurn, pops, boxLabel, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
+function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOpened, onOpenBox, onPickTool, onOpenBook, snips, lifted, liftRot, onLift, onTurn, pops, boxLabel, paint, paintColor, decals, selectedDecal, onPaint, onDecal, onSelectDecal, pose, photoMode, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
   const kit = lk.def;
   const gradient = useToonGradient();
   const { camera, gl } = useThree();
@@ -427,6 +635,23 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
     );
   }
 
+  /** Brush or decal sheet in hand: act on the part under the pointer. True if the click was used. */
+  function finishClick(partId: string, e: ThreeEvent<PointerEvent>) {
+    if (tool === "brush") {
+      e.stopPropagation();
+      onPaint(partId);
+      return true;
+    }
+    if (tool === "decal" && e.face) {
+      e.stopPropagation();
+      const local = e.object.worldToLocal(e.point.clone());
+      const n = e.face.normal;
+      onDecal(partId, [local.x, local.y, local.z], [n.x, n.y, n.z]);
+      return true;
+    }
+    return false;
+  }
+
   function startTurn() {
     session(
       (e) => onTurn(e.movementX, e.movementY),
@@ -452,17 +677,23 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
         <meshToonMaterial color="#2A6656" gradientMap={gradient} />
       </mesh>
       <KitBox gradient={gradient} opened={opened} onOpen={onOpenBox} center={[-3.5, 0, -0.45]} label={boxLabel} />
-      {opened && (
+      {opened && !photoMode && (
         <>
-          <ToolTray gradient={gradient} held={tool} animateIn={justOpened} onPick={onPickTool} onOpenBook={onOpenBook} />
-          <HeldToolFollower gradient={gradient} held={tool} snips={snips} />
+          <ToolTray gradient={gradient} held={tool} animateIn={justOpened} paint={paintColor} onPick={onPickTool} onOpenBook={onOpenBook} />
+          <HeldToolFollower gradient={gradient} held={tool} snips={snips} paint={paintColor} />
         </>
       )}
       {lifted && (
         <LiftedPart rotation={liftRot}>
-          <PartBody visual={lk.parts[lifted]} gradient={gradient} ghosted={false} />
+          <PartBody visual={lk.parts[lifted]} gradient={gradient} ghosted={false} paint={paint[lifted]} />
+          {decals
+            .filter((d) => d.part === lifted)
+            .map((d) => (
+              <DecalMesh key={d.id} decal={d} code={boxLabel.code} selected={d.id === selectedDecal} onSelect={tool === "decal" ? () => onSelectDecal(d.id) : undefined} />
+            ))}
           <mesh
             onPointerDown={(e: ThreeEvent<PointerEvent>) => {
+              if (finishClick(lifted, e)) return;
               if (tool !== "hand") return;
               e.stopPropagation();
               startTurn();
@@ -479,7 +710,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
         </LiftedPart>
       )}
       <RiseOnOpen animate={justOpened}>
-      {opened && lk.runners.map((r) => (
+      {opened && !photoMode && lk.runners.map((r) => (
         <Runner key={r.id} runner={r} gradient={gradient} />
       ))}
       {opened && kit.parts.map((p) => {
@@ -490,13 +721,20 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
           <group key={p.id}>
             {ghost && <Ghost size={p.size} at={p.target} hot={dragging === p.id} dim={dragging !== null && dragging !== p.id} />}
             {/* on the runner or loose on the mat a part lies face-up; held or assembled it stands upright */}
+            <Posed chain={ps.status === "placed" ? lk.poses.filter((j) => j.parts.includes(p.id)) : []} angles={pose}>
             <group position={pos[p.id]}>
             <PopCue pop={pops[p.id]}>
             <group rotation-x={ps.status !== "placed" && dragging !== p.id ? -Math.PI / 2 : 0}>
-              <PartBody visual={lk.parts[p.id]} gradient={gradient} ghosted={dragging === p.id} />
+              <PartBody visual={lk.parts[p.id]} gradient={gradient} ghosted={dragging === p.id} paint={paint[p.id]} />
+              {decals
+                .filter((d) => d.part === p.id)
+                .map((d) => (
+                  <DecalMesh key={d.id} decal={d} code={boxLabel.code} selected={d.id === selectedDecal} onSelect={tool === "decal" ? () => onSelectDecal(d.id) : undefined} />
+                ))}
               {/* one invisible box over the whole part: the grab target */}
               <mesh
                 onPointerDown={(e: ThreeEvent<PointerEvent>) => {
+                  if (finishClick(p.id, e)) return;
                   if (!canDrag(p.id)) return;
                   e.stopPropagation();
                   startGrab(p.id, e.nativeEvent);
@@ -513,6 +751,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
             </group>
             </PopCue>
             </group>
+            </Posed>
           </group>
         );
       })}
@@ -521,13 +760,13 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
   );
 }
 
-function PartBody({ visual, gradient, ghosted }: { visual: PartVisual; gradient: THREE.Texture; ghosted: boolean }) {
+function PartBody({ visual, gradient, ghosted, paint }: { visual: PartVisual; gradient: THREE.Texture; ghosted: boolean; paint?: string }) {
   return (
     <>
       {visual.shape.map((prim, i) => (
         <mesh key={i} position={prim.at ?? [0, 0, 0]}>
           <boxGeometry args={prim.box} />
-          <meshToonMaterial color={prim.color ?? visual.color} gradientMap={gradient} transparent={ghosted} opacity={ghosted ? 0.85 : 1} />
+          <meshToonMaterial color={prim.color ?? paint ?? visual.color} gradientMap={gradient} transparent={ghosted} opacity={ghosted ? 0.85 : 1} />
           <Outlines thickness={2} color={INK} />
         </mesh>
       ))}

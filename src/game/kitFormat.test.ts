@@ -40,3 +40,13 @@ test("loader rejects broken kits", () => {
   emptyStep.steps.push({ n: 99, title: { id: "x", en: "x" } });
   assert.throws(() => loadKit(emptyStep), /no parts/);
 });
+
+test("poses load in radians around assembly-relative pivots, and bad poses are rejected", () => {
+  const kit = loadKit(kr01);
+  const arm = kit.poses.find((j) => j.id === "arm-l")!;
+  assert.ok(Math.abs(arm.min - (-150 * Math.PI) / 180) < 1e-9);
+  assert.deepEqual(arm.pivot, [kr01.assemblyAt[0] - 0.71, 2.83, kr01.assemblyAt[1]]);
+  const bad = JSON.parse(JSON.stringify(kr01)) as KitFileV1;
+  bad.poses![0].parts = ["nope"];
+  assert.throws(() => loadKit(bad), /unknown part/);
+});

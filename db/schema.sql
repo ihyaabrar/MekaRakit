@@ -21,3 +21,16 @@ create table if not exists kit_runs (
 
 -- whole-bench snapshot so an unfinished build resumes exactly (see restoreRun in src/game/logic.ts)
 alter table kit_runs add column if not exists snapshot jsonb;
+
+-- photos of finished models (JPEG data URLs, small; capped per player in src/game/store.ts)
+create table if not exists photos (
+  id bigserial primary key,
+  user_id text not null,
+  kit_id text not null check (kit_id ~ '^kr-[0-9]{2}$'),
+  image text not null check (char_length(image) <= 700000),
+  created_at timestamptz not null default now()
+);
+create index if not exists photos_user_created on photos (user_id, created_at desc);
+
+-- total time spent at the bench for a run (seconds), mirrored from the snapshot for dashboard stats
+alter table kit_runs add column if not exists play_seconds integer not null default 0 check (play_seconds >= 0);

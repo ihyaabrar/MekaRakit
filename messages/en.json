@@ -141,7 +141,10 @@
     "error": "Progress data in this browser cannot be read.",
     "reset": "Clear progress",
     "retry": "Try again",
-    "loadError": "Progress could not be loaded from the server."
+    "loadError": "Progress could not be loaded from the server.",
+    "playTime": "Play time",
+    "minutes": "{n} min",
+    "photoAlt": "Photo of the {name} model on the shelf"
   },
   "settings": {
     "title": "Settings",
@@ -151,17 +154,26 @@
     "audio": "Sound",
     "music": "Music",
     "sfx": "Sound effects",
-    "musicNote": "Lo-fi music comes later; this setting is already saved.",
+    "musicNote": "Music plays from public/audio/music.mp3 once that file is added.",
     "save": "Save settings",
     "saved": "Saved.",
     "account": "Account",
     "deleteAccount": "Delete account",
-    "deleteNote": "Account deletion comes later.",
+    "deleteNote": "All your progress, photos and your account are deleted permanently. This cannot be undone.",
     "resetProgress": "Clear progress",
     "resetConfirm": "Clear all your progress and your shelf? This cannot be undone.",
     "resetDone": "Progress cleared.",
     "saveError": "Could not save. Check your connection and try again.",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "deletePassword": "Type your password to confirm",
+    "deleteConfirm": "Delete account permanently",
+    "deleteAsk": "Delete your account with all progress and photos? This cannot be undone.",
+    "deleteError": {
+      "password": "Wrong password.",
+      "server": "Account not deleted yet. Try again shortly."
+    },
+    "deleteReally": "Yes, delete permanently",
+    "deleteCancel": "Cancel"
   },
   "workbench": {
     "back": "Dashboard",
@@ -169,12 +181,16 @@
     "tools": {
       "hand": "Hand",
       "nipper": "Nipper",
-      "sand": "Sandpaper"
+      "sand": "Sandpaper",
+      "brush": "Brush",
+      "decal": "Decals"
     },
     "hint": {
       "hand": "Drag a free part onto the yellow outline. Click it to lift it up and look closer.",
       "nipper": "Nipper in hand: point at a gate (the small connector) and click to cut. Right-click or Esc puts it down.",
-      "sand": "Sandpaper in hand: lift a free part (with Hand), then rub its nubs back and forth until flush."
+      "sand": "Sandpaper in hand: lift a free part (with Hand), then rub its nubs back and forth until flush.",
+      "brush": "Brush in hand: pick a colour below, then click a part to paint it.",
+      "decal": "Decal sheet in hand: pick a sticker, then click a part surface to apply it. Click an existing sticker to adjust it."
     },
     "drop": {
       "wrongStep": "Almost! Finish step {n} first.",
@@ -220,6 +236,66 @@
       "prev": "Previous",
       "next": "Next",
       "page": "Page {n} of {total}"
+    },
+    "paint": {
+      "label": "Paint colour",
+      "colors": {
+        "F5F7F3": "White",
+        "2F5FB0": "Cobalt blue",
+        "C8402F": "Red",
+        "F2C230": "Yellow",
+        "9AA3AB": "Grey",
+        "4A5560": "Gunmetal",
+        "1D2B38": "Black",
+        "E07B2E": "Orange",
+        "4C7A4A": "Green"
+      }
+    },
+    "decal": {
+      "label": "Sticker",
+      "kinds": {
+        "code": "Code",
+        "stripes": "Stripes",
+        "chevron": "Caution",
+        "ring": "Ring",
+        "number": "Number",
+        "line": "Line"
+      },
+      "rotate": "Rotate",
+      "size": "Size",
+      "remove": "Remove this sticker"
+    },
+    "pose": {
+      "title": "Pose",
+      "reset": "Reset pose"
+    },
+    "photo": {
+      "enter": "Photo mode",
+      "hint": "Drag to orbit the camera for the best angle, then take the shot.",
+      "snap": "Take photo",
+      "alt": "Photo of the {name} model",
+      "saving": "Saving to the shelf...",
+      "saved": "Saved to the shelf.",
+      "error": "Photo not saved, try again.",
+      "download": "Download",
+      "leave": "Leave photo mode"
     }
+  },
+  "account": {
+    "forgotTitle": "Forgot password",
+    "forgotLead": "Enter your account email. We will send a link to set a new password.",
+    "email": "Email",
+    "sendLink": "Send link",
+    "sending": "Sending...",
+    "sent": "If that email is registered, the link is on its way. Check your inbox and spam folder.",
+    "error": "Could not send. Try again shortly.",
+    "backToLogin": "Back to log in",
+    "resetTitle": "Set a new password",
+    "newPassword": "New password",
+    "passwordHint": "At least 8 characters.",
+    "savePassword": "Save password",
+    "resetDone": "New password saved. Please log in.",
+    "expired": "This link is invalid or has expired.",
+    "askAgain": "Ask for a new link"
   }
 }

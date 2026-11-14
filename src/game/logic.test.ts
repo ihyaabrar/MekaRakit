@@ -82,3 +82,33 @@ test("magnet pulls a free part toward its allowed spot, harder when closer", asy
   assert.equal(pageForDrop(kit, s, { kind: "wrong-spot", spotOf: "b" }), 2);
   assert.equal(pageForDrop(kit, s, { kind: "none" }), null);
 });
+
+test("finish data: valid paint, decals and pose survive, junk is dropped", async () => {
+  const { restoreRun, sanitizeFinish } = await import("./logic.ts");
+  const base = { state: initState(kit), pos: { a: [0, 0.5, 0], b: [0, 0.5, 0] } };
+  const snap = {
+    ...base,
+    paint: { a: "#C8402F", b: "#123456", zzz: "#C8402F" },
+    decals: [
+      { id: "d1", part: "a", kind: "ring", at: [0, 0.1, 0.5], normal: [0, 0, 1], rot: 0.5, size: 2 },
+      { id: "d2", part: "a", kind: "nope", at: [0, 0, 0], normal: [0, 0, 1], rot: 0, size: 0.2 },
+      { id: "d3", part: "x", kind: "ring", at: [0, 0, 0], normal: [0, 0, 1], rot: 0, size: 0.2 },
+    ],
+    pose: { "arm-l": 9, "bad key!": 1 },
+    playSeconds: 125.6,
+  };
+  const r = restoreRun(kit, JSON.parse(JSON.stringify(snap)))!;
+  assert.deepEqual(r.paint, { a: "#C8402F" });
+  assert.equal(r.decals!.length, 1);
+  assert.equal(r.decals![0].size, 0.6); // clamped
+  assert.deepEqual(r.pose, { "arm-l": Math.PI });
+  assert.equal(r.playSeconds, 126);
+  assert.deepEqual(sanitizeFinish(kit, undefined), { paint: {}, decals: [], pose: {}, playSeconds: 0 });
+});
+
+test("play time ignores non-numbers instead of throwing", async () => {
+  const { sanitizeFinish } = await import("./logic.ts");
+  assert.equal(sanitizeFinish(kit, { playSeconds: { valueOf: null, toString: null } as unknown as number }).playSeconds, 0);
+  assert.equal(sanitizeFinish(kit, { playSeconds: "90" as unknown as number }).playSeconds, 0);
+  assert.equal(sanitizeFinish(kit, { playSeconds: 90.4 }).playSeconds, 90);
+});
