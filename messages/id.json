@@ -167,14 +167,14 @@
     "back": "Dashboard",
     "toolsLabel": "Alat",
     "tools": {
+      "hand": "Tangan",
       "nipper": "Nipper",
-      "sand": "Amplas",
-      "build": "Rakit"
+      "sand": "Amplas"
     },
     "hint": {
-      "nipper": "Klik gate (penghubung kecil) untuk memotong part dari runner. Part lepas setelah semua gate-nya terpotong.",
-      "sand": "Tahan klik di nub bekas gate lalu gosok bolak-balik sampai rata. Amplas sebelum dirakit: nub yang tertutup part lain tidak bisa dijangkau.",
-      "build": "Seret part yang sudah lepas ke kerangka kuning."
+      "hand": "Seret part yang sudah lepas ke kerangka kuning. Klik part itu untuk mengangkat dan melihatnya dari dekat.",
+      "nipper": "Nipper di tangan: arahkan ke gate (penghubung kecil) lalu klik untuk memotong. Klik kanan atau Esc untuk menaruhnya.",
+      "sand": "Amplas di tangan: angkat part yang sudah lepas (pakai Tangan), lalu gosok nubnya bolak-balik sampai rata."
     },
     "drop": {
       "wrongStep": "Hampir! Selesaikan langkah {n} dulu.",
@@ -189,6 +189,36 @@
     "lockedBody": "Selesaikan kit sebelumnya untuk membuka kotak ini.",
     "notDesignedBody": "Part kit ini masih dirancang. Kotaknya menyusul.",
     "saveError": "Progres terakhir belum tersimpan ke server. Permainan tetap jalan; coba lagi nanti.",
-    "loading": "Membuka kotak..."
+    "loading": "Membuka kotak...",
+    "box": {
+      "hint": "Kotak KR-01 masih tersegel. Klik kotaknya untuk membuka.",
+      "open": "Buka kotak"
+    },
+    "lift": {
+      "turn": "Seret part untuk memutarnya. Ambil amplas untuk menghaluskan nub.",
+      "sand": "Tahan klik di nub lalu gosok bolak-balik sampai rata.",
+      "putDown": "Letakkan {part}"
+    },
+    "book": {
+      "open": "Buka buku panduan",
+      "cover": "Buku panduan {name}",
+      "close": "Tutup buku",
+      "stepDone": "Langkah ini sudah selesai.",
+      "stepNow": "Kerjakan langkah ini sekarang.",
+      "stepLater": "Langkah berikutnya.",
+      "status": {
+        "runner": "di runner",
+        "free": "sudah lepas",
+        "placed": "terpasang"
+      },
+      "tip": "Potong semua gate part, amplas nubnya selagi masih bisa dijangkau, lalu pasang ke kerangka kuning.",
+      "contents": "Isi kotak:",
+      "runner": "Runner {id}: {n} part",
+      "nipper": "Nipper",
+      "sandpaper": "Amplas",
+      "prev": "Sebelumnya",
+      "next": "Berikutnya",
+      "page": "Halaman {n} dari {total}"
+    }
   }
 }

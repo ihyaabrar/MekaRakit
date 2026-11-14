@@ -31,7 +31,7 @@ export type KitFileV1 = {
   }[];
 };
 
-export type PartVisual = { name: Text; color: string; shape: Prim[] };
+export type PartVisual = { name: Text; color: string; shape: Prim[]; runner: string };
 export type RunnerVisual = KitFileV1["runners"][number];
 export type LoadedKit = { def: KitDef; parts: Record<string, PartVisual>; runners: RunnerVisual[]; steps: KitFileV1["steps"]; assembly: Vec3 };
 
@@ -82,7 +82,7 @@ export function loadKit(file: KitFileV1): LoadedKit {
 
   return {
     def: { id: file.id, name: file.code, parts },
-    parts: Object.fromEntries(file.parts.map((p) => [p.id, { name: p.name, color: p.color, shape: p.shape ?? [{ box: p.size }] }])),
+    parts: Object.fromEntries(file.parts.map((p) => [p.id, { name: p.name, color: p.color, shape: p.shape ?? [{ box: p.size }], runner: p.runner }])),
     runners: file.runners,
     steps: [...file.steps].sort((a, b) => a.n - b.n),
     assembly: [ax, 0, az],
