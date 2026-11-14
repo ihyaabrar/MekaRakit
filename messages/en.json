@@ -169,12 +169,16 @@
     "tools": {
       "hand": "Hand",
       "nipper": "Nipper",
-      "sand": "Sandpaper"
+      "sand": "Sandpaper",
+      "brush": "Brush",
+      "decal": "Decals"
     },
     "hint": {
       "hand": "Drag a free part onto the yellow outline. Click it to lift it up and look closer.",
       "nipper": "Nipper in hand: point at a gate (the small connector) and click to cut. Right-click or Esc puts it down.",
-      "sand": "Sandpaper in hand: lift a free part (with Hand), then rub its nubs back and forth until flush."
+      "sand": "Sandpaper in hand: lift a free part (with Hand), then rub its nubs back and forth until flush.",
+      "brush": "Brush in hand: pick a colour below, then click a part to paint it.",
+      "decal": "Decal sheet in hand: pick a sticker, then click a part surface to apply it. Click an existing sticker to adjust it."
     },
     "drop": {
       "wrongStep": "Almost! Finish step {n} first.",
@@ -220,6 +224,34 @@
       "prev": "Previous",
       "next": "Next",
       "page": "Page {n} of {total}"
+    },
+    "paint": {
+      "label": "Paint colour",
+      "colors": {
+        "F5F7F3": "White",
+        "2F5FB0": "Cobalt blue",
+        "C8402F": "Red",
+        "F2C230": "Yellow",
+        "9AA3AB": "Grey",
+        "4A5560": "Gunmetal",
+        "1D2B38": "Black",
+        "E07B2E": "Orange",
+        "4C7A4A": "Green"
+      }
+    },
+    "decal": {
+      "label": "Sticker",
+      "kinds": {
+        "code": "Code",
+        "stripes": "Stripes",
+        "chevron": "Caution",
+        "ring": "Ring",
+        "number": "Number",
+        "line": "Line"
+      },
+      "rotate": "Rotate",
+      "size": "Size",
+      "remove": "Remove this sticker"
     }
   }
 }

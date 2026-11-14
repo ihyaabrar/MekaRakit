@@ -9,7 +9,7 @@ import * as THREE from "three";
 import type { Vec3 } from "../logic";
 import { makeBoxArt } from "./boxArt";
 
-export type HeldTool = "hand" | "nipper" | "sand";
+export type HeldTool = "hand" | "nipper" | "sand" | "brush" | "decal";
 
 const INK = "#14202B";
 const COBALT = "#2F5FB0";
@@ -55,6 +55,36 @@ function SandpaperModel({ gradient }: { gradient: THREE.Texture }) {
   return <Block size={[0.6, 0.03, 0.8]} color={SANDPAPER} gradient={gradient} />;
 }
 
+/** Brush tip at the local origin, handle toward +z. `tip` = the loaded paint colour. */
+function BrushModel({ gradient, tip }: { gradient: THREE.Texture; tip: string }) {
+  return (
+    <group rotation-x={Math.PI / 2}>
+      <mesh position={[0, -0.06, 0]} raycast={noRaycast}>
+        <coneGeometry args={[0.05, 0.14, 12]} />
+        <meshToonMaterial color={tip} gradientMap={gradient} />
+      </mesh>
+      <Block size={[0.07, 0.08, 0.07]} at={[0, 0.04, 0]} color={STEEL} gradient={gradient} />
+      <mesh position={[0, 0.4, 0]} raycast={noRaycast}>
+        <cylinderGeometry args={[0.035, 0.03, 0.62, 12]} />
+        <meshToonMaterial color={COBALT} gradientMap={gradient} />
+      </mesh>
+    </group>
+  );
+}
+
+/** Sheet of waterslide decals. */
+function DecalSheetModel({ gradient }: { gradient: THREE.Texture }) {
+  return (
+    <group>
+      <Block size={[0.7, 0.02, 0.5]} color={BOX_WHITE} gradient={gradient} />
+      <Block size={[0.14, 0.01, 0.14]} at={[-0.2, 0.015, -0.1]} color={YELLOW} gradient={gradient} outline={0} />
+      <Block size={[0.14, 0.01, 0.14]} at={[0, 0.015, -0.1]} color="#C8402F" gradient={gradient} outline={0} />
+      <Block size={[0.14, 0.01, 0.14]} at={[0.2, 0.015, -0.1]} color={INK} gradient={gradient} outline={0} />
+      <Block size={[0.5, 0.01, 0.08]} at={[0, 0.015, 0.12]} color={COBALT} gradient={gradient} outline={0} />
+    </group>
+  );
+}
+
 function BookModel({ gradient }: { gradient: THREE.Texture }) {
   return (
     <group>
@@ -65,7 +95,7 @@ function BookModel({ gradient }: { gradient: THREE.Texture }) {
   );
 }
 
-const TRAY: Record<"book" | "sand" | "nipper", Vec3> = { book: [-5.6, 0.04, 3.55], sand: [-4.2, 0.02, 3.6], nipper: [-2.9, 0.05, 3.5] };
+const TRAY: Record<"book" | "sand" | "nipper" | "brush" | "decal", Vec3> = { book: [-5.6, 0.04, 3.55], sand: [-4.2, 0.02, 3.6], nipper: [-2.9, 0.05, 3.5], brush: [-1.9, 0.05, 3.5], decal: [-0.8, 0.02, 3.6] };
 
 /** Rises out of the box when the kit is opened; `delay` staggers each item. */
 function Rise({ children, delay, at }: { children: ReactNode; delay: number; at: Vec3 }) {
@@ -91,12 +121,13 @@ type TrayProps = {
   gradient: THREE.Texture;
   held: HeldTool;
   animateIn: boolean;
+  paint: string;
   onPick: (tool: HeldTool) => void;
   onOpenBook: () => void;
 };
 
 /** The manual, sandpaper and nipper lying on the mat. A held tool leaves its spot empty. */
-export function ToolTray({ gradient, held, animateIn, onPick, onOpenBook }: TrayProps) {
+export function ToolTray({ gradient, held, animateIn, paint, onPick, onOpenBook }: TrayProps) {
   const hit = (size: Vec3, onClick: () => void, label: string) => (
     <mesh
       onClick={(e: ThreeEvent<MouseEvent>) => {
@@ -137,6 +168,26 @@ export function ToolTray({ gradient, held, animateIn, onPick, onOpenBook }: Tray
         </group>
       ),
     ],
+    [
+      "brush",
+      held === "brush" ? null : (
+        <group rotation-y={Math.PI * 0.8} position={[0, 0, 0]}>
+          <group rotation-x={-Math.PI / 2}>
+            <BrushModel gradient={gradient} tip={paint} />
+          </group>
+          {hit([0.3, 0.3, 0.9], () => onPick("brush"), "brush")}
+        </group>
+      ),
+    ],
+    [
+      "decal",
+      held === "decal" ? null : (
+        <>
+          <DecalSheetModel gradient={gradient} />
+          {hit([0.8, 0.3, 0.6], () => onPick("decal"), "decal sheet")}
+        </>
+      ),
+    ],
   ];
   return (
     <>
@@ -156,7 +207,7 @@ export function ToolTray({ gradient, held, animateIn, onPick, onOpenBook }: Tray
 }
 
 /** The held nipper or sandpaper floats just above whatever the pointer is over. `snips` counts cuts to animate the jaws. */
-export function HeldToolFollower({ gradient, held, snips }: { gradient: THREE.Texture; held: HeldTool; snips: number }) {
+export function HeldToolFollower({ gradient, held, snips, paint }: { gradient: THREE.Texture; held: HeldTool; snips: number; paint: string }) {
   const g = useRef<THREE.Group>(null);
   const snapAt = useRef(-1);
   const left = useRef<THREE.Group>(null);
@@ -183,6 +234,14 @@ export function HeldToolFollower({ gradient, held, snips }: { gradient: THREE.Te
       {held === "nipper" ? (
         <group rotation-y={Math.PI * 0.15} rotation-x={-0.35}>
           <NipperModel gradient={gradient} left={left} right={right} />
+        </group>
+      ) : held === "brush" ? (
+        <group rotation-x={-0.5}>
+          <BrushModel gradient={gradient} tip={paint} />
+        </group>
+      ) : held === "decal" ? (
+        <group rotation-x={-0.3} scale={0.6}>
+          <DecalSheetModel gradient={gradient} />
         </group>
       ) : (
         <group rotation-x={-0.25}>

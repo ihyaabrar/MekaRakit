@@ -7,7 +7,7 @@ import * as THREE from "three";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { GATE_LENGTH, RUNNER_BAR_Y, lyingOffset, type LoadedKit, type PartVisual, type RunnerVisual } from "./kitFormat";
-import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, magnetPull, pageForDrop, type KitState, type PartDef, type RunSnapshot, type Vec3 } from "./logic";
+import { initState, cutGate, rubNub, checkDrop, placePart, isComplete, magnetPull, pageForDrop, PAINTS, DECAL_KINDS, MAX_DECALS, type Decal, type DecalKind, type KitState, type PartDef, type RunSnapshot, type Vec3 } from "./logic";
 import { catalog, findKit, type KitEntry } from "./kits";
 import { kitStatus } from "./progress";
 import { fetchProfile, fetchProgress, fetchRun, saveRun } from "./store";
@@ -19,6 +19,7 @@ import { HeldToolFollower, KitBox, RiseOnOpen, ToolTray, type HeldTool } from ".
 import LiftedPart from "./bench/LiftedPart";
 import ManualBook from "./bench/ManualBook";
 import { Ghost, PopCue, type Pop } from "./bench/Feel";
+import { DecalMesh } from "./bench/Finish";
 import styles from "./Workbench.module.css";
 
 type Tool = HeldTool;
@@ -106,6 +107,26 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
   const [bookOpen, setBookOpen] = useState(false);
   const [bookPage, setBookPage] = useState<number | null>(null);
   const [pops, setPops] = useState<Record<string, Pop>>({});
+  const [paint, setPaint] = useState<Record<string, string>>(() => saved?.paint ?? {});
+  const [decals, setDecals] = useState<Decal[]>(() => saved?.decals ?? []);
+  const [paintColor, setPaintColor] = useState<string>(PAINTS[2]);
+  const [decalKind, setDecalKind] = useState<DecalKind>("code");
+  const [selectedDecal, setSelectedDecal] = useState<string | null>(null);
+
+  function paintPart(id: string) {
+    sfx.brush();
+    setPaint((p) => ({ ...p, [id]: paintColor }));
+  }
+
+  function placeDecal(part: string, at: Vec3, normal: Vec3) {
+    if (decals.length >= MAX_DECALS) return;
+    sfx.snap();
+    const d: Decal = { id: `d${Date.now().toString(36)}`, part, kind: decalKind, at, normal, rot: 0, size: 0.22 };
+    setDecals((all) => [...all, d]);
+    setSelectedDecal(d.id);
+  }
+
+  const editDecal = (patch: Partial<Decal>) => setDecals((all) => all.map((d) => (d.id === selectedDecal ? { ...d, ...patch } : d)));
   const kitName = tk(`${entry.id}.name`);
   const boxLabel = useMemo(() => ({ code: entry.code, name: kitName, body: entry.colors.body, trim: entry.colors.trim }), [entry, kitName]);
   const [snips, setSnips] = useState(0);
@@ -136,8 +157,8 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
   const [dragging, setDragging] = useState<string | null>(null);
 
   // Autosave: the whole bench, debounced, retried until it lands. Snapshots are idempotent, so retries are safe.
-  const snapshot = useMemo(() => JSON.stringify({ state, pos }), [state, pos]);
-  const lastSaved = useRef(saved ? JSON.stringify(saved) : JSON.stringify({ state, pos }));
+  const snapshot = useMemo(() => JSON.stringify({ state, pos, paint, decals }), [state, pos, paint, decals]);
+  const lastSaved = useRef(saved ? JSON.stringify({ state: saved.state, pos: saved.pos, paint: saved.paint ?? {}, decals: saved.decals ?? [] }) : JSON.stringify({ state, pos, paint, decals }));
   const save = (snap: string) =>
     saveRun(entry.id, JSON.parse(snap)).then(
       () => {
@@ -245,6 +266,13 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
           onDragMove={(id, at) => setPos((p) => ({ ...p, [id]: magnetPull(kit, state, id, at) }))}
           pops={pops}
           boxLabel={boxLabel}
+          paint={paint}
+          paintColor={paintColor}
+          decals={decals}
+          selectedDecal={selectedDecal}
+          onPaint={paintPart}
+          onDecal={placeDecal}
+          onSelectDecal={setSelectedDecal}
           onDrop={onDrop}
           onRub={(part, gate, px) => {
             sfx.sand();
@@ -273,13 +301,67 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
         ) : (
           <>
             <div className={styles.tools} role="toolbar" aria-label={t("toolsLabel")}>
-              {(["hand", "nipper", "sand"] as const).map((k) => (
+              {(["hand", "nipper", "sand", "brush", "decal"] as const).map((k) => (
                 <button key={k} aria-pressed={tool === k} onClick={() => setTool(k)}>
                   {t(`tools.${k}`)}
                 </button>
               ))}
             </div>
             <p className={styles.hint}>{lifted ? t(tool === "sand" ? "lift.sand" : "lift.turn") : t(`hint.${tool}`)}</p>
+            {tool === "brush" && (
+              <div className={styles.swatches} role="radiogroup" aria-label={t("paint.label")}>
+                {PAINTS.map((c) => (
+                  <button key={c} type="button" role="radio" aria-checked={paintColor === c} aria-label={t(`paint.colors.${c.slice(1)}`)} style={{ background: c }} onClick={() => setPaintColor(c)} />
+                ))}
+              </div>
+            )}
+            {tool === "decal" && (
+              <>
+                <div className={styles.decalKinds} role="radiogroup" aria-label={t("decal.label")}>
+                  {DECAL_KINDS.map((k) => (
+                    <button key={k} type="button" role="radio" aria-checked={decalKind === k} onClick={() => setDecalKind(k)}>
+                      {t(`decal.kinds.${k}`)}
+                    </button>
+                  ))}
+                </div>
+                {selectedDecal && decals.some((d) => d.id === selectedDecal) && (
+                  <div className={styles.decalEdit}>
+                    <label>
+                      {t("decal.rotate")}
+                      <input
+                        type="range"
+                        min={-180}
+                        max={180}
+                        step={5}
+                        value={Math.round((decals.find((d) => d.id === selectedDecal)!.rot * 180) / Math.PI)}
+                        onChange={(e) => editDecal({ rot: (Number(e.target.value) * Math.PI) / 180 })}
+                      />
+                    </label>
+                    <label>
+                      {t("decal.size")}
+                      <input
+                        type="range"
+                        min={6}
+                        max={60}
+                        step={1}
+                        value={Math.round(decals.find((d) => d.id === selectedDecal)!.size * 100)}
+                        onChange={(e) => editDecal({ size: Number(e.target.value) / 100 })}
+                      />
+                    </label>
+                    <button
+                      className={styles.linkBtn}
+                      type="button"
+                      onClick={() => {
+                        setDecals((all) => all.filter((d) => d.id !== selectedDecal));
+                        setSelectedDecal(null);
+                      }}
+                    >
+                      {t("decal.remove")}
+                    </button>
+                  </div>
+                )}
+              </>
+            )}
             {lifted && (
               <button className={ui.btnLine} type="button" onClick={() => setLifted(null)}>
                 {t("lift.putDown", { part: lk.parts[lifted].name[lang] })}
@@ -372,6 +454,13 @@ type SceneProps = {
   onTurn: (dx: number, dy: number) => void;
   pops: Record<string, Pop>;
   boxLabel: { code: string; name: string; body: string; trim: string };
+  paint: Record<string, string>;
+  paintColor: string;
+  decals: Decal[];
+  selectedDecal: string | null;
+  onPaint: (partId: string) => void;
+  onDecal: (partId: string, at: Vec3, normal: Vec3) => void;
+  onSelectDecal: (id: string) => void;
   canDrag: (partId: string) => boolean;
   onDragStart: (partId: string) => void;
   onDragMove: (partId: string, at: Vec3) => void;
@@ -379,7 +468,7 @@ type SceneProps = {
   onRub: (partId: string, gateId: string, pixels: number) => void;
 };
 
-function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOpened, onOpenBox, onPickTool, onOpenBook, snips, lifted, liftRot, onLift, onTurn, pops, boxLabel, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
+function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOpened, onOpenBox, onPickTool, onOpenBook, snips, lifted, liftRot, onLift, onTurn, pops, boxLabel, paint, paintColor, decals, selectedDecal, onPaint, onDecal, onSelectDecal, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
   const kit = lk.def;
   const gradient = useToonGradient();
   const { camera, gl } = useThree();
@@ -427,6 +516,23 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
     );
   }
 
+  /** Brush or decal sheet in hand: act on the part under the pointer. True if the click was used. */
+  function finishClick(partId: string, e: ThreeEvent<PointerEvent>) {
+    if (tool === "brush") {
+      e.stopPropagation();
+      onPaint(partId);
+      return true;
+    }
+    if (tool === "decal" && e.face) {
+      e.stopPropagation();
+      const local = e.object.worldToLocal(e.point.clone());
+      const n = e.face.normal;
+      onDecal(partId, [local.x, local.y, local.z], [n.x, n.y, n.z]);
+      return true;
+    }
+    return false;
+  }
+
   function startTurn() {
     session(
       (e) => onTurn(e.movementX, e.movementY),
@@ -454,15 +560,21 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
       <KitBox gradient={gradient} opened={opened} onOpen={onOpenBox} center={[-3.5, 0, -0.45]} label={boxLabel} />
       {opened && (
         <>
-          <ToolTray gradient={gradient} held={tool} animateIn={justOpened} onPick={onPickTool} onOpenBook={onOpenBook} />
-          <HeldToolFollower gradient={gradient} held={tool} snips={snips} />
+          <ToolTray gradient={gradient} held={tool} animateIn={justOpened} paint={paintColor} onPick={onPickTool} onOpenBook={onOpenBook} />
+          <HeldToolFollower gradient={gradient} held={tool} snips={snips} paint={paintColor} />
         </>
       )}
       {lifted && (
         <LiftedPart rotation={liftRot}>
-          <PartBody visual={lk.parts[lifted]} gradient={gradient} ghosted={false} />
+          <PartBody visual={lk.parts[lifted]} gradient={gradient} ghosted={false} paint={paint[lifted]} />
+          {decals
+            .filter((d) => d.part === lifted)
+            .map((d) => (
+              <DecalMesh key={d.id} decal={d} code={boxLabel.code} selected={d.id === selectedDecal} onSelect={tool === "decal" ? () => onSelectDecal(d.id) : undefined} />
+            ))}
           <mesh
             onPointerDown={(e: ThreeEvent<PointerEvent>) => {
+              if (finishClick(lifted, e)) return;
               if (tool !== "hand") return;
               e.stopPropagation();
               startTurn();
@@ -493,10 +605,16 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
             <group position={pos[p.id]}>
             <PopCue pop={pops[p.id]}>
             <group rotation-x={ps.status !== "placed" && dragging !== p.id ? -Math.PI / 2 : 0}>
-              <PartBody visual={lk.parts[p.id]} gradient={gradient} ghosted={dragging === p.id} />
+              <PartBody visual={lk.parts[p.id]} gradient={gradient} ghosted={dragging === p.id} paint={paint[p.id]} />
+              {decals
+                .filter((d) => d.part === p.id)
+                .map((d) => (
+                  <DecalMesh key={d.id} decal={d} code={boxLabel.code} selected={d.id === selectedDecal} onSelect={tool === "decal" ? () => onSelectDecal(d.id) : undefined} />
+                ))}
               {/* one invisible box over the whole part: the grab target */}
               <mesh
                 onPointerDown={(e: ThreeEvent<PointerEvent>) => {
+                  if (finishClick(p.id, e)) return;
                   if (!canDrag(p.id)) return;
                   e.stopPropagation();
                   startGrab(p.id, e.nativeEvent);
@@ -521,13 +639,13 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
   );
 }
 
-function PartBody({ visual, gradient, ghosted }: { visual: PartVisual; gradient: THREE.Texture; ghosted: boolean }) {
+function PartBody({ visual, gradient, ghosted, paint }: { visual: PartVisual; gradient: THREE.Texture; ghosted: boolean; paint?: string }) {
   return (
     <>
       {visual.shape.map((prim, i) => (
         <mesh key={i} position={prim.at ?? [0, 0, 0]}>
           <boxGeometry args={prim.box} />
-          <meshToonMaterial color={prim.color ?? visual.color} gradientMap={gradient} transparent={ghosted} opacity={ghosted ? 0.85 : 1} />
+          <meshToonMaterial color={prim.color ?? paint ?? visual.color} gradientMap={gradient} transparent={ghosted} opacity={ghosted ? 0.85 : 1} />
           <Outlines thickness={2} color={INK} />
         </mesh>
       ))}

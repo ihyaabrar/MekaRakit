@@ -88,3 +88,17 @@ export function bump() {
   o.start();
   o.stop(c.currentTime + 0.15);
 }
+
+let lastBrush = 0;
+/** Soft brush stroke: low, brief, breathy. */
+export function brush() {
+  const c = ac();
+  if (!c || c.currentTime - lastBrush < 0.08) return;
+  lastBrush = c.currentTime;
+  const src = noise(c, 0.25);
+  const lp = c.createBiquadFilter();
+  lp.type = "lowpass";
+  lp.frequency.value = 900;
+  src.connect(lp).connect(envelope(c, 0.3, 0.03, 0.2));
+  src.start();
+}

@@ -169,12 +169,16 @@
     "tools": {
       "hand": "Tangan",
       "nipper": "Nipper",
-      "sand": "Amplas"
+      "sand": "Amplas",
+      "brush": "Kuas",
+      "decal": "Decal"
     },
     "hint": {
       "hand": "Seret part yang sudah lepas ke kerangka kuning. Klik part itu untuk mengangkat dan melihatnya dari dekat.",
       "nipper": "Nipper di tangan: arahkan ke gate (penghubung kecil) lalu klik untuk memotong. Klik kanan atau Esc untuk menaruhnya.",
-      "sand": "Amplas di tangan: angkat part yang sudah lepas (pakai Tangan), lalu gosok nubnya bolak-balik sampai rata."
+      "sand": "Amplas di tangan: angkat part yang sudah lepas (pakai Tangan), lalu gosok nubnya bolak-balik sampai rata.",
+      "brush": "Kuas di tangan: pilih warna di bawah, lalu klik part untuk mengecatnya.",
+      "decal": "Lembar decal di tangan: pilih stiker, lalu klik permukaan part untuk menempelnya. Klik stiker yang sudah ada untuk mengaturnya."
     },
     "drop": {
       "wrongStep": "Hampir! Selesaikan langkah {n} dulu.",
@@ -220,6 +224,34 @@
       "prev": "Sebelumnya",
       "next": "Berikutnya",
       "page": "Halaman {n} dari {total}"
+    },
+    "paint": {
+      "label": "Warna cat",
+      "colors": {
+        "F5F7F3": "Putih",
+        "2F5FB0": "Biru kobalt",
+        "C8402F": "Merah",
+        "F2C230": "Kuning",
+        "9AA3AB": "Abu-abu",
+        "4A5560": "Gunmetal",
+        "1D2B38": "Hitam",
+        "E07B2E": "Oranye",
+        "4C7A4A": "Hijau"
+      }
+    },
+    "decal": {
+      "label": "Jenis stiker",
+      "kinds": {
+        "code": "Kode",
+        "stripes": "Garis",
+        "chevron": "Peringatan",
+        "ring": "Lingkaran",
+        "number": "Nomor",
+        "line": "Strip"
+      },
+      "rotate": "Putar",
+      "size": "Ukuran",
+      "remove": "Lepas stiker ini"
     }
   }
 }

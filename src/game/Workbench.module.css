@@ -48,7 +48,7 @@
 
 .tools {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   border: 2px solid var(--ink);
   border-radius: var(--radius-control);
   overflow: hidden;
@@ -62,7 +62,7 @@
   color: var(--ink);
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 19px;
+  font-size: 16px;
   cursor: pointer;
 }
 
@@ -217,4 +217,59 @@
 /* the panel scrolls instead of squeezing its rows (the toolbar collapsed to 0px when content grew) */
 .panel > * {
   flex-shrink: 0;
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-2);
+}
+
+.swatches button {
+  aspect-ratio: 1;
+  min-height: 44px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.swatches button[aria-checked="true"] {
+  outline: 3px solid var(--decal);
+  outline-offset: 2px;
+}
+
+.decalKinds {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.decalKinds button {
+  min-height: 44px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.decalKinds button[aria-checked="true"] {
+  background: var(--decal);
+}
+
+.decalEdit {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.decalEdit label {
+  display: grid;
+  gap: var(--space-1);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.decalEdit input {
+  accent-color: var(--cobalt);
 }

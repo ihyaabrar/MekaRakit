@@ -88,7 +88,16 @@ export const isComplete = (kit: KitDef, s: KitState) => kit.parts.every((p) => s
 
 // ---- saved runs: the whole bench (part states + where loose parts lie), so a build resumes exactly ----
 
-export type RunSnapshot = { state: KitState; pos: Record<string, Vec3> };
+export const PAINTS = ["#F5F7F3", "#2F5FB0", "#C8402F", "#F2C230", "#9AA3AB", "#4A5560", "#1D2B38", "#E07B2E", "#4C7A4A"] as const;
+export const DECAL_KINDS = ["code", "stripes", "chevron", "ring", "number", "line"] as const;
+export type DecalKind = (typeof DECAL_KINDS)[number];
+/** A sticker on a part: position and surface normal in the part's own (upright) coordinates. */
+export type Decal = { id: string; part: string; kind: DecalKind; at: Vec3; normal: Vec3; rot: number; size: number };
+
+/** Everything cosmetic about a build; optional so older saves still load. */
+export type Finish = { paint: Record<string, string>; decals: Decal[]; pose: Record<string, number>; playSeconds: number };
+
+export type RunSnapshot = { state: KitState; pos: Record<string, Vec3> } & Partial<Finish>;
 
 const isVec3 = (v: unknown): v is Vec3 => Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === "number" && Number.isFinite(n));
 const STATUSES: PartStatus[] = ["runner", "free", "placed"];
@@ -115,7 +124,7 @@ export function restoreRun(kit: KitDef, raw: unknown): RunSnapshot | null {
     // a placed part always sits on its target; a part still on the runner stays in its slot
     pos[p.id] = ps.status === "placed" ? p.target : ps.status === "runner" ? p.runnerPos : at;
   }
-  return { state: { parts, step }, pos };
+  return { state: { parts, step }, pos, ...sanitizeFinish(kit, r) };
 }
 
 export function runSummary(kit: KitDef, s: KitState) {
@@ -150,4 +159,25 @@ export function pageForDrop(kit: KitDef, s: KitState, res: DropResult): number |
   if (res.kind === "wrong-step") return s.step;
   if (res.kind === "wrong-spot") return kit.parts.find((p) => p.id === res.spotOf)?.step ?? null;
   return null;
+}
+
+export const MAX_DECALS = 40;
+
+/** Keeps only finish data that fits the kit; bad entries are dropped, never the whole save. */
+export function sanitizeFinish(kit: KitDef, raw: Partial<Finish> | null | undefined): Finish {
+  const ids = new Set(kit.parts.map((p) => p.id));
+  const paint: Record<string, string> = {};
+  for (const [id, c] of Object.entries(raw?.paint ?? {})) if (ids.has(id) && (PAINTS as readonly string[]).includes(c)) paint[id] = c;
+  const decals: Decal[] = [];
+  for (const d of Array.isArray(raw?.decals) ? raw.decals : []) {
+    if (decals.length >= MAX_DECALS) break;
+    if (!d || !ids.has(d.part) || !(DECAL_KINDS as readonly string[]).includes(d.kind) || !isVec3(d.at) || !isVec3(d.normal)) continue;
+    if (typeof d.id !== "string" || d.id.length > 40 || !Number.isFinite(d.rot) || !Number.isFinite(d.size)) continue;
+    if (d.at.some((v) => Math.abs(v) > 2) || Math.hypot(...d.normal) < 0.5) continue;
+    decals.push({ id: d.id, part: d.part, kind: d.kind, at: d.at, normal: d.normal, rot: d.rot % (2 * Math.PI), size: Math.min(0.6, Math.max(0.06, d.size)) });
+  }
+  const pose: Record<string, number> = {};
+  for (const [k, a] of Object.entries(raw?.pose ?? {})) if (/^[a-z0-9-]{1,20}$/i.test(k) && Number.isFinite(a)) pose[k] = Math.max(-Math.PI, Math.min(Math.PI, a));
+  const ps = Number(raw?.playSeconds);
+  return { paint, decals, pose, playSeconds: Number.isFinite(ps) ? Math.min(1e7, Math.max(0, Math.round(ps))) : 0 };
 }
