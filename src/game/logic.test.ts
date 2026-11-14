@@ -105,3 +105,10 @@ test("finish data: valid paint, decals and pose survive, junk is dropped", async
   assert.equal(r.playSeconds, 126);
   assert.deepEqual(sanitizeFinish(kit, undefined), { paint: {}, decals: [], pose: {}, playSeconds: 0 });
 });
+
+test("play time ignores non-numbers instead of throwing", async () => {
+  const { sanitizeFinish } = await import("./logic.ts");
+  assert.equal(sanitizeFinish(kit, { playSeconds: { valueOf: null, toString: null } as unknown as number }).playSeconds, 0);
+  assert.equal(sanitizeFinish(kit, { playSeconds: "90" as unknown as number }).playSeconds, 0);
+  assert.equal(sanitizeFinish(kit, { playSeconds: 90.4 }).playSeconds, 90);
+});

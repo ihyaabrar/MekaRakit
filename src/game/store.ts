@@ -48,8 +48,10 @@ export async function fetchRun(kitId: string): Promise<RunSnapshot | null> {
   const kit = findKit(kitId)?.kit?.def;
   if (!kit) return null;
   const uid = await requireUserId();
-  const rows = await sql()`select snapshot from kit_runs where user_id = ${uid} and kit_id = ${kitId}`;
-  return rows[0] ? restoreRun(kit, rows[0].snapshot) : null;
+  const rows = await sql()`select snapshot, play_seconds from kit_runs where user_id = ${uid} and kit_id = ${kitId}`;
+  const run = rows[0] ? restoreRun(kit, rows[0].snapshot) : null;
+  // the row keeps the highest play time ever saved; a later, staler snapshot must not lower it
+  return run ? { ...run, playSeconds: Math.max(run.playSeconds ?? 0, Number(rows[0].play_seconds) || 0) } : null;
 }
 
 /**
@@ -75,7 +77,8 @@ export async function saveRun(kitId: string, snapshot: RunSnapshot) {
 
 export async function clearProgress() {
   const uid = await requireUserId();
-  await sql()`delete from kit_runs where user_id = ${uid}`;
+  const db = sql();
+  await db.transaction([db`delete from kit_runs where user_id = ${uid}`, db`delete from photos where user_id = ${uid}`]);
 }
 
 const MAX_PHOTOS = 30;

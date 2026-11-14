@@ -115,7 +115,14 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
   const [paintColor, setPaintColor] = useState<string>(PAINTS[2]);
   const [decalKind, setDecalKind] = useState<DecalKind>("code");
   const [selectedDecal, setSelectedDecal] = useState<string | null>(null);
-  const [pose, setPose] = useState<Record<string, number>>(() => saved?.pose ?? {});
+  const [pose, setPose] = useState<Record<string, number>>(() => {
+    const out: Record<string, number> = {};
+    for (const j of lk.poses) {
+      const a = saved?.pose?.[j.id];
+      if (typeof a === "number") out[j.id] = Math.min(j.max, Math.max(j.min, a));
+    }
+    return out;
+  });
   const [playSeconds, setPlaySeconds] = useState(() => saved?.playSeconds ?? 0);
   const [photoMode, setPhotoMode] = useState(false);
   const [photo, setPhoto] = useState<{ url: string; saved: "saving" | "saved" | "error" } | null>(null);
