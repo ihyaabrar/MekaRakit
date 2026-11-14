@@ -167,14 +167,14 @@
     "back": "Dashboard",
     "toolsLabel": "Tools",
     "tools": {
+      "hand": "Hand",
       "nipper": "Nipper",
-      "sand": "Sandpaper",
-      "build": "Build"
+      "sand": "Sandpaper"
     },
     "hint": {
-      "nipper": "Click a gate (the small connector) to cut the part off the runner. A part comes free once all its gates are cut.",
-      "sand": "Hold the mouse on a gate nub and rub back and forth until it is flush. Sand before assembling: nubs covered by other parts cannot be reached.",
-      "build": "Drag a free part onto the yellow outline."
+      "hand": "Drag a free part onto the yellow outline. Click it to lift it up and look closer.",
+      "nipper": "Nipper in hand: point at a gate (the small connector) and click to cut. Right-click or Esc puts it down.",
+      "sand": "Sandpaper in hand: lift a free part (with Hand), then rub its nubs back and forth until flush."
     },
     "drop": {
       "wrongStep": "Almost! Finish step {n} first.",
@@ -189,6 +189,36 @@
     "lockedBody": "Finish the previous kit to open this box.",
     "notDesignedBody": "This kit's parts are still being designed. The box comes later.",
     "saveError": "Your latest progress is not saved to the server yet. Keep playing; it will retry later.",
-    "loading": "Opening the box..."
+    "loading": "Opening the box...",
+    "box": {
+      "hint": "The KR-01 box is still sealed. Click the box to open it.",
+      "open": "Open the box"
+    },
+    "lift": {
+      "turn": "Drag the part to turn it. Pick up the sandpaper to smooth the nubs.",
+      "sand": "Hold the mouse on a nub and rub back and forth until flush.",
+      "putDown": "Put down the {part}"
+    },
+    "book": {
+      "open": "Open the manual",
+      "cover": "{name} manual",
+      "close": "Close the manual",
+      "stepDone": "This step is done.",
+      "stepNow": "Do this step now.",
+      "stepLater": "Coming up.",
+      "status": {
+        "runner": "on runner",
+        "free": "cut free",
+        "placed": "assembled"
+      },
+      "tip": "Cut all of a part’s gates, sand its nubs while you can still reach them, then fit it to the yellow outline.",
+      "contents": "In the box:",
+      "runner": "Runner {id}: {n} parts",
+      "nipper": "Nipper",
+      "sandpaper": "Sandpaper",
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page {n} of {total}"
+    }
   }
 }

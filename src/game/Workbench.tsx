@@ -15,9 +15,12 @@ import { useLoad } from "@/ui/useLoad";
 import { useRouter } from "next/navigation";
 import ui from "@/ui/ui.module.css";
 import * as sfx from "./sfx";
+import { HeldToolFollower, KitBox, RiseOnOpen, ToolTray, type HeldTool } from "./bench/Props";
+import LiftedPart from "./bench/LiftedPart";
+import ManualBook from "./bench/ManualBook";
 import styles from "./Workbench.module.css";
 
-type Tool = "nipper" | "sand" | "build";
+type Tool = HeldTool;
 type Burst = { id: number; at: Vec3 };
 type Hint = { key: "wrongStep"; n: number } | { key: "wrongSpot"; part: string } | null;
 
@@ -93,7 +96,36 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
   useEffect(() => {
     sfx.setSfxVolume(sfxVolume / 100);
   }, [sfxVolume]);
-  const [tool, setTool] = useState<Tool>("nipper");
+  const [tool, setTool] = useState<Tool>("hand");
+  // a resumed build skips the unboxing; a fresh one starts with the closed box
+  const [opened, setOpened] = useState(saved !== null);
+  const [justOpened, setJustOpened] = useState(false);
+  const [lifted, setLifted] = useState<string | null>(null);
+  const [liftRot, setLiftRot] = useState<[number, number]>([0, 0]);
+  const [bookOpen, setBookOpen] = useState(false);
+  const [snips, setSnips] = useState(0);
+
+  useEffect(() => {
+    if (bookOpen) return; // the book handles its own Escape
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      if (lifted) setLifted(null);
+      else setTool("hand");
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [bookOpen, lifted]);
+
+  function openBox() {
+    sfx.snap();
+    setOpened(true);
+    setJustOpened(true);
+  }
+
+  function lift(id: string) {
+    setLiftRot([0, 0]);
+    setLifted(id);
+  }
   const [state, setState] = useState<KitState>(() => saved?.state ?? initState(kit));
   const [pos, setPos] = useState<Record<string, Vec3>>(() => saved?.pos ?? Object.fromEntries(kit.parts.map((p) => [p.id, p.runnerPos])));
   const [dragging, setDragging] = useState<string | null>(null);
@@ -146,6 +178,7 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
 
   function onCut(part: PartDef, gateId: string) {
     sfx.snip();
+    setSnips((n) => n + 1);
     setBursts((b) => [...b.slice(-6), { id: Date.now() + Math.random(), at: add(part.runnerPos, lyingOffset(part.gates.find((g) => g.id === gateId)!.offset)) }]);
     setState((s) => cutGate(kit, s, part.id, gateId));
   }
@@ -169,7 +202,11 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
 
   return (
     <div className={styles.shell}>
-      <Canvas camera={{ position: [-1.7, 10, 7.2], fov: 48 }} dpr={[1, 2]}>
+      <Canvas
+        onContextMenu={(e) => {
+          e.preventDefault();
+          setTool("hand");
+        }} camera={{ position: [-1.7, 10, 7.2], fov: 48 }} dpr={[1, 2]}>
         <color attach="background" args={["#10261F"]} />
         <ambientLight intensity={0.9} />
         <directionalLight position={[4, 8, 5]} intensity={1.6} />
@@ -182,7 +219,17 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
           nextGate={nextGate}
           dragging={dragging}
           onCut={onCut}
-          canDrag={(id) => tool === "build" && state.parts[id].status === "free"}
+          opened={opened}
+          justOpened={justOpened}
+          onOpenBox={openBox}
+          onPickTool={setTool}
+          onOpenBook={() => setBookOpen(true)}
+          snips={snips}
+          lifted={lifted}
+          liftRot={liftRot}
+          onLift={lift}
+          onTurn={(dx, dy) => setLiftRot(([pitch, yaw]) => [Math.max(-1.4, Math.min(1.4, pitch + dy * 0.01)), yaw + dx * 0.012])}
+          canDrag={(id) => tool === "hand" && state.parts[id].status === "free"}
           onDragStart={setDragging}
           onDragMove={(id, at) => setPos((p) => ({ ...p, [id]: at }))}
           onDrop={onDrop}
@@ -203,14 +250,33 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
         <h1 className={styles.kitTitle}>
           <span className={ui.code}>{entry.code}</span> {tk(`${entry.id}.name`)}
         </h1>
-        <div className={styles.tools} role="toolbar" aria-label={t("toolsLabel")}>
-          {(["nipper", "sand", "build"] as const).map((k) => (
-            <button key={k} aria-pressed={tool === k} onClick={() => setTool(k)}>
-              {t(`tools.${k}`)}
+        {!opened ? (
+          <>
+            <p className={styles.hint}>{t("box.hint")}</p>
+            <button className={ui.btn} type="button" onClick={openBox}>
+              {t("box.open")}
             </button>
-          ))}
-        </div>
-        <p className={styles.hint}>{t(`hint.${tool}`)}</p>
+          </>
+        ) : (
+          <>
+            <div className={styles.tools} role="toolbar" aria-label={t("toolsLabel")}>
+              {(["hand", "nipper", "sand"] as const).map((k) => (
+                <button key={k} aria-pressed={tool === k} onClick={() => setTool(k)}>
+                  {t(`tools.${k}`)}
+                </button>
+              ))}
+            </div>
+            <p className={styles.hint}>{lifted ? t(tool === "sand" ? "lift.sand" : "lift.turn") : t(`hint.${tool}`)}</p>
+            {lifted && (
+              <button className={ui.btnLine} type="button" onClick={() => setLifted(null)}>
+                {t("lift.putDown", { part: lk.parts[lifted].name[lang] })}
+              </button>
+            )}
+            <button className={ui.btnLine} type="button" onClick={() => setBookOpen(true)}>
+              {t("book.open")}
+            </button>
+          </>
+        )}
         {saveError && (
           <p className={styles.warn} role="status">
             {t("saveError")}
@@ -245,6 +311,7 @@ function Bench({ entry, lk, sfxVolume, saved }: { entry: KitEntry; lk: LoadedKit
           </div>
         )}
       </aside>
+      {bookOpen && <ManualBook lk={lk} state={state} lang={lang} code={entry.code} name={tk(`${entry.id}.name`)} onClose={() => setBookOpen(false)} />}
     </div>
   );
 }
@@ -257,6 +324,16 @@ type SceneProps = {
   nextGate: string | null;
   dragging: string | null;
   onCut: (part: PartDef, gateId: string) => void;
+  opened: boolean;
+  justOpened: boolean;
+  onOpenBox: () => void;
+  onPickTool: (tool: Tool) => void;
+  onOpenBook: () => void;
+  snips: number;
+  lifted: string | null;
+  liftRot: [number, number];
+  onLift: (partId: string) => void;
+  onTurn: (dx: number, dy: number) => void;
   canDrag: (partId: string) => boolean;
   onDragStart: (partId: string) => void;
   onDragMove: (partId: string, at: Vec3) => void;
@@ -264,7 +341,7 @@ type SceneProps = {
   onRub: (partId: string, gateId: string, pixels: number) => void;
 };
 
-function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
+function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOpened, onOpenBox, onPickTool, onOpenBook, snips, lifted, liftRot, onLift, onTurn, canDrag, onDragStart, onDragMove, onDrop, onRub }: SceneProps) {
   const kit = lk.def;
   const gradient = useToonGradient();
   const { camera, gl } = useThree();
@@ -294,15 +371,28 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, canDrag, onDra
     return hit ? [hit.x, Math.max(0.1, hit.y), 0] : null;
   }
 
-  function startDrag(id: string) {
-    onDragStart(id);
+  function startGrab(id: string, e0: PointerEvent) {
+    const [x0, y0] = [e0.clientX, e0.clientY];
+    let moving = false;
     let last: Vec3 = pos[id];
     session(
       (e) => {
+        if (!moving && Math.hypot(e.clientX - x0, e.clientY - y0) < 6) return; // still a click
+        if (!moving) {
+          moving = true;
+          onDragStart(id);
+        }
         const at = toWorld(e);
         if (at) onDragMove(id, (last = at));
       },
-      (e) => onDrop(id, toWorld(e) ?? last),
+      (e) => (moving ? onDrop(id, toWorld(e) ?? last) : onLift(id)),
+    );
+  }
+
+  function startTurn() {
+    session(
+      (e) => onTurn(e.movementX, e.movementY),
+      () => {},
     );
   }
 
@@ -319,15 +409,43 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, canDrag, onDra
         <planeGeometry args={[14, 9]} />
         <meshToonMaterial color={MAT} gradientMap={gradient} />
       </mesh>
-      {lk.runners.map((r) => (
-        <Runner key={r.id} runner={r} gradient={gradient} />
-      ))}
       <mesh position={[lk.assembly[0], 0.01, lk.assembly[2]]} rotation-x={-Math.PI / 2}>
         <circleGeometry args={[1.1, 40]} />
         <meshToonMaterial color="#2A6656" gradientMap={gradient} />
       </mesh>
-
-      {kit.parts.map((p) => {
+      <KitBox gradient={gradient} opened={opened} onOpen={onOpenBox} center={[-3.5, 0, -0.45]} />
+      {opened && (
+        <>
+          <ToolTray gradient={gradient} held={tool} animateIn={justOpened} onPick={onPickTool} onOpenBook={onOpenBook} />
+          <HeldToolFollower gradient={gradient} held={tool} snips={snips} />
+        </>
+      )}
+      {lifted && (
+        <LiftedPart rotation={liftRot}>
+          <PartBody visual={lk.parts[lifted]} gradient={gradient} ghosted={false} />
+          <mesh
+            onPointerDown={(e: ThreeEvent<PointerEvent>) => {
+              if (tool !== "hand") return;
+              e.stopPropagation();
+              startTurn();
+            }}
+          >
+            <boxGeometry args={kit.parts.find((p) => p.id === lifted)!.size} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+          </mesh>
+          {kit.parts
+            .find((p) => p.id === lifted)!
+            .gates.map((g) => (
+              <Nub key={g.id} offset={g.offset} height={state.parts[lifted].nubs[g.id] ?? 0} active={tool === "sand"} onStart={() => startRub(lifted, g.id)} gradient={gradient} color={lk.parts[lifted].color} />
+            ))}
+        </LiftedPart>
+      )}
+      <RiseOnOpen animate={justOpened}>
+      {opened && lk.runners.map((r) => (
+        <Runner key={r.id} runner={r} gradient={gradient} />
+      ))}
+      {opened && kit.parts.map((p) => {
+        if (p.id === lifted) return null;
         const ps = state.parts[p.id];
         const ghost = ps.status !== "placed" && p.step === state.step;
         return (
@@ -346,7 +464,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, canDrag, onDra
                 onPointerDown={(e: ThreeEvent<PointerEvent>) => {
                   if (!canDrag(p.id)) return;
                   e.stopPropagation();
-                  startDrag(p.id);
+                  startGrab(p.id, e.nativeEvent);
                 }}
               >
                 <boxGeometry args={p.size} />
@@ -355,12 +473,13 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, canDrag, onDra
               {p.gates.map((g) => {
                 const cut = ps.cut.includes(g.id);
                 if (!cut) return <Gate key={g.id} offset={g.offset} hot={nextGate === `${p.id}/${g.id}` && tool === "nipper"} onCut={() => tool === "nipper" && onCut(p, g.id)} />;
-                return <Nub key={g.id} offset={g.offset} height={ps.nubs[g.id] ?? 0} active={tool === "sand"} onStart={() => startRub(p.id, g.id)} gradient={gradient} color={lk.parts[p.id].color} />;
+                return <Nub key={g.id} offset={g.offset} height={ps.nubs[g.id] ?? 0} active={false} onStart={() => {}} gradient={gradient} color={lk.parts[p.id].color} />;
               })}
             </group>
           </group>
         );
       })}
+      </RiseOnOpen>
     </group>
   );
 }
