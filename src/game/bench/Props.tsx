@@ -4,9 +4,10 @@
 // and the tool currently held in the hand, which follows the pointer.
 import { useFrame, type ThreeEvent } from "@react-three/fiber";
 import { Outlines } from "@react-three/drei";
-import { useEffect, useRef, type ReactNode, type Ref } from "react";
+import { useEffect, useMemo, useRef, type ReactNode, type Ref } from "react";
 import * as THREE from "three";
 import type { Vec3 } from "../logic";
+import { makeBoxArt } from "./boxArt";
 
 export type HeldTool = "hand" | "nipper" | "sand";
 
@@ -17,10 +18,11 @@ const BOX_WHITE = "#F5F7F3";
 const STEEL = "#9AA3AB";
 const SANDPAPER = "#C8B48A";
 
+// Outlines thickness is in screen pixels (drei default mode), not world units.
 // meshes of held/decorative props must never steal clicks from gates, parts or nubs
 const noRaycast = () => null;
 
-function Block({ size, at = [0, 0, 0], color, gradient, outline = 0.02, rot }: { size: Vec3; at?: Vec3; color: string; gradient: THREE.Texture; outline?: number; rot?: Vec3 }) {
+function Block({ size, at = [0, 0, 0], color, gradient, outline = 1.6, rot }: { size: Vec3; at?: Vec3; color: string; gradient: THREE.Texture; outline?: number; rot?: Vec3 }) {
   return (
     <mesh position={at} rotation={rot} raycast={noRaycast}>
       <boxGeometry args={size} />
@@ -192,7 +194,10 @@ export function HeldToolFollower({ gradient, held, snips }: { gradient: THREE.Te
 }
 
 /** Closed kit box covering the runners. Clicking it opens the lid; the lid then rests at the back of the mat. */
-export function KitBox({ gradient, opened, onOpen, center }: { gradient: THREE.Texture; opened: boolean; onOpen: () => void; center: Vec3 }) {
+type BoxLabel = { code: string; name: string; body: string; trim: string };
+
+export function KitBox({ gradient, opened, onOpen, center, label }: { gradient: THREE.Texture; opened: boolean; onOpen: () => void; center: Vec3; label: BoxLabel }) {
+  const art = useMemo(() => makeBoxArt(label), [label]);
   const lid = useRef<THREE.Group>(null);
   const base = useRef<THREE.Group>(null);
   const t0 = useRef<number | null>(null);
@@ -216,12 +221,16 @@ export function KitBox({ gradient, opened, onOpen, center }: { gradient: THREE.T
   return (
     <>
       <group ref={base} position={[center[0], 0, center[2]]}>
-        <Block size={[w, 0.9, d]} at={[0, 0.45, 0]} color={BOX_WHITE} gradient={gradient} outline={0.03} />
+        <Block size={[w, 0.9, d]} at={[0, 0.45, 0]} color={BOX_WHITE} gradient={gradient} outline={2.4} />
       </group>
       <group ref={lid} position={[center[0], 1.0, center[2]]}>
-        <Block size={[w + 0.08, 0.22, d + 0.08]} color={COBALT} gradient={gradient} outline={0.03} />
+        <Block size={[w + 0.08, 0.22, d + 0.08]} color={COBALT} gradient={gradient} outline={2.4} />
         <Block size={[w + 0.09, 0.05, 0.6]} at={[0, 0.09, -1.6]} color={YELLOW} gradient={gradient} outline={0} />
-        <Block size={[1.4, 0.03, 2.2]} at={[1.6, 0.12, 0.6]} color={BOX_WHITE} gradient={gradient} outline={0} />
+        {/* box art printed on the lid */}
+        <mesh position={[0.4, 0.115, 0.35]} rotation-x={-Math.PI / 2} raycast={noRaycast}>
+          <planeGeometry args={[4.4, 3.6]} />
+          {art ? <meshBasicMaterial map={art} toneMapped={false} /> : <meshBasicMaterial color={BOX_WHITE} />}
+        </mesh>
         {!opened && (
           <mesh
             position={[0, 0, 0]}

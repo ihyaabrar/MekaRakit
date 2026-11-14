@@ -127,3 +127,27 @@ export function runSummary(kit: KitDef, s: KitState) {
   }
   return { gatesCut, nubsLeft, complete: isComplete(kit, s) };
 }
+
+// ---- assembly feel ----
+
+export const MAGNET_DIST = 1.0; // a carried part starts drifting toward its own spot inside this radius
+
+/**
+ * Where a carried part is shown: inside MAGNET_DIST of its own (allowed) spot it is pulled in,
+ * harder the closer it gets, so the last bit of the move "clicks" into place.
+ */
+export function magnetPull(kit: KitDef, s: KitState, partId: string, at: Vec3): Vec3 {
+  const def = kit.parts.find((p) => p.id === partId);
+  if (!def || def.step > s.step || s.parts[partId]?.status !== "free") return at;
+  const d = dist(at, def.target);
+  if (d >= MAGNET_DIST) return at;
+  const k = 1 - d / MAGNET_DIST; // 0 at the edge, 1 on the spot
+  return [at[0] + (def.target[0] - at[0]) * k, at[1] + (def.target[1] - at[1]) * k, at[2] + (def.target[2] - at[2]) * k];
+}
+
+/** Manual page that explains a failed drop: the current step, or the step that owns the spot it was dropped on. */
+export function pageForDrop(kit: KitDef, s: KitState, res: DropResult): number | null {
+  if (res.kind === "wrong-step") return s.step;
+  if (res.kind === "wrong-spot") return kit.parts.find((p) => p.id === res.spotOf)?.step ?? null;
+  return null;
+}

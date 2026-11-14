@@ -8,12 +8,12 @@ import type { LoadedKit } from "../kitFormat";
 import ui from "@/ui/ui.module.css";
 import styles from "./ManualBook.module.css";
 
-type Props = { lk: LoadedKit; state: KitState; lang: "id" | "en"; code: string; name: string; onClose: () => void };
+type Props = { initialPage?: number; lk: LoadedKit; state: KitState; lang: "id" | "en"; code: string; name: string; onClose: () => void };
 
-export default function ManualBook({ lk, state, lang, code, name, onClose }: Props) {
+export default function ManualBook({ initialPage, lk, state, lang, code, name, onClose }: Props) {
   const t = useTranslations("workbench.book");
   // page 0 is the cover with the box contents; page n is manual step n
-  const [page, setPage] = useState(Math.min(state.step, lk.steps.length));
+  const [page, setPage] = useState(Math.min(initialPage ?? state.step, lk.steps.length));
   const closeRef = useRef<HTMLButtonElement>(null);
   const last = lk.steps.length;
 

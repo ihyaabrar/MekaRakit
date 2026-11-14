@@ -195,3 +195,26 @@
   font-size: 13px;
   color: var(--ink-soft);
 }
+
+.warn p {
+  margin: 0;
+}
+
+/* text-style action inside the yellow nudge box */
+.linkBtn {
+  margin-top: var(--space-2);
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--cobalt);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* the panel scrolls instead of squeezing its rows (the toolbar collapsed to 0px when content grew) */
+.panel > * {
+  flex-shrink: 0;
+}
