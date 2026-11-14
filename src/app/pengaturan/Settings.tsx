@@ -7,6 +7,7 @@ import AppHeader from "@/ui/AppHeader";
 import ui from "@/ui/ui.module.css";
 import { clearProgress, fetchProfile, saveProfile, type Profile } from "@/game/store";
 import { setLocaleCookie } from "@/ui/locale";
+import { deleteAccount } from "../akun/actions";
 import { useLoad } from "@/ui/useLoad";
 import s from "./settings.module.css";
 
@@ -35,7 +36,6 @@ export default function Settings() {
 
 function SettingsForm({ initial }: { initial: Profile }) {
   const t = useTranslations("settings");
-  const tc = useTranslations("common");
   const ta = useTranslations("auth");
   const locale = useLocale();
   const router = useRouter();
@@ -60,6 +60,30 @@ function SettingsForm({ initial }: { initial: Profile }) {
       setLocaleCookie(lang as "id" | "en");
       router.refresh();
     }
+  }
+
+  const [deleting, setDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<"" | "password" | "server">("");
+  const [armed, setArmed] = useState(false); // first click arms, second click deletes
+
+  async function removeAccount(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const password = String(new FormData(e.currentTarget).get("password") ?? "");
+    if (!armed) {
+      setArmed(true);
+      return;
+    }
+    setDeleting(true);
+    setDeleteError("");
+    const res = await deleteAccount(password).catch(() => ({ ok: false as const, code: "server" as const }));
+    if (res.ok) {
+      router.push("/");
+      router.refresh();
+      return;
+    }
+    setDeleting(false);
+    setArmed(false);
+    setDeleteError(res.code ?? "server");
   }
 
   async function reset() {
@@ -140,13 +164,30 @@ function SettingsForm({ initial }: { initial: Profile }) {
           <button className={ui.btnLine} type="button" onClick={reset}>
             {t("resetProgress")}
           </button>
-          {/* TODO: real account deletion via Supabase once accounts exist */}
-          <div>
-            <button className={ui.btnLine} type="button" disabled>
-              {t("deleteAccount")} ({tc("soon")})
-            </button>
+          <form className={s.danger} onSubmit={removeAccount}>
+            <h3>{t("deleteAccount")}</h3>
             <p className={s.note}>{t("deleteNote")}</p>
-          </div>
+            <label htmlFor="del-pw">{t("deletePassword")}</label>
+            <input id="del-pw" name="password" type="password" autoComplete="current-password" />
+            {armed && (
+              <p className={s.err} role="alert">
+                {t("deleteAsk")}
+              </p>
+            )}
+            <button className={s.dangerBtn} type="submit" disabled={deleting}>
+              {armed ? t("deleteReally") : t("deleteConfirm")}
+            </button>
+            {armed && (
+              <button className={ui.btnLine} type="button" onClick={() => setArmed(false)}>
+                {t("deleteCancel")}
+              </button>
+            )}
+            {deleteError && (
+              <p className={s.err} role="alert">
+                {t(`deleteError.${deleteError}`)}
+              </p>
+            )}
+          </form>
         </section>
       </main>
     </>

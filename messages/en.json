@@ -159,12 +159,21 @@
     "saved": "Saved.",
     "account": "Account",
     "deleteAccount": "Delete account",
-    "deleteNote": "Account deletion comes later.",
+    "deleteNote": "All your progress, photos and your account are deleted permanently. This cannot be undone.",
     "resetProgress": "Clear progress",
     "resetConfirm": "Clear all your progress and your shelf? This cannot be undone.",
     "resetDone": "Progress cleared.",
     "saveError": "Could not save. Check your connection and try again.",
-    "saving": "Saving..."
+    "saving": "Saving...",
+    "deletePassword": "Type your password to confirm",
+    "deleteConfirm": "Delete account permanently",
+    "deleteAsk": "Delete your account with all progress and photos? This cannot be undone.",
+    "deleteError": {
+      "password": "Wrong password.",
+      "server": "Account not deleted yet. Try again shortly."
+    },
+    "deleteReally": "Yes, delete permanently",
+    "deleteCancel": "Cancel"
   },
   "workbench": {
     "back": "Dashboard",
@@ -271,5 +280,22 @@
       "download": "Download",
       "leave": "Leave photo mode"
     }
+  },
+  "account": {
+    "forgotTitle": "Forgot password",
+    "forgotLead": "Enter your account email. We will send a link to set a new password.",
+    "email": "Email",
+    "sendLink": "Send link",
+    "sending": "Sending...",
+    "sent": "If that email is registered, the link is on its way. Check your inbox and spam folder.",
+    "error": "Could not send. Try again shortly.",
+    "backToLogin": "Back to log in",
+    "resetTitle": "Set a new password",
+    "newPassword": "New password",
+    "passwordHint": "At least 8 characters.",
+    "savePassword": "Save password",
+    "resetDone": "New password saved. Please log in.",
+    "expired": "This link is invalid or has expired.",
+    "askAgain": "Ask for a new link"
   }
 }
