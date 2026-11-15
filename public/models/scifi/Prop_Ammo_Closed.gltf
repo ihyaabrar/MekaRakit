@@ -67,19 +67,19 @@
 	],
 	"images":[
 		{
-			"mimeType":"image/png",
+			"mimeType":"image/jpeg",
 			"name":"T_Props_Batch2_Normal",
-			"uri":"T_Props_Batch2_Normal.png"
+			"uri":"T_Props_Batch2_Normal.jpg"
 		},
 		{
-			"mimeType":"image/png",
+			"mimeType":"image/jpeg",
 			"name":"T_Props_Batch2_BaseColor",
-			"uri":"T_Props_Batch2_BaseColor.png"
+			"uri":"T_Props_Batch2_BaseColor.jpg"
 		},
 		{
-			"mimeType":"image/png",
+			"mimeType":"image/jpeg",
 			"name":"T_Props_Batch2_ORM",
-			"uri":"T_Props_Batch2_ORM.png"
+			"uri":"T_Props_Batch2_ORM.jpg"
 		}
 	],
 	"accessors":[

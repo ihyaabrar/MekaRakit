@@ -67,19 +67,19 @@
 	],
 	"images":[
 		{
-			"mimeType":"image/png",
+			"mimeType":"image/jpeg",
 			"name":"T_Props_Crates_Normal",
-			"uri":"T_Props_Crates_Normal.png"
+			"uri":"T_Props_Crates_Normal.jpg"
 		},
 		{
-			"mimeType":"image/png",
+			"mimeType":"image/jpeg",
 			"name":"T_Props_Crates_BaseColor",
-			"uri":"T_Props_Crates_BaseColor.png"
+			"uri":"T_Props_Crates_BaseColor.jpg"
 		},
 		{
-			"mimeType":"image/png",
+			"mimeType":"image/jpeg",
 			"name":"T_Props_Crates_ORM",
-			"uri":"T_Props_Crates_ORM.png"
+			"uri":"T_Props_Crates_ORM.jpg"
 		}
 	],
 	"accessors":[

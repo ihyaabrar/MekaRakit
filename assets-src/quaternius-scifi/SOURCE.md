@@ -16,4 +16,5 @@ Props used as desk dressing in `src/game/bench/Studio.tsx`, copied to `public/mo
 | `Prop_Crate_Tarp.gltf`  | covered crate, back            |
 | `Prop_Mug.gltf`         | coffee mug, back right corner  |
 
-The `.gltf` and `.bin` files are unchanged. Their textures were shrunk to at most 1024 px (PNG) to keep the page light.
+The `.bin` files are unchanged. Textures were shrunk to 512 px JPEG (normal maps at quality 90, the rest 85) and the
+`.gltf` image references point at the `.jpg` files, so the four props cost about 330 KB instead of 7 MB.
