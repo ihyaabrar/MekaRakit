@@ -715,7 +715,7 @@ function Scene({ lk, tool, state, pos, nextGate, dragging, onCut, opened, justOp
         </>
       )}
       {lifted && (
-        <LiftedPart rotation={liftRot}>
+        <LiftedPart rotation={liftRot} size={kit.parts.find((p) => p.id === lifted)!.size}>
           <PartBody visual={lk.parts[lifted]} ghosted={false} paint={paint[lifted]} model={lk.model} onSurface={(e) => finishClick(lifted, e)} />
           {decals
             .filter((d) => d.part === lifted)
