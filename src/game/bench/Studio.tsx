@@ -3,8 +3,8 @@
 // The modeler's desk: wooden top, a printed cutting mat, a warm desk lamp, soft shadows and
 // a procedural environment for plastic reflections (no HDR download).
 import { useFrame, useThree } from "@react-three/fiber";
-import { Environment, Lightformer } from "@react-three/drei";
-import { useMemo, useRef } from "react";
+import { Environment, Lightformer, useGLTF } from "@react-three/drei";
+import { Suspense, useMemo, useRef } from "react";
 import * as THREE from "three";
 import type { Vec3 } from "../logic";
 
@@ -150,6 +150,29 @@ function DeskLamp({ at }: { at: Vec3 }) {
   );
 }
 
+/** A Quaternius Sci-Fi Essentials prop (CC0) as desk clutter: cloned, and never hit by pointer rays. */
+function DeskProp({ name, at, scale, rotY = 0 }: { name: string; at: Vec3; scale: number; rotY?: number }) {
+  const { scene } = useGLTF(`/models/scifi/${name}.gltf`);
+  const prop = useMemo(() => {
+    const c = scene.clone(true);
+    c.traverse((o) => (o.raycast = () => {}));
+    return c;
+  }, [scene]);
+  return <primitive object={prop} position={at} scale={scale} rotation-y={rotY} />;
+}
+
+// all off the cutting mat (|x| < 7, |z| < 4.5), clear of the kit box, runners, tool tray and lamp
+function DeskProps() {
+  return (
+    <Suspense fallback={null}>
+      <DeskProp name="Prop_Ammo_Closed" at={[-1.6, 0, -6.4]} scale={3.4} rotY={0.3} />
+      <DeskProp name="Prop_Crate" at={[3.4, 0, -6.8]} scale={0.9} rotY={0.15} />
+      <DeskProp name="Prop_Crate_Tarp" at={[5.7, 0, -6.4]} scale={0.75} rotY={-0.4} />
+      <DeskProp name="Prop_Mug" at={[8.1, 0, -4.4]} scale={6} rotY={-2.2} />
+    </Suspense>
+  );
+}
+
 export function Studio({ lampTarget }: { lampTarget: Vec3 }) {
   const mat = useMatTexture();
   const wood = useWoodTexture();
@@ -201,6 +224,7 @@ export function Studio({ lampTarget }: { lampTarget: Vec3 }) {
         <meshStandardMaterial map={mat ?? undefined} color={mat ? "#ffffff" : "#1e4a3d"} roughness={0.92} />
       </mesh>
       <DeskLamp at={[-11.5, 0, -6.5]} />
+      <DeskProps />
     </>
   );
 }

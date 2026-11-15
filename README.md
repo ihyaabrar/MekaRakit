@@ -38,3 +38,5 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 ## Credits
 
 Mech models: [Animated Mech Pack](https://quaternius.com/packs/animatedmech.html) by Quaternius, CC0 1.0. Source files and the kit build script are described in `assets-src/quaternius-mech/SOURCE.md`.
+
+Desk props: [Sci-Fi Essentials Kit](https://quaternius.com/packs/scifiessentialskit.html) by Quaternius, CC0 1.0. Source and the files used are described in `assets-src/quaternius-scifi/SOURCE.md`.
