@@ -30,8 +30,10 @@ export type KitFileV1 = {
     target: Vec3; // relative to assemblyAt (y absolute)
     step: number;
   }[];
-  /** Part geometry file under /public (see scripts/build-mech-kit.mjs). */
+  /** Part geometry file under /public (see scripts/build-mech-kit.mjs), with a ?v= content hash. */
   model?: string;
+  /** Box-art render under /public, with a ?v= content hash. */
+  art?: string;
   /** Posable joints, outermost first: each turns its parts around a pivot (relative to assemblyAt, y absolute). */
   poses?: { id: string; name: Text; parts: string[]; pivot: Vec3; axis: "x" | "y" | "z"; min: number; max: number }[];
 };
@@ -40,7 +42,7 @@ export type PoseJoint = { id: string; name: Text; parts: string[]; pivot: Vec3; 
 
 export type PartVisual = { name: Text; color: string; shape: Prim[]; runner: string; model?: string };
 export type RunnerVisual = KitFileV1["runners"][number];
-export type LoadedKit = { def: KitDef; parts: Record<string, PartVisual>; runners: RunnerVisual[]; steps: KitFileV1["steps"]; assembly: Vec3; poses: PoseJoint[]; model?: string };
+export type LoadedKit = { def: KitDef; parts: Record<string, PartVisual>; runners: RunnerVisual[]; steps: KitFileV1["steps"]; assembly: Vec3; poses: PoseJoint[]; model?: string; art?: string };
 
 const EPS = 1e-9;
 
@@ -105,6 +107,7 @@ export function loadKit(file: KitFileV1): LoadedKit {
     assembly: [ax, 0, az],
     poses,
     model: file.model,
+    art: file.art,
   };
 }
 

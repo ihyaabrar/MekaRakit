@@ -433,7 +433,6 @@
       "step": 6
     }
   ],
-  "model": "/models/kr-02.json",
   "poses": [
     {
       "id": "waist",
@@ -559,5 +558,7 @@
       "min": -60,
       "max": 45
     }
-  ]
+  ],
+  "model": "/models/kr-02.json?v=2ea857e503",
+  "art": "/art/kr-02.png?v=0b745f8f3d"
 }

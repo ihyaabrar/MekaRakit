@@ -12,7 +12,7 @@ test("every kit loads: 10-30 parts, every step used, each part has model geometr
     const kit = loadKit(file);
     assert.ok(kit.def.parts.length >= 10 && kit.def.parts.length <= 30, `${file.id} parts: ${kit.def.parts.length}`);
     assert.deepEqual([...new Set(kit.def.parts.map((p) => p.step))].sort(), kit.steps.map((s) => s.n));
-    const model = JSON.parse(readFileSync(new URL(`../../public${file.model}`, import.meta.url), "utf8"));
+    const model = JSON.parse(readFileSync(new URL(`../../public${file.model!.split("?")[0]}`, import.meta.url), "utf8"));
     for (const p of Object.values(kit.parts)) assert.ok(model[p.model!]?.main.length || model[p.model!]?.detail.length, `${file.id} ${p.model} has geometry`);
   }
 });
