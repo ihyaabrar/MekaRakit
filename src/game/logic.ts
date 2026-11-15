@@ -15,7 +15,8 @@ export type PartDef = {
   step: number; // manual step that installs it (1-based)
 };
 
-export type KitDef = { id: string; name: string; parts: PartDef[] };
+/** `rev` fingerprints the part layout; a save made for another layout of the same kit id is not restored. */
+export type KitDef = { id: string; name: string; parts: PartDef[]; rev?: string };
 
 export type PartStatus = "runner" | "free" | "placed";
 
@@ -97,7 +98,7 @@ export type Decal = { id: string; part: string; kind: DecalKind; at: Vec3; norma
 /** Everything cosmetic about a build; optional so older saves still load. */
 export type Finish = { paint: Record<string, string>; decals: Decal[]; pose: Record<string, number>; playSeconds: number };
 
-export type RunSnapshot = { state: KitState; pos: Record<string, Vec3> } & Partial<Finish>;
+export type RunSnapshot = { state: KitState; pos: Record<string, Vec3>; kit?: string } & Partial<Finish>;
 
 const isVec3 = (v: unknown): v is Vec3 => Array.isArray(v) && v.length === 3 && v.every((n) => typeof n === "number" && Number.isFinite(n));
 const STATUSES: PartStatus[] = ["runner", "free", "placed"];
@@ -107,6 +108,8 @@ export function restoreRun(kit: KitDef, raw: unknown): RunSnapshot | null {
   const r = raw as Partial<RunSnapshot> | null;
   const step = r?.state?.step;
   if (!r?.state || !r.pos || typeof step !== "number" || !Number.isInteger(step) || step < 1) return null;
+  // same part ids can mean different parts after a kit is redesigned: never carry progress across
+  if (kit.rev && r.kit !== kit.rev) return null;
   const parts: Record<string, PartState> = {};
   const pos: Record<string, Vec3> = {};
   for (const p of kit.parts) {
@@ -124,7 +127,7 @@ export function restoreRun(kit: KitDef, raw: unknown): RunSnapshot | null {
     // a placed part always sits on its target; a part still on the runner stays in its slot
     pos[p.id] = ps.status === "placed" ? p.target : ps.status === "runner" ? p.runnerPos : at;
   }
-  return { state: { parts, step }, pos, ...sanitizeFinish(kit, r) };
+  return { state: { parts, step }, pos, ...(kit.rev ? { kit: kit.rev } : {}), ...sanitizeFinish(kit, r) };
 }
 
 export function runSummary(kit: KitDef, s: KitState) {

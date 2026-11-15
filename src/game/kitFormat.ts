@@ -98,7 +98,7 @@ export function loadKit(file: KitFileV1): LoadedKit {
   });
 
   return {
-    def: { id: file.id, name: file.code, parts },
+    def: { id: file.id, name: file.code, parts, rev: layoutRev(file) },
     parts: Object.fromEntries(file.parts.map((p) => [p.id, { name: p.name, color: p.color, shape: p.shape ?? [{ box: p.size }], runner: p.runner, model: file.model ? p.model : undefined }])),
     runners: file.runners,
     steps: [...file.steps].sort((a, b) => a.n - b.n),
@@ -106,6 +106,14 @@ export function loadKit(file: KitFileV1): LoadedKit {
     poses,
     model: file.model,
   };
+}
+
+/** Short fingerprint of what each part id means (shape source, step, gate count). */
+function layoutRev(file: KitFileV1): string {
+  const text = file.parts.map((p) => `${p.id}:${p.model ?? JSON.stringify(p.shape ?? p.size)}:${p.step}:${p.gates.length}`).join("|");
+  let h = 0x811c9dc5; // FNV-1a
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
+  return (h >>> 0).toString(36);
 }
 
 /** Part-local point -> world offset while the part lies face-up on the mat (rotation -90 deg about X). */

@@ -286,7 +286,9 @@
       "leave": "Leave photo mode"
     },
     "stepOf": "Step {n} of {total}",
-    "nubsShort": "Nubs {n}"
+    "nubsShort": "Nubs {n}",
+    "modelError": "The kit model failed to load. Check your connection and try again.",
+    "modelRetry": "Try again"
   },
   "account": {
     "forgotTitle": "Forgot password",

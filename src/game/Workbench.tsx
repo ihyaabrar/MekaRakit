@@ -26,7 +26,8 @@ import { Studio } from "./bench/Studio";
 import styles from "./Workbench.module.css";
 import hud from "./bench/Hud.module.css";
 import { ToolIcon } from "./bench/ToolIcons";
-import { MechPiece, loadModel } from "./bench/Model";
+import { MechPiece, forgetModel, loadModel } from "./bench/Model";
+import Catch from "./bench/Catch";
 
 type Tool = HeldTool;
 type Burst = { id: number; at: Vec3 };
@@ -89,6 +90,8 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
   const tk = useTranslations("kits");
   const router = useRouter();
   const [saveError, setSaveError] = useState(false);
+  const [modelFailed, setModelFailed] = useState(false);
+  const [modelTry, setModelTry] = useState(0); // remounts the scene so a failed model file is fetched again
   const [shelving, setShelving] = useState(false);
   useEffect(() => {
     sfx.setSfxVolume(sfxVolume / 100);
@@ -326,6 +329,7 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
         <Studio lampTarget={[lk.assembly[0] - 2, 0, lk.assembly[2]]} />
         <OrbitControls makeDefault target={[-1.2, 0.2, 0.9]} maxPolarAngle={Math.PI / 2.1} minDistance={4} maxDistance={16} />
         {/* the mech model file streams in; the desk and box render meanwhile */}
+        <Catch key={modelTry} onError={() => setModelFailed(true)}>
         <Suspense fallback={null}>
         <Scene
           lk={lk}
@@ -366,6 +370,7 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
           }}
         />
         </Suspense>
+        </Catch>
         {bursts.map((b) => (
           <Sparks key={b.id} seed={b.id} at={b.at} />
         ))}
@@ -419,6 +424,22 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
           <p className={hud.warn} role="status">
             {t("saveError")}
           </p>
+        )}
+        {modelFailed && (
+          <div className={hud.warn} role="alert">
+            <p>{t("modelError")}</p>
+            <button
+              className={hud.chipBtn}
+              type="button"
+              onClick={() => {
+                if (lk.model) forgetModel(lk.model);
+                setModelFailed(false);
+                setModelTry((n) => n + 1);
+              }}
+            >
+              {t("modelRetry")}
+            </button>
+          </div>
         )}
         {hint && (
           <div className={hud.warn}>

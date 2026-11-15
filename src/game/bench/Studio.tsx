@@ -5,6 +5,7 @@
 import { useFrame, useThree } from "@react-three/fiber";
 import { Environment, Lightformer, useGLTF } from "@react-three/drei";
 import { Suspense, useMemo, useRef } from "react";
+import Catch from "./Catch";
 import * as THREE from "three";
 import type { Vec3 } from "../logic";
 
@@ -164,14 +165,25 @@ function DeskProp({ name, at, scale, rotY = 0 }: { name: string; at: Vec3; scale
 // all off the cutting mat (|x| < 7, |z| < 4.5), clear of the kit box, runners, tool tray and lamp
 function DeskProps() {
   return (
-    <Suspense fallback={null}>
-      <DeskProp name="Prop_Ammo_Closed" at={[-1.6, 0, -6.4]} scale={3.4} rotY={0.3} />
-      <DeskProp name="Prop_Crate" at={[3.4, 0, -6.8]} scale={0.9} rotY={0.15} />
-      <DeskProp name="Prop_Crate_Tarp" at={[5.7, 0, -6.4]} scale={0.75} rotY={-0.4} />
-      <DeskProp name="Prop_Mug" at={[8.1, 0, -4.4]} scale={6} rotY={-2.2} />
-    </Suspense>
+    // each prop on its own: one missing file only drops that prop, never the bench
+    <>
+      {PROPS.map((p) => (
+        <Catch key={p.name}>
+          <Suspense fallback={null}>
+            <DeskProp {...p} />
+          </Suspense>
+        </Catch>
+      ))}
+    </>
   );
 }
+
+const PROPS: { name: string; at: Vec3; scale: number; rotY?: number }[] = [
+  { name: "Prop_Ammo_Closed", at: [-1.6, 0, -6.4], scale: 3.4, rotY: 0.3 },
+  { name: "Prop_Crate", at: [3.4, 0, -6.8], scale: 0.9, rotY: 0.15 },
+  { name: "Prop_Crate_Tarp", at: [5.7, 0, -6.4], scale: 0.75, rotY: -0.4 },
+  { name: "Prop_Mug", at: [8.1, 0, -4.4], scale: 6, rotY: -2.2 },
+];
 
 export function Studio({ lampTarget }: { lampTarget: Vec3 }) {
   const mat = useMatTexture();

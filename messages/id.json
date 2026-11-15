@@ -286,7 +286,9 @@
       "leave": "Keluar mode foto"
     },
     "stepOf": "Langkah {n} dari {total}",
-    "nubsShort": "Nub {n}"
+    "nubsShort": "Nub {n}",
+    "modelError": "Model kit gagal dimuat. Periksa koneksi lalu coba lagi.",
+    "modelRetry": "Coba lagi"
   },
   "account": {
     "forgotTitle": "Lupa password",

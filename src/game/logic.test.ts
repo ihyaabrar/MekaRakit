@@ -66,6 +66,15 @@ test("saved runs restore exactly and reject snapshots that do not fit the kit", 
   assert.equal(restoreRun(kit, badGate), null);
 });
 
+test("a save made for another layout of the same kit is not restored", async () => {
+  const { restoreRun } = await import("./logic.ts");
+  const snap = { state: initState(kit), pos: { a: [0, 0, 0], b: [0, 0, 0] } };
+  const v2 = { ...kit, rev: "v2" };
+  assert.equal(restoreRun(v2, snap), null); // older save without a stamp
+  assert.equal(restoreRun(v2, { ...snap, kit: "v1" }), null);
+  assert.equal(restoreRun(v2, { ...snap, kit: "v2" })?.kit, "v2");
+});
+
 test("magnet pulls a free part toward its allowed spot, harder when closer", async () => {
   const { magnetPull, pageForDrop, MAGNET_DIST } = await import("./logic.ts");
   let s = cutGate(kit, cutGate(kit, initState(kit), "a", "g1"), "a", "g2");
