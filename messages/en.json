@@ -288,7 +288,9 @@
     "stepOf": "Step {n} of {total}",
     "nubsShort": "Nubs {n}",
     "modelError": "The kit model failed to load. Check your connection and try again.",
-    "modelRetry": "Try again"
+    "modelRetry": "Try again",
+    "staleKit": "This kit was updated after the page opened, so your latest progress is not saved. Reload to continue.",
+    "reload": "Reload"
   },
   "account": {
     "forgotTitle": "Forgot password",

@@ -288,7 +288,9 @@
     "stepOf": "Langkah {n} dari {total}",
     "nubsShort": "Nub {n}",
     "modelError": "Model kit gagal dimuat. Periksa koneksi lalu coba lagi.",
-    "modelRetry": "Coba lagi"
+    "modelRetry": "Coba lagi",
+    "staleKit": "Kit ini sudah diperbarui sejak halaman dibuka, jadi progres terakhir tidak disimpan. Muat ulang untuk lanjut.",
+    "reload": "Muat ulang"
   },
   "account": {
     "forgotTitle": "Lupa password",

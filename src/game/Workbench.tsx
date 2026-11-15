@@ -215,15 +215,22 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
   const [dragging, setDragging] = useState<string | null>(null);
 
   // Autosave: the whole bench, debounced, retried until it lands. Snapshots are idempotent, so retries are safe.
-  const snapshot = useMemo(() => JSON.stringify({ state, pos, paint, decals, pose, playSeconds }), [state, pos, paint, decals, pose, playSeconds]);
+  // `kit` names the part layout this page was built with, so the server can refuse saves from an outdated tab
+  const rev = kit.rev;
+  const snapshot = useMemo(() => JSON.stringify({ kit: rev, state, pos, paint, decals, pose, playSeconds }), [rev, state, pos, paint, decals, pose, playSeconds]);
   const lastSaved = useRef(
     saved
-      ? JSON.stringify({ state: saved.state, pos: saved.pos, paint: saved.paint ?? {}, decals: saved.decals ?? [], pose: saved.pose ?? {}, playSeconds: saved.playSeconds ?? 0 })
-      : JSON.stringify({ state, pos, paint, decals, pose, playSeconds }),
+      ? JSON.stringify({ kit: rev, state: saved.state, pos: saved.pos, paint: saved.paint ?? {}, decals: saved.decals ?? [], pose: saved.pose ?? {}, playSeconds: saved.playSeconds ?? 0 })
+      : JSON.stringify({ kit: rev, state, pos, paint, decals, pose, playSeconds }),
   );
+  const [stale, setStale] = useState(false);
   const save = (snap: string) =>
     saveRun(entry.id, JSON.parse(snap)).then(
-      () => {
+      (res) => {
+        if (!res.ok) {
+          setStale(true); // retrying cannot help: only a reload brings the new layout
+          return;
+        }
         lastSaved.current = snap;
         setSaveError(false);
       },
@@ -233,20 +240,20 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
       },
     );
   useEffect(() => {
-    if (dragging || snapshot === lastSaved.current) return;
+    if (dragging || stale || snapshot === lastSaved.current) return;
     let timer = setTimeout(function attempt() {
       save(snapshot).catch(() => (timer = setTimeout(attempt, RETRY_MS)));
     }, SAVE_DELAY_MS);
     return () => clearTimeout(timer);
     // save only depends on entry.id, which is fixed for this bench
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [snapshot, dragging]);
+  }, [snapshot, dragging, stale]);
 
   /** Leaving the bench: write the latest state first so nothing done in the last moments is lost. */
   async function leave() {
     setShelving(true);
     try {
-      if (snapshot !== lastSaved.current) await save(snapshot);
+      if (!stale && snapshot !== lastSaved.current) await save(snapshot);
       router.push("/dashboard");
     } catch {
       setShelving(false);
@@ -424,6 +431,14 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
           <p className={hud.warn} role="status">
             {t("saveError")}
           </p>
+        )}
+        {stale && (
+          <div className={hud.warn} role="alert">
+            <p>{t("staleKit")}</p>
+            <button className={hud.chipBtn} type="button" onClick={() => window.location.reload()}>
+              {t("reload")}
+            </button>
+          </div>
         )}
         {modelFailed && (
           <div className={hud.warn} role="alert">

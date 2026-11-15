@@ -58,11 +58,12 @@ export async function fetchRun(kitId: string): Promise<RunSnapshot | null> {
  * Stores the whole bench. Idempotent (same snapshot = same row), so the client can retry freely.
  * Totals are derived here from the snapshot, never sent as increments, so a lost save cannot skew them.
  */
-export async function saveRun(kitId: string, snapshot: RunSnapshot) {
+export async function saveRun(kitId: string, snapshot: RunSnapshot): Promise<{ ok: true } | { ok: false; code: "stale" }> {
   const kit = findKit(kitId)?.kit?.def;
   if (!kit) throw new Error("unknown kit");
-  // the client plays the current kit layout; the server stamps it so later loads can tell layouts apart
-  const run = restoreRun(kit, { ...snapshot, kit: kit.rev });
+  // the bench names the layout it was built for; a tab opened before a kit update must not save old progress
+  if (kit.rev && snapshot?.kit !== kit.rev) return { ok: false, code: "stale" };
+  const run = restoreRun(kit, snapshot);
   if (!run) throw new Error("snapshot does not fit kit");
   const { gatesCut, nubsLeft, complete } = runSummary(kit, run.state);
   const uid = await requireUserId();
@@ -74,6 +75,7 @@ export async function saveRun(kitId: string, snapshot: RunSnapshot) {
                 snapshot = excluded.snapshot,
                 finished_at = coalesce(kit_runs.finished_at, excluded.finished_at),
                 nubs_left = coalesce(excluded.nubs_left, kit_runs.nubs_left)`;
+  return { ok: true };
 }
 
 export async function clearProgress() {
