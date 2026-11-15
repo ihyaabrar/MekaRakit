@@ -36,7 +36,7 @@
     },
     "kr-04": {
       "name": "Rajawali",
-      "blurb": "22 part dengan bahu dan tumit terpisah. Tantangan paling lengkap."
+      "blurb": "44 part dengan pelat depan-belakang dan jari terpisah. Tantangan paling lengkap."
     }
   },
   "landing": {
@@ -290,7 +290,8 @@
     "modelError": "Model kit gagal dimuat. Periksa koneksi lalu coba lagi.",
     "modelRetry": "Coba lagi",
     "staleKit": "Kit ini sudah diperbarui sejak halaman dibuka, jadi progres terakhir tidak disimpan. Muat ulang untuk lanjut.",
-    "reload": "Muat ulang"
+    "reload": "Muat ulang",
+    "partsLeft": "{n} part:"
   },
   "account": {
     "forgotTitle": "Lupa password",

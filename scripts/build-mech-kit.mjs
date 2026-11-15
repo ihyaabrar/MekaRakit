@@ -3,16 +3,19 @@
 //   public/models/<id>.json   part geometry (rigid pieces, part-local, already scaled)
 // Every triangle goes to the bone that moves it most, then each bone's piece is frozen in the
 // first frame of the "Idle" clip, so the arms hang down instead of the T-pose.
-// Usage: node scripts/build-mech-kit.mjs <model.gltf> <kit-id> <KIT-CODE> [height]
+// Detail level: 0 = one piece per bone (fingers in the hand), 1 = big pieces also split into front and back
+// plates, 2 = also a separate palm and finger segments. More pieces = a harder kit.
+// Usage: node scripts/build-mech-kit.mjs <model.gltf> <kit-id> <KIT-CODE> [height] [detail]
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
 import * as THREE from "three";
 
-const [src, kitId, code, heightArg] = process.argv.slice(2);
-if (!src || !kitId || !code) throw new Error("usage: build-mech-kit.mjs <model.gltf> <kit-id> <KIT-CODE> [height]");
+const [src, kitId, code, heightArg, detailArg] = process.argv.slice(2);
+if (!src || !kitId || !code) throw new Error("usage: build-mech-kit.mjs <model.gltf> <kit-id> <KIT-CODE> [height] [detail]");
 const HEIGHT = Number(heightArg ?? 3.4);
+const DETAIL = Number(detailArg ?? 0);
 const GATE = 0.3; // keep in sync with GATE_LENGTH in src/game/kitFormat.ts
 const BAR_Y = 0.15; // keep in sync with RUNNER_BAR_Y
 
@@ -70,10 +73,13 @@ const jointName = joints.map((j) => g.nodes[j].name);
 const invBind = read(skin.inverseBindMatrices).map((m) => new THREE.Matrix4().fromArray(m));
 const skinMat = joints.map((j, k) => worldOf(j).clone().multiply(invBind[k]));
 
-// bone -> part: fingers and palm pieces become one hand; IK helpers never own geometry
+// bone -> part: at low detail fingers and palm pieces become one hand, at detail 2 the palm bones become one palm
+// and every finger segment stays its own part; IK helpers never own geometry
 const groupOf = (name) => {
   const hand = name.match(/^(Palm|Pinky|Ring|Index|Thumb|Middle)\w*\.(L|R)$/);
-  return hand ? `Hand.${hand[2]}` : name;
+  if (!hand) return name;
+  if (DETAIL < 2) return `Hand.${hand[2]}`;
+  return hand[1] === "Palm" ? `Palm.${hand[2]}` : name;
 };
 
 // --- split triangles ----------------------------------------------------------------------
@@ -128,6 +134,36 @@ for (const [grp, pc] of [...pieces]) {
   pieces.delete(grp);
 }
 
+// detail 1+: deep pieces split into a front and a back plate, the way kit armor comes in halves
+if (DETAIL >= 1) {
+  const height = (() => {
+    const b = new THREE.Box3();
+    for (const pc of pieces.values()) for (let i = 0; i < pc.main.length; i += 6) b.expandByPoint(p.set(pc.main[i], pc.main[i + 1], pc.main[i + 2]));
+    return b.max.y - b.min.y;
+  })();
+  for (const [grp, pc] of [...pieces]) {
+    if (/^(Palm|Pinky|Ring|Index|Thumb|Middle)/.test(grp) || tris(pc) < 40) continue;
+    const zs = [];
+    for (let i = 0; i < pc.main.length; i += 6) zs.push(pc.main[i + 2]);
+    for (let i = 0; i < pc.detail.length; i += 9) zs.push(pc.detail[i + 2]);
+    const [lo, hi] = [Math.min(...zs), Math.max(...zs)];
+    if (hi - lo < height * 0.12) continue; // thin pieces stay whole
+    const mid = (lo + hi) / 2;
+    const halves = { F: { main: [], detail: [], joint: pc.joint }, B: { main: [], detail: [], joint: pc.joint } };
+    for (const [key, stride] of [["main", 6], ["detail", 9]]) {
+      const arr = pc[key];
+      for (let i = 0; i < arr.length; i += stride * 3) {
+        const z = (arr[i + 2] + arr[i + stride + 2] + arr[i + 2 * stride + 2]) / 3;
+        halves[z >= mid ? "F" : "B"][key].push(...arr.slice(i, i + stride * 3));
+      }
+    }
+    if (tris(halves.F) < 8 || tris(halves.B) < 8) continue;
+    pieces.delete(grp);
+    pieces.set(`${grp}#F`, halves.F);
+    pieces.set(`${grp}#B`, halves.B);
+  }
+}
+
 // --- scale and place ----------------------------------------------------------------------
 const all = new THREE.Box3();
 for (const pc of pieces.values()) {
@@ -151,13 +187,19 @@ const NAMES = {
   UpperArm: ["Lengan atas", "upper arm"],
   LowerArm: ["Lengan bawah", "forearm"],
   Hand: ["Tangan", "hand"],
+  Palm: ["Telapak tangan", "palm"],
+  Thumb: ["Jempol", "thumb"],
+  Index: ["Telunjuk", "index finger"],
+  Middle: ["Jari tengah", "middle finger"],
+  Ring: ["Jari manis", "ring finger"],
+  Pinky: ["Kelingking", "little finger"],
   UpperLeg: ["Paha", "thigh"],
   MidLeg: ["Lutut", "knee"],
   LowerLeg: ["Betis", "shin"],
   FootBack: ["Tumit", "heel"],
   Foot: ["Telapak", "foot"],
 };
-const STEP_OF = { Foot: 1, FootBack: 1, LowerLeg: 1, MidLeg: 1, UpperLeg: 2, Body: 2, Torso: 3, Chest: 3, Neck: 4, Head: 4, Shoulder: 5, UpperArm: 5, LowerArm: 5, Hand: 6 };
+const STEP_OF = { Palm: 6, Thumb: 6, Index: 6, Middle: 6, Ring: 6, Pinky: 6, Foot: 1, FootBack: 1, LowerLeg: 1, MidLeg: 1, UpperLeg: 2, Body: 2, Torso: 3, Chest: 3, Neck: 4, Head: 4, Shoulder: 5, UpperArm: 5, LowerArm: 5, Hand: 6 };
 const STEP_TITLES = {
   1: ["Kaki bawah", "Feet and shins"],
   2: ["Paha dan pinggul", "Thighs and hip"],
@@ -167,10 +209,16 @@ const STEP_TITLES = {
   6: ["Tangan", "Hands"],
 };
 const nameOf = (grp) => {
-  const [base, side] = grp.split(".");
-  const [id, en] = NAMES[base] ?? [base, base];
-  if (!side) return { id, en };
-  return side === "L" ? { id: `${id} kiri`, en: `Left ${en}` } : { id: `${id} kanan`, en: `Right ${en}` };
+  const [bone, plate] = grp.split("#");
+  const [raw, side] = bone.split(".");
+  const [, base, seg] = raw.match(/^(.*?)(\d*)$/); // finger bones end in a segment number
+  let [id, en] = NAMES[base] ?? [base, base];
+  // name the segment only when the finger really comes in more than one piece
+  const segments = [...pieces.keys()].filter((k) => k.split("#")[0].replace(/\d+(?=\.)/, "") === `${base}.${side}`).length;
+  if (seg && segments > 1) [id, en] = [`${id} ruas ${seg}`, `${en}, segment ${seg}`];
+  if (side) [id, en] = side === "L" ? [`${id} kiri`, `Left ${en}`] : [`${id} kanan`, `Right ${en}`];
+  if (plate) [id, en] = plate === "F" ? [`${id} (depan)`, `${en} (front)`] : [`${id} (belakang)`, `${en} (back)`];
+  return { id, en };
 };
 
 const parts = [];
@@ -194,9 +242,9 @@ for (const [grp, pc] of pieces) {
     }
     return out;
   };
-  const key = grp.replace(".", "-");
+  const key = grp.replace(".", "-").replace("#", "-");
   geometry[key] = { main: localize(pc.main, 6), detail: localize(pc.detail, 9) };
-  const base = grp.split(".")[0];
+  const base = grp.split(/[.#]/)[0].replace(/\d+$/, "");
   parts.push({
     key,
     grp,
@@ -229,7 +277,8 @@ const open = () => {
   x = -RUNNER_W / 2 + GAP;
 };
 open();
-for (const q of parts) {
+// tallest first: each runner's depth follows its tallest part, so grouping tall parts keeps the others shallow
+for (const q of [...parts].sort((a, b) => b.size[1] - a.size[1])) {
   const w = q.size[0];
   if (x + w > RUNNER_W / 2 - GAP) {
     if (row === -1) {
@@ -243,12 +292,22 @@ for (const q of parts) {
   x += w + GAP;
   cur.parts.push(q);
 }
-// runners stack front to back on the left half of the mat
-let z = -3.3; // in front of the top-left HUD cards at the default camera
+// runners stack front to back on the left half of the mat (in front of the top-left HUD cards, behind the tool
+// tray); one that no longer fits there goes to the front right, ahead of the assembly spot
+const SLOTS = [
+  { x: -3.6, z: -3.3, end: 3.1 },
+  { x: 3.6, z: 1.55, end: 4.4 },
+];
+let slot = 0;
+let z = SLOTS[0].z;
 const runnerDefs = runners.map((r) => {
   const maxH = Math.max(...r.parts.map((q) => q.size[1]));
   const depth = r3(2 * (GATE + maxH) + 0.2);
-  const center = [-3.6, r3(z + depth / 2)];
+  while (z + depth > SLOTS[slot].end) {
+    if (++slot >= SLOTS.length) throw new Error(`${kitId}: runners do not fit on the mat`);
+    z = SLOTS[slot].z;
+  }
+  const center = [SLOTS[slot].x, r3(z + depth / 2)];
   z += depth + 0.25;
   return { id: r.id, color: r.parts[0].color, center, size: [RUNNER_W, depth] };
 });
@@ -279,7 +338,7 @@ const poses = POSES.flatMap(([id, bone, [nid, nen], axis, min, max]) => {
   const at = jointAt(bone) ?? (bone === "Neck" ? jointAt("Head") : null);
   let ids = jointAt(bone) ? below(bone) : bone === "Neck" ? below("Head") : [];
   // some rigs hang the shoulders off the neck bone; turning the head must not swing the arms
-  if (id === "head") ids = ids.filter((pid) => !/^(Shoulder|UpperArm|LowerArm|Hand)/.test(parts.find((q) => q.id === pid).grp));
+  if (id === "head") ids = ids.filter((pid) => !/^(Shoulder|UpperArm|LowerArm|Hand|Palm|Pinky|Ring|Index|Thumb|Middle)/.test(parts.find((q) => q.id === pid).grp));
   if (!at || !ids.length) return [];
   return [{ id, name: { id: nid, en: nen }, parts: ids, pivot: at, axis, min, max }];
 });
@@ -295,7 +354,7 @@ function gatesFor(q) {
   for (const [arr, stride] of [[g.main, 6], [g.detail, 9]])
     for (let i = 0; i < arr.length; i += stride) if (Math.abs(arr[i + 1] - endY) < Math.max(0.06, h * 0.12)) near.push([arr[i], Math.abs(arr[i + 2] - barZ)]);
   const best = (pred) => near.filter(([x]) => pred(x)).sort((a, b) => a[1] - b[1])[0]?.[0];
-  const clamp = (x) => r3(Math.max(-w / 2, Math.min(w / 2, x)));
+  const clamp = (x) => r3(Math.max(-w / 2 + 0.001, Math.min(w / 2 - 0.001, x))); // margin survives rounding
   if (w >= 0.5) {
     const l = best((x) => x < -w / 8);
     const r = best((x) => x > w / 8);

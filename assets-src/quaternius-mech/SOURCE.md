@@ -7,13 +7,18 @@
 These are the inputs for `scripts/build-mech-kit.mjs`, which splits each rigged mech into kit parts
 (`kits/<id>/kit.json`), part geometry (`public/models/<id>.json`) and box art (`public/art/<id>.png`):
 
-| Kit   | Model  |
-|-------|--------|
-| KR-01 | Leela  |
-| KR-02 | Stan   |
-| KR-03 | Mike   |
-| KR-04 | George |
+| Kit   | Model  | Detail | Parts |
+|-------|--------|--------|-------|
+| KR-01 | Leela  | 1      | 25    |
+| KR-02 | Stan   | 2      | 29    |
+| KR-03 | Mike   | 2      | 29    |
+| KR-04 | George | 2      | 44    |
 
-Rebuild a kit:
+Detail 1 splits deep pieces into front and back plates; detail 2 also gives each hand a palm and separate fingers.
 
-    node scripts/build-mech-kit.mjs assets-src/quaternius-mech/Leela.gltf kr-01 KR-01
+Rebuild a kit (height 3.4, then the detail level):
+
+    node scripts/build-mech-kit.mjs assets-src/quaternius-mech/Leela.gltf kr-01 KR-01 3.4 1
+    node scripts/build-mech-kit.mjs assets-src/quaternius-mech/Stan.gltf kr-02 KR-02 3.4 2
+    node scripts/build-mech-kit.mjs assets-src/quaternius-mech/Mike.gltf kr-03 KR-03 3.4 2
+    node scripts/build-mech-kit.mjs assets-src/quaternius-mech/George.gltf kr-04 KR-04 3.4 2

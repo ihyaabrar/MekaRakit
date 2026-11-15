@@ -401,12 +401,15 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
           <div className={hud.stepCard}>
             <p className={hud.stepLabel}>{t("stepOf", { n: currentStep.n, total: lk.steps.length })}</p>
             <p className={hud.stepTitle}>{currentStep.title[lang]}</p>
-            <p className={hud.stepParts}>
-              {kit.parts
-                .filter((p) => p.step === currentStep.n && state.parts[p.id].status !== "placed")
-                .map((p) => lk.parts[p.id].name[lang])
-                .join(" · ")}
-            </p>
+            {(() => {
+              const left = kit.parts.filter((p) => p.step === currentStep.n && state.parts[p.id].status !== "placed");
+              const names = left.map((p) => lk.parts[p.id].name[lang]).join(" · ");
+              return (
+                <p className={hud.stepParts} title={names}>
+                  {t("partsLeft", { n: left.length })} {names}
+                </p>
+              );
+            })()}
           </div>
         )}
       </div>
