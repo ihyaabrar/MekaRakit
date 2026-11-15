@@ -229,10 +229,11 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
       (res) => {
         if (!res.ok) {
           setStale(true); // retrying cannot help: only a reload brings the new layout
-          return;
+          return false;
         }
         lastSaved.current = snap;
         setSaveError(false);
+        return true;
       },
       (e) => {
         setSaveError(true);
@@ -253,7 +254,11 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
   async function leave() {
     setShelving(true);
     try {
-      if (!stale && snapshot !== lastSaved.current) await save(snapshot);
+      // a save refused just now keeps the player here, so the reload notice is seen before anything is lost
+      if (!stale && snapshot !== lastSaved.current && !(await save(snapshot))) {
+        setShelving(false);
+        return;
+      }
       router.push("/dashboard");
     } catch {
       setShelving(false);

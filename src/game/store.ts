@@ -62,7 +62,10 @@ export async function saveRun(kitId: string, snapshot: RunSnapshot): Promise<{ o
   const kit = findKit(kitId)?.kit?.def;
   if (!kit) throw new Error("unknown kit");
   // the bench names the layout it was built for; a tab opened before a kit update must not save old progress
-  if (kit.rev && snapshot?.kit !== kit.rev) return { ok: false, code: "stale" };
+  // pages from before revisions existed send none: throw, so their own handler warns and retries
+  // (they would read a returned refusal as success)
+  if (kit.rev && !snapshot?.kit) throw new Error("snapshot has no kit revision");
+  if (kit.rev && snapshot.kit !== kit.rev) return { ok: false, code: "stale" };
   const run = restoreRun(kit, snapshot);
   if (!run) throw new Error("snapshot does not fit kit");
   const { gatesCut, nubsLeft, complete } = runSummary(kit, run.state);
