@@ -67,19 +67,19 @@
 	],
 	"images":[
 		{
-			"mimeType":"image/png",
+			"mimeType":"image/jpeg",
 			"name":"T_Trim_03_Normal",
-			"uri":"T_Trim_03_Normal.png"
+			"uri":"T_Trim_03_Normal.jpg"
 		},
 		{
-			"mimeType":"image/png",
+			"mimeType":"image/jpeg",
 			"name":"T_Trim_03_BaseColor",
-			"uri":"T_Trim_03_BaseColor.png"
+			"uri":"T_Trim_03_BaseColor.jpg"
 		},
 		{
-			"mimeType":"image/png",
+			"mimeType":"image/jpeg",
 			"name":"T_Trim_03_ORM",
-			"uri":"T_Trim_03_ORM.png"
+			"uri":"T_Trim_03_ORM.jpg"
 		}
 	],
 	"accessors":[
