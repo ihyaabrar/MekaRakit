@@ -186,7 +186,7 @@ function Bench({ entry, lk, sfxVolume, musicVolume, saved }: { entry: KitEntry; 
 
   const editDecal = (patch: Partial<Decal>) => setDecals((all) => all.map((d) => (d.id === selectedDecal ? { ...d, ...patch } : d)));
   const kitName = tk(`${entry.id}.name`);
-  const boxLabel = useMemo(() => ({ code: entry.code, name: kitName, body: entry.colors.body, trim: entry.colors.trim, art: `/art/${entry.id}.png` }), [entry, kitName]);
+  const boxLabel = useMemo(() => ({ code: entry.code, name: kitName, body: entry.colors.body, trim: entry.colors.trim, art: lk.art ?? `/art/${entry.id}.png` }), [entry, kitName, lk.art]);
   const [snips, setSnips] = useState(0);
 
   useEffect(() => {

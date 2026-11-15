@@ -4,6 +4,7 @@
 // Every triangle goes to the bone that moves it most, then each bone's piece is frozen in the
 // first frame of the "Idle" clip, so the arms hang down instead of the T-pose.
 // Usage: node scripts/build-mech-kit.mjs <model.gltf> <kit-id> <KIT-CODE> [height]
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
@@ -324,14 +325,15 @@ const kit = {
     target: q.target,
     step: q.step,
   })),
-  model: `/models/${kitId}.json`,
   poses,
 };
 
-fs.mkdirSync(path.join("kits", kitId), { recursive: true });
-fs.writeFileSync(path.join("kits", kitId, "kit.json"), JSON.stringify(kit, null, 2) + "\n");
+// asset URLs carry a hash of the file, so browsers that cached an older build fetch the new one at once
+const version = (data) => crypto.createHash("sha256").update(data).digest("hex").slice(0, 10);
+const geometryJson = JSON.stringify(geometry);
 fs.mkdirSync(path.join("public", "models"), { recursive: true });
-fs.writeFileSync(path.join("public", "models", `${kitId}.json`), JSON.stringify(geometry));
+fs.writeFileSync(path.join("public", "models", `${kitId}.json`), geometryJson);
+kit.model = `/models/${kitId}.json?v=${version(geometryJson)}`;
 console.log(`${kitId}: ${parts.length} parts, ${runnerDefs.length} runners, ${kit.steps.length} steps, ${poses.length} joints, height ${HEIGHT}`);
 console.log(runnerDefs.map((r) => `${r.id} ${r.center} ${r.size}`).join("\n"));
 
@@ -426,4 +428,7 @@ ihdr.set([8, 6, 0, 0, 0], 8);
 const png = Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk("IHDR", ihdr), chunk("IDAT", zlib.deflateSync(raw, { level: 9 })), chunk("IEND", Buffer.alloc(0))]);
 fs.mkdirSync(path.join("public", "art"), { recursive: true });
 fs.writeFileSync(path.join("public", "art", `${kitId}.png`), png);
+kit.art = `/art/${kitId}.png?v=${version(png)}`;
+fs.mkdirSync(path.join("kits", kitId), { recursive: true });
+fs.writeFileSync(path.join("kits", kitId, "kit.json"), JSON.stringify(kit, null, 2) + "\n");
 console.log(`box art public/art/${kitId}.png ${png.length} bytes`);
