@@ -243,7 +243,7 @@ for (const q of parts) {
   cur.parts.push(q);
 }
 // runners stack front to back on the left half of the mat
-let z = -4.4;
+let z = -3.3; // in front of the top-left HUD cards at the default camera
 const runnerDefs = runners.map((r) => {
   const maxH = Math.max(...r.parts.map((q) => q.size[1]));
   const depth = r3(2 * (GATE + maxH) + 0.2);

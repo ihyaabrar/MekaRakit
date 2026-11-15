@@ -356,12 +356,13 @@
   margin: 0;
 }
 
-/* sits under the top-right chips and above the hotbar row, so it never covers other controls */
+/* left column, under the kit title and above the bottom-left hint: the finished model on the right stays
+   in view, so the brush and decals can reach it */
 .finish {
-  top: 72px;
-  right: 16px;
-  max-height: calc(100vh - 72px - 112px);
-  width: min(320px, calc(100vw - 32px));
+  top: 120px;
+  left: 16px;
+  max-height: calc(100vh - 120px - 210px);
+  width: min(280px, calc(100vw - 32px)); /* clear of the centered paint and decal panels */
   overflow-y: auto;
   display: grid;
   align-content: start;
@@ -409,6 +410,6 @@
     bottom: 100px;
   }
   .finish {
-    max-height: calc(100vh - 72px - 96px);
+    max-height: calc(100vh - 120px - 190px);
   }
 }
