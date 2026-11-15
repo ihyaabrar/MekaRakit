@@ -3,18 +3,25 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { loadKit, lyingOffset, GATE_LENGTH, RUNNER_BAR_Y, type KitFileV1 } from "./kitFormat.ts";
 
-const kr01 = JSON.parse(readFileSync(new URL("../../kits/kr-01/kit.json", import.meta.url), "utf8")) as KitFileV1;
+const read = (id: string) => JSON.parse(readFileSync(new URL(`../../kits/${id}/kit.json`, import.meta.url), "utf8")) as KitFileV1;
+const files = ["kr-01", "kr-02", "kr-03", "kr-04"].map(read);
+const [kr01, kr02] = files;
 
-test("KR-01 loads: 20-30 parts, every step used, ids unique", () => {
-  const kit = loadKit(kr01);
-  assert.ok(kit.def.parts.length >= 20 && kit.def.parts.length <= 30, `parts: ${kit.def.parts.length}`);
-  assert.deepEqual([...new Set(kit.def.parts.map((p) => p.step))].sort(), kit.steps.map((s) => s.n));
+test("every kit loads: 10-30 parts, every step used, each part has model geometry", () => {
+  for (const file of files) {
+    const kit = loadKit(file);
+    assert.ok(kit.def.parts.length >= 10 && kit.def.parts.length <= 30, `${file.id} parts: ${kit.def.parts.length}`);
+    assert.deepEqual([...new Set(kit.def.parts.map((p) => p.step))].sort(), kit.steps.map((s) => s.n));
+    const model = JSON.parse(readFileSync(new URL(`../../public${file.model}`, import.meta.url), "utf8"));
+    for (const p of Object.values(kit.parts)) assert.ok(model[p.model!]?.main.length || model[p.model!]?.detail.length, `${file.id} ${p.model} has geometry`);
+  }
 });
 
 test("gates sit on the runner's middle bar once the part lies on it", () => {
-  const kit = loadKit(kr01);
+  for (const file of files) {
+  const kit = loadKit(file);
   for (const p of kit.def.parts) {
-    const runner = kit.runners.find((r) => r.id === kr01.parts.find((q) => q.id === p.id)!.runner)!;
+    const runner = kit.runners.find((r) => r.id === file.parts.find((q) => q.id === p.id)!.runner)!;
     for (const g of p.gates) {
       const [ox, oy, oz] = lyingOffset(g.offset);
       const world = [p.runnerPos[0] + ox, p.runnerPos[1] + oy, p.runnerPos[2] + oz];
@@ -22,6 +29,7 @@ test("gates sit on the runner's middle bar once the part lies on it", () => {
       // gate midpoint is half a gate length from the bar
       assert.ok(Math.abs(Math.abs(world[2] - runner.center[1]) - GATE_LENGTH / 2) < 1e-9, `${p.id} gate distance`);
     }
+  }
   }
 });
 
@@ -42,11 +50,12 @@ test("loader rejects broken kits", () => {
 });
 
 test("poses load in radians around assembly-relative pivots, and bad poses are rejected", () => {
-  const kit = loadKit(kr01);
+  const kit = loadKit(kr02);
   const arm = kit.poses.find((j) => j.id === "arm-l")!;
+  const raw = kr02.poses!.find((j) => j.id === "arm-l")!;
   assert.ok(Math.abs(arm.min - (-150 * Math.PI) / 180) < 1e-9);
-  assert.deepEqual(arm.pivot, [kr01.assemblyAt[0] - 0.71, 2.83, kr01.assemblyAt[1]]);
-  const bad = JSON.parse(JSON.stringify(kr01)) as KitFileV1;
+  assert.deepEqual(arm.pivot, [kr02.assemblyAt[0] + raw.pivot[0], raw.pivot[1], kr02.assemblyAt[1] + raw.pivot[2]]);
+  const bad = JSON.parse(JSON.stringify(kr02)) as KitFileV1;
   bad.poses![0].parts = ["nope"];
   assert.throws(() => loadKit(bad), /unknown part/);
 });

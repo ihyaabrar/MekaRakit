@@ -11,7 +11,8 @@
     "levels": {
       "beginner": "Pemula",
       "easy": "Mudah",
-      "medium": "Menengah"
+      "medium": "Menengah",
+      "hard": "Mahir"
     },
     "status": {
       "locked": "Terkunci",
@@ -23,15 +24,19 @@
   "kits": {
     "kr-01": {
       "name": "Tunas",
-      "blurb": "Kit pertama: potong, haluskan, dan snap dasar."
+      "blurb": "Kit pertama: walker berkaki dua. Potong, haluskan, dan snap dasar."
     },
     "kr-02": {
       "name": "Sigap",
-      "blurb": "Sendi yang bisa digerakkan dan decal pertama."
+      "blurb": "Lengan dan tangan pertama, plus sendi yang bisa digerakkan."
     },
     "kr-03": {
       "name": "Benteng",
-      "blurb": "Sub-rakitan dan warna per part."
+      "blurb": "Dada lebar dan lengan berat. Pas untuk latihan cat dan decal."
+    },
+    "kr-04": {
+      "name": "Rajawali",
+      "blurb": "22 part dengan bahu dan tumit terpisah. Tantangan paling lengkap."
     }
   },
   "landing": {
@@ -208,7 +213,7 @@
     "saveError": "Progres terakhir belum tersimpan ke server. Permainan tetap jalan; coba lagi nanti.",
     "loading": "Membuka kotak...",
     "box": {
-      "hint": "Kotak KR-01 masih tersegel. Klik kotaknya untuk membuka.",
+      "hint": "Kotak {code} masih tersegel. Klik kotaknya untuk membuka.",
       "open": "Buka kotak"
     },
     "lift": {
