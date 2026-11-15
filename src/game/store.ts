@@ -61,7 +61,8 @@ export async function fetchRun(kitId: string): Promise<RunSnapshot | null> {
 export async function saveRun(kitId: string, snapshot: RunSnapshot) {
   const kit = findKit(kitId)?.kit?.def;
   if (!kit) throw new Error("unknown kit");
-  const run = restoreRun(kit, snapshot);
+  // the client plays the current kit layout; the server stamps it so later loads can tell layouts apart
+  const run = restoreRun(kit, { ...snapshot, kit: kit.rev });
   if (!run) throw new Error("snapshot does not fit kit");
   const { gatesCut, nubsLeft, complete } = runSummary(kit, run.state);
   const uid = await requireUserId();

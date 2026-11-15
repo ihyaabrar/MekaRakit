@@ -276,7 +276,9 @@ const POSES = [
 ];
 const poses = POSES.flatMap(([id, bone, [nid, nen], axis, min, max]) => {
   const at = jointAt(bone) ?? (bone === "Neck" ? jointAt("Head") : null);
-  const ids = jointAt(bone) ? below(bone) : bone === "Neck" ? below("Head") : [];
+  let ids = jointAt(bone) ? below(bone) : bone === "Neck" ? below("Head") : [];
+  // some rigs hang the shoulders off the neck bone; turning the head must not swing the arms
+  if (id === "head") ids = ids.filter((pid) => !/^(Shoulder|UpperArm|LowerArm|Hand)/.test(parts.find((q) => q.id === pid).grp));
   if (!at || !ids.length) return [];
   return [{ id, name: { id: nid, en: nen }, parts: ids, pivot: at, axis, min, max }];
 });

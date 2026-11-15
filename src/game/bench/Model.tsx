@@ -41,10 +41,15 @@ export function loadModel(url: string): Promise<Model> {
         return r.json() as Promise<Record<string, { main: number[]; detail: number[] }>>;
       })
       .then((raw) => Object.fromEntries(Object.entries(raw).map(([k, v]) => [k, { main: build(v.main, 6), detail: build(v.detail, 9) }])));
-    p.catch(() => files.delete(url)); // let a remount retry after a failed fetch
+    // a failure stays cached so the error boundary sees it once; forgetModel() clears it for a retry
+    p.catch(() => {});
     files.set(url, p);
   }
   return p;
+}
+
+export function forgetModel(url: string) {
+  files.delete(url);
 }
 
 export function MechPiece({ url, piece, color, ghosted, onPointerDown }: { url: string; piece: string; color: string; ghosted: boolean; onPointerDown?: (e: ThreeEvent<PointerEvent>) => void }) {
