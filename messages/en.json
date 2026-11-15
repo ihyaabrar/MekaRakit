@@ -11,7 +11,8 @@
     "levels": {
       "beginner": "Beginner",
       "easy": "Easy",
-      "medium": "Intermediate"
+      "medium": "Intermediate",
+      "hard": "Advanced"
     },
     "status": {
       "locked": "Locked",
@@ -23,15 +24,19 @@
   "kits": {
     "kr-01": {
       "name": "Tunas",
-      "blurb": "First kit: cutting, sanding and basic snap-fit."
+      "blurb": "First kit: a two-legged walker. Cutting, sanding and basic snap-fit."
     },
     "kr-02": {
       "name": "Sigap",
-      "blurb": "Movable joints and your first decals."
+      "blurb": "First arms and hands, plus movable joints."
     },
     "kr-03": {
       "name": "Benteng",
-      "blurb": "Sub-assemblies and per-part colors."
+      "blurb": "Broad chest and heavy arms. Good for practicing paint and decals."
+    },
+    "kr-04": {
+      "name": "Rajawali",
+      "blurb": "22 parts with separate shoulders and heels. The fullest challenge."
     }
   },
   "landing": {
@@ -208,7 +213,7 @@
     "saveError": "Your latest progress is not saved to the server yet. Keep playing; it will retry later.",
     "loading": "Opening the box...",
     "box": {
-      "hint": "The KR-01 box is still sealed. Click the box to open it.",
+      "hint": "The {code} box is still sealed. Click the box to open it.",
       "open": "Open the box"
     },
     "lift": {

@@ -44,7 +44,7 @@ export default function Landing() {
               <span className={ui.code}>{first.code}</span>
               <span className={s.boxName}>{tk(`${first.id}.name`)}</span>
             </div>
-            <KitArt body={first.colors.body} trim={first.colors.trim} variant={1} label={t("boxLabel", { code: first.code })} size={200} />
+            <KitArt kitId={first.id} label={t("boxLabel", { code: first.code })} size={200} />
             <figcaption className={s.boxSide}>{tc("levels.beginner")}</figcaption>
           </figure>
         </section>

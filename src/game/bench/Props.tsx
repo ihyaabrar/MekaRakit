@@ -250,7 +250,7 @@ export function HeldToolFollower({ held, snips, paint }: { held: HeldTool; snips
 }
 
 /** Closed kit box covering the runners. Clicking it opens the lid; the lid then rests at the back of the mat. */
-type BoxLabel = { code: string; name: string; body: string; trim: string };
+type BoxLabel = { code: string; name: string; body: string; trim: string; art: string };
 
 export function KitBox({ opened, onOpen, center, label }: { opened: boolean; onOpen: () => void; center: Vec3; label: BoxLabel }) {
   const art = useMemo(() => makeBoxArt(label), [label]);
@@ -280,7 +280,7 @@ export function KitBox({ opened, onOpen, center, label }: { opened: boolean; onO
         <Block size={[w, 0.9, d]} at={[0, 0.45, 0]} color={BOX_WHITE} />
       </group>
       <group ref={lid} position={[center[0], 1.0, center[2]]}>
-        <Block size={[w + 0.08, 0.22, d + 0.08]} color={COBALT} />
+        <Block size={[w + 0.08, 0.22, d + 0.08]} color={label.body} />
         <Block size={[w + 0.09, 0.05, 0.6]} at={[0, 0.09, -1.6]} color={YELLOW} />
         {/* box art printed on the lid */}
         <mesh position={[0.4, 0.115, 0.35]} rotation-x={-Math.PI / 2} raycast={noRaycast}>

@@ -5,14 +5,13 @@ import { useFormatter, useTranslations } from "next-intl";
 import AppHeader from "@/ui/AppHeader";
 import KitArt from "@/ui/KitArt";
 import ui from "@/ui/ui.module.css";
-import { catalog, type KitEntry } from "@/game/kits";
+import { catalog } from "@/game/kits";
 import { achievements, kitStatus, type AchievementId } from "@/game/progress";
 import { fetchProfile, fetchProgress, fetchShelfPhotos } from "@/game/store";
 import { useLoad } from "@/ui/useLoad";
 import s from "./dashboard.module.css";
 
 const order = catalog.map((k) => k.id);
-const variantOf = (k: KitEntry) => order.indexOf(k.id) + 1;
 const loadAll = () => Promise.all([fetchProfile(), fetchProgress(), fetchShelfPhotos()]);
 
 export default function Dashboard() {
@@ -62,7 +61,7 @@ export default function Dashboard() {
             {next ? (
               <>
                 <div className={s.nextArt}>
-                  <KitArt body={next.k.colors.body} trim={next.k.colors.trim} variant={variantOf(next.k)} label={tk(`${next.k.id}.name`)} size={150} />
+                  <KitArt kitId={next.k.id} label={tk(`${next.k.id}.name`)} size={150} />
                 </div>
                 <div className={s.nextBody}>
                   <h2 id="next-title" className={s.kicker}>
@@ -143,7 +142,7 @@ export default function Dashboard() {
                       // eslint-disable-next-line @next/next/no-img-element -- player photo stored as a data URL
                       <img className={s.shelfPhoto} src={photos[k.id]} alt={t("photoAlt", { name: tk(`${k.id}.name`) })} />
                     ) : (
-                      <KitArt body={k.colors.body} trim={k.colors.trim} variant={variantOf(k)} label={tk(`${k.id}.name`)} size={84} />
+                      <KitArt kitId={k.id} label={tk(`${k.id}.name`)} size={84} />
                     )}
                     <p>
                       <span className={ui.code}>{k.code}</span> {tk(`${k.id}.name`)}
