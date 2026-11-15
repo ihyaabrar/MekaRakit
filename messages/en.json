@@ -36,7 +36,7 @@
     },
     "kr-04": {
       "name": "Rajawali",
-      "blurb": "22 parts with separate shoulders and heels. The fullest challenge."
+      "blurb": "44 parts with front and back plates and separate fingers. The fullest challenge."
     }
   },
   "landing": {
@@ -290,7 +290,8 @@
     "modelError": "The kit model failed to load. Check your connection and try again.",
     "modelRetry": "Try again",
     "staleKit": "This kit was updated after the page opened, so your latest progress is not saved. Reload to continue.",
-    "reload": "Reload"
+    "reload": "Reload",
+    "partsLeft": "{n} parts:"
   },
   "account": {
     "forgotTitle": "Forgot password",

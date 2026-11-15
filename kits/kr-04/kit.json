@@ -12,11 +12,23 @@
       "color": "#678672",
       "center": [
         -3.6,
-        -1.627
+        -1.809
       ],
       "size": [
         6.4,
-        3.346
+        2.982
+      ]
+    },
+    {
+      "id": "B",
+      "color": "#678672",
+      "center": [
+        -3.6,
+        0.779
+      ],
+      "size": [
+        6.4,
+        1.694
       ]
     }
   ],
@@ -66,14 +78,14 @@
   ],
   "parts": [
     {
-      "id": "A1",
+      "id": "B17",
       "name": {
         "id": "Tumit kanan",
         "en": "Right heel"
       },
       "model": "FootBack-R",
-      "runner": "A",
-      "row": -1,
+      "runner": "B",
+      "row": 1,
       "x": -2.98,
       "gates": [
         -0.049
@@ -92,17 +104,17 @@
       "step": 1
     },
     {
-      "id": "A2",
+      "id": "B18",
       "name": {
         "id": "Tumit kiri",
         "en": "Left heel"
       },
       "model": "FootBack-L",
-      "runner": "A",
-      "row": -1,
+      "runner": "B",
+      "row": 1,
       "x": -2.7,
       "gates": [
-        -0.048
+        -0.049
       ],
       "color": "#678672",
       "size": [
@@ -118,226 +130,460 @@
       "step": 1
     },
     {
-      "id": "A3",
+      "id": "B12",
       "name": {
-        "id": "Telapak kanan",
-        "en": "Right foot"
+        "id": "Telapak kanan (depan)",
+        "en": "Right foot (front)"
       },
-      "model": "Foot-R",
-      "runner": "A",
+      "model": "Foot-R-F",
+      "runner": "B",
       "row": -1,
-      "x": -2.224,
+      "x": 1.025,
       "gates": [
-        -0.155,
-        0.079
+        -0.254,
+        0.067
       ],
       "color": "#678672",
       "size": [
         0.511,
-        0.261,
-        0.45
+        0.22,
+        0.301
       ],
       "target": [
         -0.534,
-        0.13,
-        0.356
+        0.11,
+        0.43
       ],
       "step": 1
     },
     {
-      "id": "A4",
+      "id": "B13",
       "name": {
-        "id": "Telapak kiri",
-        "en": "Left foot"
+        "id": "Telapak kiri (depan)",
+        "en": "Left foot (front)"
       },
-      "model": "Foot-L",
-      "runner": "A",
+      "model": "Foot-L-F",
+      "runner": "B",
       "row": -1,
-      "x": -1.553,
+      "x": 1.696,
       "gates": [
-        -0.079,
-        0.155
+        -0.067,
+        0.255
       ],
       "color": "#678672",
       "size": [
         0.511,
-        0.261,
-        0.45
+        0.22,
+        0.301
       ],
       "target": [
         0.513,
-        0.13,
-        0.356
+        0.11,
+        0.43
       ],
       "step": 1
     },
     {
-      "id": "A5",
+      "id": "B10",
       "name": {
-        "id": "Betis kanan",
-        "en": "Right shin"
+        "id": "Telapak kanan (belakang)",
+        "en": "Right foot (back)"
       },
-      "model": "LowerLeg-R",
-      "runner": "A",
+      "model": "Foot-R-B",
+      "runner": "B",
       "row": -1,
-      "x": -1.046,
+      "x": -0.049,
       "gates": [
-        -0.087
+        -0.017
+      ],
+      "color": "#678672",
+      "size": [
+        0.332,
+        0.261,
+        0.278
+      ],
+      "target": [
+        -0.523,
+        0.13,
+        0.27
+      ],
+      "step": 1
+    },
+    {
+      "id": "B11",
+      "name": {
+        "id": "Telapak kiri (belakang)",
+        "en": "Left foot (back)"
+      },
+      "model": "Foot-L-B",
+      "runner": "B",
+      "row": -1,
+      "x": 0.443,
+      "gates": [
+        0.017
+      ],
+      "color": "#678672",
+      "size": [
+        0.332,
+        0.261,
+        0.278
+      ],
+      "target": [
+        0.503,
+        0.13,
+        0.27
+      ],
+      "step": 1
+    },
+    {
+      "id": "A18",
+      "name": {
+        "id": "Betis kanan (depan)",
+        "en": "Right shin (front)"
+      },
+      "model": "LowerLeg-R-F",
+      "runner": "A",
+      "row": 1,
+      "x": 1.808,
+      "gates": [
+        0.039
+      ],
+      "color": "#678672",
+      "size": [
+        0.169,
+        0.512,
+        0.576
+      ],
+      "target": [
+        -0.503,
+        0.304,
+        -0.037
+      ],
+      "step": 1
+    },
+    {
+      "id": "A17",
+      "name": {
+        "id": "Betis kiri (depan)",
+        "en": "Left shin (front)"
+      },
+      "model": "LowerLeg-L-F",
+      "runner": "A",
+      "row": 1,
+      "x": 1.482,
+      "gates": [
+        0.042
+      ],
+      "color": "#678672",
+      "size": [
+        0.163,
+        0.519,
+        0.565
+      ],
+      "target": [
+        0.513,
+        0.311,
+        -0.029
+      ],
+      "step": 1
+    },
+    {
+      "id": "A20",
+      "name": {
+        "id": "Betis kanan (belakang)",
+        "en": "Right shin (back)"
+      },
+      "model": "LowerLeg-R-B",
+      "runner": "A",
+      "row": 1,
+      "x": 2.489,
+      "gates": [
+        0.085
       ],
       "color": "#678672",
       "size": [
         0.184,
-        0.717,
-        0.865
+        0.504,
+        0.583
       ],
       "target": [
         -0.495,
-        0.407,
-        -0.182
+        0.513,
+        -0.323
+      ],
+      "step": 1
+    },
+    {
+      "id": "A19",
+      "name": {
+        "id": "Betis kiri (belakang)",
+        "en": "Left shin (back)"
+      },
+      "model": "LowerLeg-L-B",
+      "runner": "A",
+      "row": 1,
+      "x": 2.145,
+      "gates": [
+        0.085
+      ],
+      "color": "#678672",
+      "size": [
+        0.184,
+        0.511,
+        0.583
+      ],
+      "target": [
+        0.524,
+        0.525,
+        -0.31
+      ],
+      "step": 1
+    },
+    {
+      "id": "B2",
+      "name": {
+        "id": "Lutut kanan (belakang)",
+        "en": "Right knee (back)"
+      },
+      "model": "MidLeg-R-B",
+      "runner": "B",
+      "row": -1,
+      "x": -2.662,
+      "gates": [
+        -0.034
+      ],
+      "color": "#678672",
+      "size": [
+        0.125,
+        0.422,
+        0.416
+      ],
+      "target": [
+        -0.518,
+        0.756,
+        -0.321
+      ],
+      "step": 1
+    },
+    {
+      "id": "B3",
+      "name": {
+        "id": "Lutut kiri (belakang)",
+        "en": "Left knee (back)"
+      },
+      "model": "MidLeg-L-B",
+      "runner": "B",
+      "row": -1,
+      "x": -2.379,
+      "gates": [
+        -0.035
+      ],
+      "color": "#678672",
+      "size": [
+        0.121,
+        0.403,
+        0.438
+      ],
+      "target": [
+        0.526,
+        0.757,
+        -0.292
+      ],
+      "step": 1
+    },
+    {
+      "id": "B5",
+      "name": {
+        "id": "Lutut kiri (depan)",
+        "en": "Left knee (front)"
+      },
+      "model": "MidLeg-L-F",
+      "runner": "B",
+      "row": -1,
+      "x": -1.807,
+      "gates": [
+        0.061
+      ],
+      "color": "#678672",
+      "size": [
+        0.128,
+        0.355,
+        0.42
+      ],
+      "target": [
+        0.523,
+        0.811,
+        -0.009
+      ],
+      "step": 1
+    },
+    {
+      "id": "B4",
+      "name": {
+        "id": "Lutut kanan (depan)",
+        "en": "Right knee (front)"
+      },
+      "model": "MidLeg-R-F",
+      "runner": "B",
+      "row": -1,
+      "x": -2.095,
+      "gates": [
+        0.06
+      ],
+      "color": "#678672",
+      "size": [
+        0.128,
+        0.368,
+        0.424
+      ],
+      "target": [
+        -0.52,
+        0.826,
+        -0.037
       ],
       "step": 1
     },
     {
       "id": "A6",
       "name": {
-        "id": "Betis kiri",
-        "en": "Left shin"
+        "id": "Paha kiri (depan)",
+        "en": "Left thigh (front)"
       },
-      "model": "LowerLeg-L",
+      "model": "UpperLeg-L-F",
       "runner": "A",
       "row": -1,
-      "x": -0.702,
+      "x": 0.755,
       "gates": [
-        -0.086
+        -0.122
       ],
       "color": "#678672",
       "size": [
-        0.184,
-        0.73,
-        0.854
+        0.345,
+        0.779,
+        0.668
       ],
       "target": [
-        0.524,
-        0.416,
-        -0.174
+        0.49,
+        1.087,
+        0.362
       ],
-      "step": 1
+      "step": 2
     },
     {
       "id": "A7",
       "name": {
-        "id": "Lutut kiri",
-        "en": "Left knee"
+        "id": "Paha kanan (depan)",
+        "en": "Right thigh (front)"
       },
-      "model": "MidLeg-L",
+      "model": "UpperLeg-R-F",
       "runner": "A",
       "row": -1,
-      "x": -0.386,
+      "x": 1.26,
       "gates": [
-        -0.032
+        -0.122
       ],
       "color": "#678672",
       "size": [
-        0.128,
-        0.433,
-        0.712
+        0.345,
+        0.77,
+        0.68
       ],
       "target": [
-        0.523,
-        0.772,
-        -0.155
+        -0.532,
+        1.119,
+        0.321
       ],
-      "step": 1
+      "step": 2
     },
     {
-      "id": "A8",
+      "id": "A4",
       "name": {
-        "id": "Lutut kanan",
-        "en": "Right knee"
+        "id": "Paha kiri (belakang)",
+        "en": "Left thigh (back)"
       },
-      "model": "MidLeg-R",
+      "model": "UpperLeg-L-B",
       "runner": "A",
       "row": -1,
-      "x": -0.098,
+      "x": -0.469,
       "gates": [
-        -0.032
-      ],
-      "color": "#678672",
-      "size": [
-        0.128,
-        0.465,
-        0.703
-      ],
-      "target": [
-        -0.52,
-        0.777,
-        -0.177
-      ],
-      "step": 1
-    },
-    {
-      "id": "A9",
-      "name": {
-        "id": "Paha kiri",
-        "en": "Left thigh"
-      },
-      "model": "UpperLeg-L",
-      "runner": "A",
-      "row": -1,
-      "x": 0.37,
-      "gates": [
-        -0.079
+        -0.056
       ],
       "color": "#678672",
       "size": [
         0.488,
-        0.977,
-        1.197
+        0.828,
+        0.842
       ],
       "target": [
         0.446,
-        1.186,
-        0.097
+        1.26,
+        -0.081
       ],
       "step": 2
     },
     {
-      "id": "A10",
+      "id": "A5",
       "name": {
-        "id": "Paha kanan",
-        "en": "Right thigh"
+        "id": "Paha kanan (belakang)",
+        "en": "Right thigh (back)"
       },
-      "model": "UpperLeg-R",
+      "model": "UpperLeg-R-B",
       "runner": "A",
       "row": -1,
-      "x": 1.03,
+      "x": 0.178,
       "gates": [
-        -0.205,
-        0.09
+        -0.194
       ],
       "color": "#678672",
       "size": [
-        0.511,
-        0.963,
-        1.204
+        0.487,
+        0.821,
+        0.835
       ],
       "target": [
-        -0.449,
-        1.216,
-        0.058
+        -0.437,
+        1.287,
+        -0.126
       ],
       "step": 2
     },
     {
-      "id": "A11",
+      "id": "A8",
       "name": {
-        "id": "Perut",
-        "en": "Abdomen"
+        "id": "Perut (depan)",
+        "en": "Abdomen (front)"
       },
-      "model": "Torso",
+      "model": "Torso-F",
       "runner": "A",
       "row": -1,
-      "x": 1.74,
+      "x": 1.88,
+      "gates": [
+        -0.239,
+        0.178
+      ],
+      "color": "#678672",
+      "size": [
+        0.576,
+        0.732,
+        0.634
+      ],
+      "target": [
+        -0.005,
+        1.523,
+        -0.091
+      ],
+      "step": 3
+    },
+    {
+      "id": "A9",
+      "name": {
+        "id": "Perut (belakang)",
+        "en": "Abdomen (back)"
+      },
+      "model": "Torso-B",
+      "runner": "A",
+      "row": -1,
+      "x": 2.623,
       "gates": [
         -0.246,
         0.171
@@ -346,25 +592,52 @@
       "size": [
         0.589,
         0.732,
-        0.717
+        0.537
       ],
       "target": [
         0.001,
         1.523,
-        -0.133
+        -0.223
       ],
       "step": 3
     },
     {
-      "id": "A12",
+      "id": "A2",
       "name": {
-        "id": "Dada",
-        "en": "Chest"
+        "id": "Dada (depan)",
+        "en": "Chest (front)"
       },
-      "model": "Chest",
+      "model": "Chest-F",
       "runner": "A",
       "row": -1,
-      "x": 2.532,
+      "x": -2.041,
+      "gates": [
+        -0.139,
+        0.11
+      ],
+      "color": "#678672",
+      "size": [
+        0.664,
+        0.931,
+        0.385
+      ],
+      "target": [
+        0.025,
+        2.169,
+        -0.29
+      ],
+      "step": 3
+    },
+    {
+      "id": "A3",
+      "name": {
+        "id": "Dada (belakang)",
+        "en": "Chest (back)"
+      },
+      "model": "Chest-B",
+      "runner": "A",
+      "row": -1,
+      "x": -1.211,
       "gates": [
         -0.134,
         0.106
@@ -372,26 +645,53 @@
       "color": "#678672",
       "size": [
         0.676,
-        0.931,
-        0.44
+        0.93,
+        0.402
       ],
       "target": [
         0.029,
         2.169,
-        -0.317
+        -0.336
       ],
       "step": 3
     },
     {
-      "id": "A13",
+      "id": "A10",
       "name": {
-        "id": "Kepala",
-        "en": "Head"
+        "id": "Leher (depan)",
+        "en": "Neck (front)"
       },
-      "model": "Head",
+      "model": "Neck-F",
       "runner": "A",
       "row": 1,
-      "x": -2.958,
+      "x": -2.786,
+      "gates": [
+        -0.094,
+        0.113
+      ],
+      "color": "#678672",
+      "size": [
+        0.507,
+        0.668,
+        0.606
+      ],
+      "target": [
+        0.028,
+        2.461,
+        -0.282
+      ],
+      "step": 4
+    },
+    {
+      "id": "A21",
+      "name": {
+        "id": "Kepala (depan)",
+        "en": "Head (front)"
+      },
+      "model": "Head-F",
+      "runner": "A",
+      "row": 1,
+      "x": 2.823,
       "gates": [
         0.079
       ],
@@ -409,86 +709,164 @@
       "step": 4
     },
     {
-      "id": "A14",
+      "id": "B1",
       "name": {
-        "id": "Leher",
-        "en": "Neck"
+        "id": "Kepala (belakang)",
+        "en": "Head (back)"
       },
-      "model": "Neck",
-      "runner": "A",
-      "row": 1,
-      "x": -2.464,
+      "model": "Head-B",
+      "runner": "B",
+      "row": -1,
+      "x": -2.962,
       "gates": [
-        -0.173,
-        0.227
+        0.072
+      ],
+      "color": "#678672",
+      "size": [
+        0.155,
+        0.447,
+        0.344
+      ],
+      "target": [
+        0.033,
+        2.694,
+        -0.227
+      ],
+      "step": 4
+    },
+    {
+      "id": "A1",
+      "name": {
+        "id": "Leher (belakang)",
+        "en": "Neck (back)"
+      },
+      "model": "Neck-B",
+      "runner": "A",
+      "row": -1,
+      "x": -2.786,
+      "gates": [
+        -0.2,
+        0.219
       ],
       "color": "#678672",
       "size": [
         0.507,
-        1.273,
-        0.717
+        1.091,
+        0.584
       ],
       "target": [
         0.028,
-        2.764,
-        -0.337
+        2.854,
+        -0.403
       ],
       "step": 4
     },
     {
       "id": "A15",
       "name": {
-        "id": "Lengan bawah kiri",
-        "en": "Left forearm"
+        "id": "Lengan bawah kiri (depan)",
+        "en": "Left forearm (front)"
       },
-      "model": "LowerArm-L",
+      "model": "LowerArm-L-F",
       "runner": "A",
       "row": 1,
-      "x": -1.801,
+      "x": 0.422,
       "gates": [
-        -0.232
+        -0.124
       ],
       "color": "#678672",
       "size": [
-        0.498,
-        0.694,
-        0.576
+        0.423,
+        0.587,
+        0.435
       ],
       "target": [
-        0.845,
-        1.743,
-        -0.06
+        0.882,
+        1.689,
+        0.011
       ],
       "step": 5
     },
     {
       "id": "A16",
       "name": {
-        "id": "Lengan bawah kanan",
-        "en": "Right forearm"
+        "id": "Lengan bawah kanan (depan)",
+        "en": "Right forearm (front)"
       },
-      "model": "LowerArm-R",
+      "model": "LowerArm-R-F",
       "runner": "A",
       "row": 1,
-      "x": -1.125,
+      "x": 1.017,
       "gates": [
-        0.256
+        0.127
       ],
       "color": "#678672",
       "size": [
-        0.534,
-        0.688,
-        0.56
+        0.447,
+        0.582,
+        0.374
       ],
       "target": [
-        -0.827,
-        1.777,
-        -0.131
+        -0.87,
+        1.724,
+        -0.038
       ],
       "step": 5
     },
     {
-      "id": "A17",
+      "id": "A13",
+      "name": {
+        "id": "Lengan bawah kiri (belakang)",
+        "en": "Left forearm (back)"
+      },
+      "model": "LowerArm-L-B",
+      "runner": "A",
+      "row": 1,
+      "x": -0.825,
+      "gates": [
+        -0.232
+      ],
+      "color": "#678672",
+      "size": [
+        0.498,
+        0.633,
+        0.429
+      ],
+      "target": [
+        0.845,
+        1.773,
+        -0.133
+      ],
+      "step": 5
+    },
+    {
+      "id": "A11",
+      "name": {
+        "id": "Lengan bawah kanan (belakang)",
+        "en": "Right forearm (back)"
+      },
+      "model": "LowerArm-R-B",
+      "runner": "A",
+      "row": 1,
+      "x": -2.106,
+      "gates": [
+        0.123
+      ],
+      "color": "#678672",
+      "size": [
+        0.534,
+        0.644,
+        0.413
+      ],
+      "target": [
+        -0.827,
+        1.799,
+        -0.204
+      ],
+      "step": 5
+    },
+    {
+      "id": "A12",
       "name": {
         "id": "Lengan atas kiri",
         "en": "Left upper arm"
@@ -496,7 +874,7 @@
       "model": "UpperArm-L",
       "runner": "A",
       "row": 1,
-      "x": -0.475,
+      "x": -1.457,
       "gates": [
         0.003
       ],
@@ -514,7 +892,7 @@
       "step": 5
     },
     {
-      "id": "A18",
+      "id": "A14",
       "name": {
         "id": "Lengan atas kanan",
         "en": "Right upper arm"
@@ -522,7 +900,7 @@
       "model": "UpperArm-R",
       "runner": "A",
       "row": 1,
-      "x": 0.141,
+      "x": -0.183,
       "gates": [
         0.211
       ],
@@ -540,17 +918,17 @@
       "step": 5
     },
     {
-      "id": "A19",
+      "id": "B8",
       "name": {
         "id": "Bahu kiri",
         "en": "Left shoulder"
       },
       "model": "Shoulder-L",
-      "runner": "A",
-      "row": 1,
-      "x": 0.61,
+      "runner": "B",
+      "row": -1,
+      "x": -0.761,
       "gates": [
-        -0.002
+        -0.005
       ],
       "color": "#678672",
       "size": [
@@ -566,17 +944,17 @@
       "step": 5
     },
     {
-      "id": "A20",
+      "id": "B9",
       "name": {
         "id": "Bahu kanan",
         "en": "Right shoulder"
       },
       "model": "Shoulder-R",
-      "runner": "A",
-      "row": 1,
-      "x": 0.921,
+      "runner": "B",
+      "row": -1,
+      "x": -0.45,
       "gates": [
-        0.004
+        0
       ],
       "color": "#678672",
       "size": [
@@ -592,54 +970,262 @@
       "step": 5
     },
     {
-      "id": "A21",
+      "id": "B19",
       "name": {
-        "id": "Tangan kiri",
-        "en": "Left hand"
+        "id": "Kelingking kiri",
+        "en": "Left little finger"
       },
-      "model": "Hand-L",
-      "runner": "A",
+      "model": "Pinky2-L",
+      "runner": "B",
       "row": 1,
-      "x": 1.294,
+      "x": -2.42,
       "gates": [
-        -0.063
+        0.05
       ],
       "color": "#678672",
       "size": [
-        0.276,
-        0.337,
-        0.303
+        0.12,
+        0.12,
+        0.12
       ],
       "target": [
-        0.914,
-        1.502,
+        0.841,
+        1.381,
+        0.024
+      ],
+      "step": 6
+    },
+    {
+      "id": "B20",
+      "name": {
+        "id": "Kelingking kanan",
+        "en": "Right little finger"
+      },
+      "model": "Pinky2-R",
+      "runner": "B",
+      "row": 1,
+      "x": -2.139,
+      "gates": [
+        -0.043
+      ],
+      "color": "#678672",
+      "size": [
+        0.122,
+        0.12,
+        0.12
+      ],
+      "target": [
+        -0.865,
+        1.382,
+        -0.047
+      ],
+      "step": 6
+    },
+    {
+      "id": "B21",
+      "name": {
+        "id": "Jari manis kanan",
+        "en": "Right ring finger"
+      },
+      "model": "Ring2-R",
+      "runner": "B",
+      "row": 1,
+      "x": -1.844,
+      "gates": [
+        -0.034
+      ],
+      "color": "#678672",
+      "size": [
+        0.147,
+        0.12,
+        0.12
+      ],
+      "target": [
+        -0.86,
+        1.395,
+        0.05
+      ],
+      "step": 6
+    },
+    {
+      "id": "B14",
+      "name": {
+        "id": "Jari manis kiri",
+        "en": "Left ring finger"
+      },
+      "model": "Ring2-L",
+      "runner": "B",
+      "row": -1,
+      "x": 2.171,
+      "gates": [
+        0.04
+      ],
+      "color": "#678672",
+      "size": [
+        0.12,
+        0.124,
+        0.123
+      ],
+      "target": [
+        0.832,
+        1.396,
+        0.111
+      ],
+      "step": 6
+    },
+    {
+      "id": "B22",
+      "name": {
+        "id": "Telunjuk kiri",
+        "en": "Left index finger"
+      },
+      "model": "Index2-L",
+      "runner": "B",
+      "row": 1,
+      "x": -1.551,
+      "gates": [
+        0.022
+      ],
+      "color": "#678672",
+      "size": [
+        0.12,
+        0.12,
+        0.12
+      ],
+      "target": [
+        0.86,
+        1.447,
+        0.198
+      ],
+      "step": 6
+    },
+    {
+      "id": "B23",
+      "name": {
+        "id": "Telunjuk kanan",
+        "en": "Right index finger"
+      },
+      "model": "Index2-R",
+      "runner": "B",
+      "row": 1,
+      "x": -1.271,
+      "gates": [
+        -0.043
+      ],
+      "color": "#678672",
+      "size": [
+        0.12,
+        0.12,
+        0.12
+      ],
+      "target": [
+        -0.893,
+        1.467,
+        0.149
+      ],
+      "step": 6
+    },
+    {
+      "id": "B6",
+      "name": {
+        "id": "Telapak tangan kiri",
+        "en": "Left palm"
+      },
+      "model": "Palm-L",
+      "runner": "B",
+      "row": -1,
+      "x": -1.478,
+      "gates": [
+        0.104
+      ],
+      "color": "#678672",
+      "size": [
+        0.21,
+        0.335,
+        0.263
+      ],
+      "target": [
+        0.947,
+        1.503,
         0.129
       ],
       "step": 6
     },
     {
-      "id": "A22",
+      "id": "B7",
       "name": {
-        "id": "Tangan kanan",
-        "en": "Right hand"
+        "id": "Telapak tangan kanan",
+        "en": "Right palm"
       },
-      "model": "Hand-R",
-      "runner": "A",
-      "row": 1,
-      "x": 1.737,
+      "model": "Palm-R",
+      "runner": "B",
+      "row": -1,
+      "x": -1.105,
       "gates": [
-        0.071
+        -0.057
       ],
       "color": "#678672",
       "size": [
-        0.29,
-        0.378,
-        0.288
+        0.216,
+        0.335,
+        0.259
       ],
       "target": [
-        -0.932,
-        1.52,
-        0.059
+        -0.969,
+        1.541,
+        0.045
+      ],
+      "step": 6
+    },
+    {
+      "id": "B15",
+      "name": {
+        "id": "Jempol kiri",
+        "en": "Left thumb"
+      },
+      "model": "Thumb2-L",
+      "runner": "B",
+      "row": -1,
+      "x": 2.451,
+      "gates": [
+        -0.027
+      ],
+      "color": "#678672",
+      "size": [
+        0.12,
+        0.124,
+        0.12
+      ],
+      "target": [
+        0.894,
+        1.594,
+        0.234
+      ],
+      "step": 6
+    },
+    {
+      "id": "B16",
+      "name": {
+        "id": "Jempol kanan",
+        "en": "Right thumb"
+      },
+      "model": "Thumb2-R",
+      "runner": "B",
+      "row": -1,
+      "x": 2.731,
+      "gates": [
+        0.023
+      ],
+      "color": "#678672",
+      "size": [
+        0.12,
+        0.124,
+        0.12
+      ],
+      "target": [
+        -0.917,
+        1.631,
+        0.157
       ],
       "step": 6
     }
@@ -652,18 +1238,32 @@
         "en": "Waist"
       },
       "parts": [
-        "A11",
-        "A12",
-        "A13",
-        "A14",
+        "A8",
+        "A9",
+        "A2",
+        "A3",
+        "A10",
+        "A21",
+        "B1",
+        "A1",
         "A15",
         "A16",
-        "A17",
-        "A18",
-        "A19",
-        "A20",
-        "A21",
-        "A22"
+        "A13",
+        "A11",
+        "A12",
+        "A14",
+        "B8",
+        "B9",
+        "B19",
+        "B20",
+        "B21",
+        "B14",
+        "B22",
+        "B23",
+        "B6",
+        "B7",
+        "B15",
+        "B16"
       ],
       "pivot": [
         -0.007,
@@ -681,8 +1281,10 @@
         "en": "Head"
       },
       "parts": [
-        "A13",
-        "A14"
+        "A10",
+        "A21",
+        "B1",
+        "A1"
       ],
       "pivot": [
         0.026,
@@ -701,9 +1303,14 @@
       },
       "parts": [
         "A15",
-        "A17",
-        "A19",
-        "A21"
+        "A13",
+        "A12",
+        "B8",
+        "B19",
+        "B14",
+        "B22",
+        "B6",
+        "B15"
       ],
       "pivot": [
         0.22,
@@ -722,9 +1329,14 @@
       },
       "parts": [
         "A16",
-        "A18",
-        "A20",
-        "A22"
+        "A11",
+        "A14",
+        "B9",
+        "B20",
+        "B21",
+        "B23",
+        "B7",
+        "B16"
       ],
       "pivot": [
         -0.166,
@@ -742,10 +1354,13 @@
         "en": "Left leg"
       },
       "parts": [
-        "A2",
+        "B18",
+        "A17",
+        "A19",
+        "B3",
+        "B5",
         "A6",
-        "A7",
-        "A9"
+        "A4"
       ],
       "pivot": [
         0.51,
@@ -763,10 +1378,13 @@
         "en": "Right leg"
       },
       "parts": [
-        "A1",
-        "A5",
-        "A8",
-        "A10"
+        "B17",
+        "A18",
+        "A20",
+        "B2",
+        "B4",
+        "A7",
+        "A5"
       ],
       "pivot": [
         -0.5,
@@ -778,6 +1396,6 @@
       "max": 45
     }
   ],
-  "model": "/models/kr-04.json?v=f4f1ea6164",
+  "model": "/models/kr-04.json?v=1e814fa410",
   "art": "/art/kr-04.png?v=7136aa7ee8"
 }

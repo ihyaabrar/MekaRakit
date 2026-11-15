@@ -128,10 +128,16 @@
   margin: 2px 0 4px !important;
 }
 
+/* detailed kits list a dozen parts per step: two lines here, the full list is in the manual */
 .stepParts {
   font-size: 13px;
   color: #c9c3b8;
   line-height: 1.4;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 .notices {
