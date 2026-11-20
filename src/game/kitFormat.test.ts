@@ -17,6 +17,11 @@ test("every kit loads: 10-60 parts, every step used, each part has model geometr
   }
 });
 
+test("kits get harder in unlock order: each has more parts than the one before", () => {
+  const counts = files.map((f) => f.parts.length);
+  for (let i = 1; i < counts.length; i++) assert.ok(counts[i] > counts[i - 1], `part counts ${counts.join(", ")}`);
+});
+
 test("gates sit on the runner's middle bar once the part lies on it", () => {
   for (const file of files) {
   const kit = loadKit(file);
