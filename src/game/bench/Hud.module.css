@@ -376,6 +376,35 @@
   padding: 16px;
 }
 
+/* up to six pose sliders: one row each (name, then slider), dark scrollbar, and the shelf button stays in view */
+.finish {
+  overflow-x: hidden;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+  scrollbar-width: thin;
+}
+
+.finish .sliders {
+  min-width: 0;
+  gap: 6px;
+}
+
+.finish .sliders label {
+  grid-template-columns: 92px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.finish .sliders input {
+  width: 100%;
+  min-width: 0;
+}
+
+.finish > .primary:last-child {
+  position: sticky;
+  bottom: 0;
+  box-shadow: 0 -10px 14px rgba(16, 18, 20, 0.9);
+}
+
 .finish h2 {
   font-size: 28px;
 }
