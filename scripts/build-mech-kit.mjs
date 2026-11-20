@@ -141,6 +141,7 @@ if (DETAIL >= 1) {
     for (const pc of pieces.values()) for (let i = 0; i < pc.main.length; i += 6) b.expandByPoint(p.set(pc.main[i], pc.main[i + 1], pc.main[i + 2]));
     return b.max.y - b.min.y;
   })();
+  const whole = new Map(); // pieces that were split, for undoing a one-sided split below
   for (const [grp, pc] of [...pieces]) {
     if (/^(Palm|Pinky|Ring|Index|Thumb|Middle)/.test(grp) || tris(pc) < 40) continue;
     const zs = [];
@@ -158,9 +159,29 @@ if (DETAIL >= 1) {
       }
     }
     if (tris(halves.F) < 8 || tris(halves.B) < 8) continue;
+    // big faces can straddle the cut; when the halves still overlap through most of the depth they are
+    // interleaved shards, not plates, so the piece stays whole
+    const zr = (h) => {
+      const v = [];
+      for (let i = 0; i < h.main.length; i += 6) v.push(h.main[i + 2]);
+      for (let i = 0; i < h.detail.length; i += 9) v.push(h.detail[i + 2]);
+      return [Math.min(...v), Math.max(...v)];
+    };
+    const [fLo] = zr(halves.F);
+    const [, bHi] = zr(halves.B);
+    if (bHi - fLo > (hi - lo) * 0.5) continue;
     pieces.delete(grp);
     pieces.set(`${grp}#F`, halves.F);
     pieces.set(`${grp}#B`, halves.B);
+    whole.set(grp, pc);
+  }
+  // left and right stay alike: a piece split on one side only goes back to whole
+  for (const [grp, pc] of whole) {
+    const mirror = grp.replace(/\.(L|R)$/, (_, s) => (s === "L" ? ".R" : ".L"));
+    if (mirror === grp || whole.has(mirror) || !pieces.has(mirror)) continue;
+    pieces.delete(`${grp}#F`);
+    pieces.delete(`${grp}#B`);
+    pieces.set(grp, pc);
   }
 }
 

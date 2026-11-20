@@ -36,7 +36,9 @@ test("gates sit on the runner's middle bar once the part lies on it", () => {
 test("loader rejects broken kits", () => {
   const clone = () => JSON.parse(JSON.stringify(kr01)) as KitFileV1;
   const overlap = clone();
-  overlap.parts[1].x = overlap.parts[0].x;
+  // two parts in the same runner row, made to share a slot
+  const [first, second] = overlap.parts.filter((p) => p.runner === overlap.parts[0].runner && p.row === overlap.parts[0].row);
+  second.x = first.x;
   assert.throws(() => loadKit(overlap), /overlaps/);
   const badRunner = clone();
   badRunner.parts[0].runner = "Z";

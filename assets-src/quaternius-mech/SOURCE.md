@@ -9,12 +9,12 @@ These are the inputs for `scripts/build-mech-kit.mjs`, which splits each rigged 
 
 | Kit   | Model  | Detail | Parts |
 |-------|--------|--------|-------|
-| KR-01 | Leela  | 1      | 25    |
-| KR-02 | Stan   | 2      | 29    |
-| KR-03 | Mike   | 2      | 29    |
-| KR-04 | George | 2      | 44    |
+| KR-01 | Leela  | 1      | 22    |
+| KR-02 | Stan   | 2      | 20    |
+| KR-03 | Mike   | 2      | 23    |
+| KR-04 | George | 2      | 40    |
 
-Detail 1 splits deep pieces into front and back plates; detail 2 also gives each hand a palm and separate fingers.
+Detail 1 splits deep pieces into front and back plates (only where the halves really separate, and the same on both sides); detail 2 also gives each hand a palm and separate fingers.
 
 Rebuild a kit (height 3.4, then the detail level):
 
